@@ -27,9 +27,9 @@ public class CloudinaryService {
         Map<String, Object> uploadResult;
         String fileType = file.getContentType();
         String publicId = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + "_" + UUID.randomUUID();
-        if (fileType != null && fileType.startsWith("video")) {
+        if (fileType != null) {
             uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    ObjectUtils.asMap("resource_type", "video", "public_id", publicId));
+                    ObjectUtils.asMap("resource_type", fileType.split("/")[0], "public_id", publicId));
         } else {
             uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap("public_id", publicId));

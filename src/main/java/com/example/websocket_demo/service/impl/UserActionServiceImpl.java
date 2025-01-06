@@ -7,6 +7,7 @@ import com.example.websocket_demo.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.websocket_demo.dto.UserDto;
@@ -27,6 +28,7 @@ public class UserActionServiceImpl implements IUserActionService {
     IUserRepository userRepository;
     UserMapper userMapper;
     CloudinaryService mediaUploader;
+    PasswordEncoder passwordEncoder;
 
     @Override
     public Page<UserDto> getAllUsers(Pageable pageable) {
@@ -64,6 +66,9 @@ public class UserActionServiceImpl implements IUserActionService {
         currentUser.setUsername(userModel.getUsername() != null
                 ? userModel.getUsername()
                 : currentUser.getUsername());
+        currentUser.setPassword(userModel.getPassword() != null
+                ? passwordEncoder.encode(userModel.getPassword())
+                : currentUser.getPassword());
         try {
             currentUser.setProfilePicture(userModel.getProfilePicture() != null
                     ? currentUser.getProfilePicture() != null
