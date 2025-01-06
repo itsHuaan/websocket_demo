@@ -11,14 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.websocket_demo.configuration.UserDetailsImpl;
 import com.example.websocket_demo.repository.ITokenBlackListRepository;
-import com.example.websocket_demo.service.impl.UserServiceImpl;
+import com.example.websocket_demo.service.impl.UserDetailServiceImpl;
 
 import java.io.IOException;
 
@@ -26,17 +26,17 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
-    private final UserServiceImpl userServiceImpl;
+    private final UserDetailServiceImpl userDetailServiceImpl;
     private final ITokenBlackListRepository tokenBlackListRepository;
     @Value("${jwt.secret-key}")
     private String JWT_SECRET;
 
     @Autowired
     public JwtAuthenticationFilter(JwtProvider jwtProvider, 
-            UserServiceImpl userServiceImpl,
+            UserDetailServiceImpl userDetailServiceImpl,
             ITokenBlackListRepository tokenBlackListRepository) {
         this.jwtProvider = jwtProvider;
-        this.userServiceImpl = userServiceImpl;
+        this.userDetailServiceImpl = userDetailServiceImpl;
         this.tokenBlackListRepository = tokenBlackListRepository;
     }
 
@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwtToken = getJwtFromRequest(request);
             if (jwtToken != null && this.validateToken(jwtToken) && !tokenBlackListRepository.existsByToken(jwtToken)) {
                 String email = jwtProvider.getKeyByValueFromJWT("email", jwtToken);
-                UserDetailsImpl userDetails = (UserDetailsImpl) userServiceImpl.loadUserByUsername(email);
+                UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(email);
                 if (userDetails != null) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
