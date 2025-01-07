@@ -1,10 +1,7 @@
-package com.example.websocket_demo.service;
+package com.example.websocket_demo.service.unclassified;
 
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.MediaUploadTestModel;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 public interface ITestService {
     ApiResponse<?> getMedias();

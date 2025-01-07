@@ -1,8 +1,6 @@
-package com.example.websocket_demo.service.impl;
+package com.example.websocket_demo.service.user.impl;
 
-import java.util.List;
-
-import com.example.websocket_demo.service.IUserActionService;
+import com.example.websocket_demo.service.user.IUserActionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -12,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.dto.UserDto;
 import com.example.websocket_demo.model.UserModel;
-import com.example.websocket_demo.service.IUserService;
+import com.example.websocket_demo.service.user.IUserService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

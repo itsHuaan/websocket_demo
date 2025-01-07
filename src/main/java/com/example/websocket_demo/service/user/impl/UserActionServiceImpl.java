@@ -1,4 +1,4 @@
-package com.example.websocket_demo.service.impl;
+package com.example.websocket_demo.service.user.impl;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import com.example.websocket_demo.dto.UserDto;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.model.UserModel;
 import com.example.websocket_demo.repository.IUserRepository;
-import com.example.websocket_demo.service.IUserActionService;
+import com.example.websocket_demo.service.user.IUserActionService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -72,8 +72,8 @@ public class UserActionServiceImpl implements IUserActionService {
         try {
             currentUser.setProfilePicture(userModel.getProfilePicture() != null
                     ? currentUser.getProfilePicture() != null
-                    ? mediaUploader.replaceSingleMediaFile(currentUser.getProfilePicture(), userModel.getProfilePicture())
-                    : mediaUploader.uploadSingleMediaFile(userModel.getProfilePicture())
+                    ? mediaUploader.replaceMediaFile(currentUser.getProfilePicture(), userModel.getProfilePicture())
+                    : mediaUploader.uploadMediaFile(userModel.getProfilePicture())
                     : currentUser.getProfilePicture());
         } catch (IOException e) {
             throw new RuntimeException(e);

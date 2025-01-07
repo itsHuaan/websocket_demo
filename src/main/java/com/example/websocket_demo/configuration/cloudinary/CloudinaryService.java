@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -22,8 +24,7 @@ import java.util.UUID;
 public class CloudinaryService {
     Cloudinary cloudinary;
 
-
-    public String uploadSingleMediaFile(MultipartFile file) throws IOException {
+    public String uploadMediaFile(MultipartFile file) throws IOException {
         Map<String, Object> uploadResult;
         String fileType = file.getContentType();
         String publicId = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + "_" + UUID.randomUUID();
@@ -37,7 +38,7 @@ public class CloudinaryService {
         return (String) uploadResult.get("url");
     }
 
-    public String replaceSingleMediaFile(String mediaUrl, MultipartFile newFile) throws IOException {
+    public String replaceMediaFile(String mediaUrl, MultipartFile newFile) throws IOException {
         Map<String, Object> uploadResult;
         String extractedPublicId = extractPublicId(mediaUrl);
         uploadResult = cloudinary.uploader().upload(newFile.getBytes(),
@@ -45,24 +46,45 @@ public class CloudinaryService {
         return (String) uploadResult.get("url");
     }
 
-    public boolean deleteSingleMediaFile(String mediaUrl) throws IOException {
+    public boolean deleteMediaFile(String mediaUrl) throws IOException {
         String publicId = extractPublicId(mediaUrl);
-        String resourceType = mediaUrl.contains("/video/upload/") ? "video" : "image";
         Map<String, Object> deleteResult = cloudinary.uploader().destroy(publicId,
-                ObjectUtils.asMap("resource_type", resourceType));
+                ObjectUtils.asMap("resource_type", getResourceType(mediaUrl)));
         return "ok".equals(deleteResult.get("result"));
     }
 
     private String extractPublicId(String mediaUrl) {
-        if (mediaUrl == null || !mediaUrl.contains("/upload/")) {
-            throw new IllegalArgumentException("Invalid image URL format: " + mediaUrl);
+        if (mediaUrl == null || mediaUrl.isEmpty()) {
+            throw new IllegalArgumentException("URL cannot be null or empty");
         }
-        String[] parts = mediaUrl.split("/upload/");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Failed to extract public ID from image URL: " + mediaUrl);
+        Pattern pattern = Pattern.compile("(\\d{8}_\\d{6}_[\\w-]+)");
+        Matcher matcher = pattern.matcher(mediaUrl);
+        if (matcher.find()) {
+            return matcher.group(0);
+        } else {
+            throw new IllegalArgumentException("Failed to extract public ID from URL: " + mediaUrl);
         }
-        String uploadPath = parts[1];
-        return uploadPath.substring(uploadPath.indexOf('/') + 1, uploadPath.lastIndexOf('.'));
     }
+
+    private String getResourceType(String mediaUrl) {
+        if (mediaUrl == null || mediaUrl.isEmpty()) {
+            throw new IllegalArgumentException("URL cannot be null or empty");
+        }
+        String mediaUrlLower = mediaUrl.toLowerCase();
+        if (mediaUrlLower.endsWith(".mp4") || mediaUrlLower.endsWith(".webm") ||
+                mediaUrlLower.endsWith(".mov") || mediaUrlLower.endsWith(".avi") ||
+                mediaUrlLower.endsWith(".flv")) {
+            return "video";
+        } else if (mediaUrlLower.endsWith(".mp3") || mediaUrlLower.endsWith(".ogg") ||
+                mediaUrlLower.endsWith(".wav")) {
+            return "audio";
+        } else if (mediaUrlLower.endsWith(".pdf") || mediaUrlLower.endsWith(".zip") ||
+                mediaUrlLower.endsWith(".docx") || mediaUrlLower.endsWith(".psd")) {
+            return "raw";
+        } else {
+            return "image";
+        }
+    }
+
 }
 

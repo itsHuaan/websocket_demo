@@ -1,4 +1,4 @@
-package com.example.websocket_demo.service;
+package com.example.websocket_demo.service.user;
 
 import org.springframework.data.domain.Pageable;
 

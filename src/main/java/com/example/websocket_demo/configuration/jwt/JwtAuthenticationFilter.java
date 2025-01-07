@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.websocket_demo.repository.ITokenBlackListRepository;
-import com.example.websocket_demo.service.impl.UserDetailServiceImpl;
+import com.example.websocket_demo.service.user.impl.UserDetailServiceImpl;
 
 import java.io.IOException;
 

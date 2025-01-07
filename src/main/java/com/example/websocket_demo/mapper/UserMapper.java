@@ -37,7 +37,7 @@ public class UserMapper {
                 .username(userModel.getUsername())
                 .password(passwordEncoder.encode(userModel.getPassword()))
                 .profilePicture(userModel.getProfilePicture() != null
-                        ? mediaUploader.uploadSingleMediaFile(userModel.getProfilePicture())
+                        ? mediaUploader.uploadMediaFile(userModel.getProfilePicture())
                         : null)
                 .role(userModel.getRoleId() != null
                         ? RoleEntity.builder().roleId(userModel.getRoleId()).build()

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.UserModel;
-import com.example.websocket_demo.service.IUserService;
+import com.example.websocket_demo.service.user.IUserService;
 import com.example.websocket_demo.util.Const;
 import com.example.websocket_demo.util.PageableValidation;
 

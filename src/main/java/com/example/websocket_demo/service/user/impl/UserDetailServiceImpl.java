@@ -1,4 +1,4 @@
-package com.example.websocket_demo.service.impl;
+package com.example.websocket_demo.service.user.impl;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

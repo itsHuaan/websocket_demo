@@ -1,7 +1,7 @@
 package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.model.MediaUploadTestModel;
-import com.example.websocket_demo.service.ITestService;
+import com.example.websocket_demo.service.unclassified.ITestService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,6 +16,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @RestController
 @Tag(name = "Test Controller")
 @RequestMapping(value = Const.API_PREFIX + "/test")
@@ -27,12 +30,15 @@ public class TestController {
 
     @Operation(summary = "This is my first test controller")
     @GetMapping("/first")
-    public ResponseEntity<?> firstTestMethod() {
+    public ResponseEntity<?> firstTestMethod(@RequestParam String url) {
+        Pattern pattern = Pattern.compile("(\\d{8}_\\d{6}_[\\w-]+)");
+        Matcher matcher = pattern.matcher(url);
+        String publicId = matcher.find() ? matcher.group(0) : null;
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         HttpStatus.OK,
                         "This controller for testing",
-                        null));
+                        publicId));
     }
 
     @GetMapping("/get-upload")

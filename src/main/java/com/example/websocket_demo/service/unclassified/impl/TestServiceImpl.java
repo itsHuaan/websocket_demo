@@ -1,4 +1,4 @@
-package com.example.websocket_demo.service.impl;
+package com.example.websocket_demo.service.unclassified.impl;
 
 import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
 import com.example.websocket_demo.dto.ApiResponse;
@@ -7,10 +7,11 @@ import com.example.websocket_demo.entity.TestEntity;
 import com.example.websocket_demo.entity.TestMediaEntity;
 import com.example.websocket_demo.model.MediaUploadTestModel;
 import com.example.websocket_demo.repository.ITestRepository;
-import com.example.websocket_demo.service.ITestService;
+import com.example.websocket_demo.service.unclassified.ITestService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -45,7 +47,7 @@ public class TestServiceImpl implements ITestService {
                     try {
                         return TestMediaEntity.builder()
                                 .testRecord(testEntity)
-                                .mediaUrl(mediaUploader.uploadSingleMediaFile(media))
+                                .mediaUrl(mediaUploader.uploadMediaFile(media))
                                 .build();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -105,7 +107,12 @@ public class TestServiceImpl implements ITestService {
                     .map(TestMediaEntity::getMediaUrl)
                     .toList();
             for (String mediaUrl : mediaUrls){
-                mediaUploader.deleteSingleMediaFile(mediaUrl);
+                if (mediaUploader.deleteMediaFile(mediaUrl))
+                {
+                    log.info("Media deleted successfully: {}", mediaUrl);
+                } else {
+                    log.error("Failed to delete media: {}", mediaUrl);
+                }
             }
             testRepository.delete(getTestEntity(id));
             message = "Media deleted";
