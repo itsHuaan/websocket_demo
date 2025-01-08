@@ -18,12 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tbl_user")
-public class UserEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long userId;
-
+public class UserEntity extends BaseEntity {
     @Column(unique = true, nullable = false)
     @NotNull
     @Size(min = 3, max = 50)
@@ -39,12 +34,4 @@ public class UserEntity {
     @JoinColumn(name = "role_id", nullable = false)
     RoleEntity role;
 
-    @Column(updatable = false)
-    @CreationTimestamp
-    LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    LocalDateTime modifiedAt;
-
-    LocalDateTime deletedAt;
 }

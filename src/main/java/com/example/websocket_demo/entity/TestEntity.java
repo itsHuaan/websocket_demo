@@ -15,10 +15,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tbl_test")
-public class TestEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long testId;
+public class TestEntity extends BaseEntity{
     @OneToMany(mappedBy = "testRecord", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<TestMediaEntity> testMedia;
+    List<TestMediaEntity> testMedia;
 }

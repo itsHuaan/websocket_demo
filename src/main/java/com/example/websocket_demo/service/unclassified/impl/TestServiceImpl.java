@@ -30,7 +30,7 @@ public class TestServiceImpl implements ITestService {
 
     private TestDto toTestDto(TestEntity testEntity) {
         return TestDto.builder()
-                .testId(testEntity.getTestId())
+                .testId(testEntity.getId())
                 .mediaUrls(testEntity.getTestMedia().stream()
                         .map(TestMediaEntity::getMediaUrl)
                         .toList())

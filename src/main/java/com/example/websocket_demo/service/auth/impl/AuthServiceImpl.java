@@ -21,7 +21,7 @@ public class AuthServiceImpl implements IAuthService {
         try {
             SignInResponse signInResponse = authActionService.signIn(credentials);
             return new ApiResponse<>(HttpStatus.OK,
-                    "Sign in successful",
+                    "You're now logged in",
                     signInResponse);
         } catch (RuntimeException e) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST,

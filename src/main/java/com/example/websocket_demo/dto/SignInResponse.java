@@ -12,9 +12,17 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SignInResponse {
     Long id;
     String username;
     String type;
     String token;
+
+    public SignInResponse(Long id, String username, String token) {
+        this.id = id;
+        this.username = username;
+        this.type = "Bearer";
+        this.token = token;
+    }
 }

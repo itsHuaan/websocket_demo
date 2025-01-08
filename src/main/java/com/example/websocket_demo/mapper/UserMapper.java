@@ -1,9 +1,10 @@
 package com.example.websocket_demo.mapper;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
+import com.example.websocket_demo.repository.IRoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -22,27 +23,35 @@ import lombok.experimental.FieldDefaults;
 public class UserMapper {
     PasswordEncoder passwordEncoder;
     CloudinaryService mediaUploader;
+    IRoleRepository roleRepository;
 
     public UserDto toUserDto(UserEntity userEntity) {
         return UserDto.builder()
-                .userId(userEntity.getUserId())
+                .userId(userEntity.getId())
                 .username(userEntity.getUsername())
                 .profilePicture(userEntity.getProfilePicture())
                 .createdAt(userEntity.getCreatedAt())
+                .modifiedAt(userEntity.getModifiedAt())
+                .deletedAt(userEntity.getDeletedAt())
                 .build();
     }
 
     public UserEntity toUserEntity(UserModel userModel) throws IOException {
+        RoleEntity role = new RoleEntity();
+        if (userModel.getRoleId() != null) {
+            role = roleRepository.findById(userModel.getRoleId()).orElseThrow(
+                    () -> new NoSuchElementException("Role not found")
+            );
+        } else {
+            role.setId(2L);
+        }
         return UserEntity.builder()
                 .username(userModel.getUsername())
                 .password(passwordEncoder.encode(userModel.getPassword()))
                 .profilePicture(userModel.getProfilePicture() != null
                         ? mediaUploader.uploadMediaFile(userModel.getProfilePicture())
                         : null)
-                .role(userModel.getRoleId() != null
-                        ? RoleEntity.builder().roleId(userModel.getRoleId()).build()
-                        : RoleEntity.builder().roleId(2L).build())
-                .createdAt(LocalDateTime.now())
+                .role(role)
                 .build();
     }
 }

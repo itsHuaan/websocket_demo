@@ -1,24 +1,39 @@
 package com.example.websocket_demo.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tbl_chat_message")
-public class ChatMessageEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String chatId;
-    private Long senderId;
-    private Long recipientId;
-    private String message;
-    private LocalDateTime sentAt;
+public class ChatMessageEntity extends BaseEntity {
+    @NotNull
+    String chatId;
+
+    @NotNull
+    Long senderId;
+
+    @NotNull
+    Long recipientId;
+
+    String message;
+
+    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    List<ChatMediaEntity> chatMedias;
+
+    @Column(nullable = false, columnDefinition = "INT default 1")
+    Integer senderVisibility = 1;
+
+    @Column(nullable = false, columnDefinition = "INT default 1")
+    Integer recipientVisibility = 1;
 }

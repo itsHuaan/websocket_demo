@@ -1,7 +1,6 @@
 package com.example.websocket_demo.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,8 +11,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "tbl_role")
-public class RoleEntity extends BaseEntity{
-    @NotNull
-    String roleName;
+@Table(name = "tbl_chat_media")
+public class ChatMediaEntity extends BaseEntity{
+    String mediaUrl;
+    @ManyToOne
+    @JoinColumn(name="chat_message_id")
+    ChatMessageEntity chatMessage;
 }

@@ -12,11 +12,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tbl_test_media")
-public class TestMediaEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long testMediaId;
+public class TestMediaEntity extends BaseEntity {
     String mediaUrl;
+
     @ManyToOne
     @JoinColumn(name = "test_id")
     TestEntity testRecord;

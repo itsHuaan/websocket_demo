@@ -1,6 +1,7 @@
 package com.example.websocket_demo.service.user.impl;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
 import com.example.websocket_demo.entity.UserEntity;
@@ -54,6 +55,8 @@ public class UserActionServiceImpl implements IUserActionService {
             userRepository.save(userMapper.toUserEntity(userModel));
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (NoSuchElementException e){
+            throw new RuntimeException(e.getMessage());
         }
         return 1;
     }
