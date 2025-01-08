@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "tbl_chat_media")
 public class ChatMediaEntity extends BaseEntity{
     String mediaUrl;
+
     @ManyToOne
     @JoinColumn(name="chat_message_id")
     ChatMessageEntity chatMessage;

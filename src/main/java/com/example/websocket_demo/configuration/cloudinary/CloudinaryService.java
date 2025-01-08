@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -23,6 +25,14 @@ import java.util.regex.Pattern;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CloudinaryService {
     Cloudinary cloudinary;
+
+    public List<String> uploadMediaFile(MultipartFile[] file) throws IOException {
+        List<String> mediaUrls = new ArrayList<>();
+        for (MultipartFile f : file) {
+            mediaUrls.add(uploadMediaFile(f));
+        }
+        return mediaUrls;
+    }
 
     public String uploadMediaFile(MultipartFile file) throws IOException {
         Map<String, Object> uploadResult;
