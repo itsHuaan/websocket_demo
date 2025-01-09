@@ -13,9 +13,12 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChatMessageModel {
+    Long id;
     String chatId;
     Long senderId;
     Long recipientId;
     String message;
     List<String> mediaUrls;
+    Integer senderVisibility;
+    Integer recipientVisibility;
 }

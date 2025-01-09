@@ -28,7 +28,7 @@ public class ChatMessageEntity extends BaseEntity {
 
     String message;
 
-    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<ChatMediaEntity> chatMedias;
 
     @Column(nullable = false, columnDefinition = "INT default 1")

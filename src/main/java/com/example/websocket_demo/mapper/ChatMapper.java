@@ -44,6 +44,8 @@ public class ChatMapper {
                 .senderId(chatMessageModel.getSenderId())
                 .recipientId(chatMessageModel.getRecipientId())
                 .message(chatMessageModel.getMessage())
+                .senderVisibility(chatMessageModel.getSenderVisibility())
+                .recipientVisibility(chatMessageModel.getRecipientVisibility())
                 .build();
         if (chatMessageModel.getMediaUrls() != null) {
             List<ChatMediaEntity> chatMedias = chatMessageModel.getMediaUrls().stream()

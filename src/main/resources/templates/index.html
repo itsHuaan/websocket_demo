@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #chat-messages {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>WebSocket Chat Test</h1>
+
+<div>
+    <label for="senderId">Sender ID:</label>
+    <input type="number" id="senderId">
+
+    <label for="recipientId">Recipient ID:</label>
+    <input type="number" id="recipientId">
+</div>
+
+<div>
+    <label for="messageInput">Message:</label>
+    <input type="text" id="messageInput">
+    <br>
+    <label for="mediaFiles">Media Files:</label>
+    <input type="file" id="mediaFiles" multiple accept="image/*,video/*">
+    <br>
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<div id="chat-messages"></div>
+
+<script>
+    let stompClient = null;
+
+    function connect() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            const userId = document.getElementById('senderId').value;
+
+            stompClient.subscribe(`/user/${userId}/queue/messages`, function (message) {
+                const messageData = JSON.parse(message.body);
+                console.log("Received message:", messageData);
+                showMessage(messageData);
+            });
+        });
+    }
+
+    function sendMessage() {
+        const senderId = document.getElementById('senderId').value;
+        const recipientId = document.getElementById('recipientId').value;
+        const messageInput = document.getElementById('messageInput');
+        const mediaFilesInput = document.getElementById('mediaFiles');
+
+        const chatMessage = {
+            senderId: senderId,
+            recipientId: recipientId,
+            message: messageInput.value,
+            senderVisibility: 1,
+            recipientVisibility: 1,
+            mediaUrls: []
+        };
+
+        const files = mediaFilesInput.files;
+
+        if (files && files.length > 0) {
+            const formData = new FormData();
+            for (const file of files) {
+                formData.append("files", file);
+            }
+
+            uploadMediaFiles(formData).then(mediaUrls => {
+                chatMessage.mediaUrls = mediaUrls;
+
+                stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+                showMessage(chatMessage, true);
+
+                messageInput.value = '';
+                mediaFilesInput.value = '';
+            });
+        } else {
+            stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+            showMessage(chatMessage, true);
+            messageInput.value = '';
+        }
+    }
+
+    function uploadMediaFiles(formData) {
+        return new Promise((resolve, reject) => {
+            fetch('/v1/api/media-uploader/chat', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to upload media files");
+                    }
+                    return response.json();
+                })
+                .then(data => resolve(data))
+                .catch(error => reject(error));
+        });
+    }
+
+    function showMessage(messageData, isSender = false) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.style.marginBottom = '10px';
+
+        if (isSender || messageData.senderId === document.getElementById('senderId').value) {
+            messageElement.style.textAlign = 'right';
+            messageElement.style.color = 'blue';
+            messageElement.innerHTML = `
+                <strong>You:</strong>
+                <p>${messageData.message}</p>
+            `;
+        } else {
+            messageElement.style.textAlign = 'left';
+            messageElement.style.color = 'green';
+            messageElement.innerHTML = `
+                <strong>From ${messageData.senderId}:</strong>
+                <p>${messageData.message}</p>
+            `;
+        }
+
+        if (messageData.mediaUrls && messageData.mediaUrls.length > 0) {
+            const mediaContainer = document.createElement('div');
+            for (const url of messageData.mediaUrls) {
+                if (url.match(/\.(jpeg|jpg|gif|png)$/)) {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.maxWidth = '100px';
+                    img.style.marginRight = '5px';
+                    mediaContainer.appendChild(img);
+                } else if (url.match(/\.(mp4|webm|ogg)$/)) {
+                    const video = document.createElement('video');
+                    video.src = url;
+                    video.controls = true;
+                    video.style.maxWidth = '200px';
+                    video.style.marginRight = '5px';
+                    mediaContainer.appendChild(video);
+                }
+            }
+            messageElement.appendChild(mediaContainer);
+        }
+
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    document.getElementById('senderId').addEventListener('change', connect);
+</script>
+
+</body>
+</html>

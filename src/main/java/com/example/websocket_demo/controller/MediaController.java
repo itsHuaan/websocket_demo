@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @Tag(name = "Chat Controller")
-@RequestMapping(value = Const.API_PREFIX + "/chat")
+@RequestMapping(value = Const.API_PREFIX + "/media-uploader")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MediaController {

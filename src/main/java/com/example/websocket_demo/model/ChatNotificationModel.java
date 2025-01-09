@@ -1,29 +1,24 @@
-package com.example.websocket_demo.dto;
+package com.example.websocket_demo.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ChatMessageDto {
-    Long messageId;
-    String chatId;
+public class ChatNotificationModel {
+    Long id;
     Long senderId;
-    String senderUsername;
     Long recipientId;
-    String recipientUsername;
     String message;
     List<String> mediaUrls;
-    LocalDateTime sentAt;
+    private LocalDateTime sentAt;
     Integer senderVisibility;
     Integer recipientVisibility;
 }
