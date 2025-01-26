@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -63,10 +62,10 @@ public class ChatRoomService implements IChatRoomService {
     private String createChatId(Long senderId, Long recipientId) {
         Long _senderId = userRepository.findById(senderId).orElseThrow(
                 () -> new NoSuchElementException("Sender not found")
-        ).getId();
+        ).getUserId();
         Long _recipientId = userRepository.findById(recipientId).orElseThrow(
                 () -> new NoSuchElementException("Recipient not found")
-        ).getId();
+        ).getUserId();
         var chatId = String.format("%s_%s", Math.min(_senderId, _recipientId), Math.max(_senderId, _recipientId));
         ChatRoomEntity senderRecipient = ChatRoomEntity.builder()
                 .chatId(chatId)

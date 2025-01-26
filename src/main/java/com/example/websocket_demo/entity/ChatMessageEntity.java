@@ -1,6 +1,5 @@
 package com.example.websocket_demo.entity;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -17,6 +16,10 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "tbl_chat_message")
 public class ChatMessageEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long chatMessageId;
+
     @NotNull
     String chatId;
 

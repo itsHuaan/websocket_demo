@@ -14,6 +14,10 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "tbl_token_blacklist")
 public class TokenBlackListEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long tokenId;
+
     @Column(length = 1000)
     String token;
 }

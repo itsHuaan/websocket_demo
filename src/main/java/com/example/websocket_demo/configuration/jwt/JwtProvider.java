@@ -27,9 +27,9 @@ public class JwtProvider {
     Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
     UserEntity user = userRepository.findByUsername(username).get();
     return Jwts.builder()
-    .setSubject(Long.toString(user.getId()))
+    .setSubject(Long.toString(user.getUserId()))
     .claim("username", user.getUsername())
-    .claim("role", user.getRole().getId())
+    .claim("RoleActionService", user.getRole().getRoleId())
     .setExpiration(expiryDate)
     .setIssuedAt(new Date())
     .signWith(SignatureAlgorithm.HS512, JWT_SECRET)

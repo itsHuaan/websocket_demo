@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -48,7 +47,7 @@ public class ChatMessageService implements IChatMessageService {
         message.setChatId(chatRoomId);
         ChatMessageEntity entity = chatMapper.toChatMessageEntity(message);
         chatMessageRepository.save(entity);
-        message.setId(entity.getId());
+        message.setId(entity.getChatMessageId());
         return 1;
     }
 

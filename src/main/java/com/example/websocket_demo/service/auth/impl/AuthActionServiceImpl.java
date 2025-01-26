@@ -38,7 +38,7 @@ public class AuthActionServiceImpl implements IAuthActionService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtProvider.generateTokenByUsername(userDetails.getUsername());
         return new SignInResponse(
-                userDetails.getUser().getId(),
+                userDetails.getUser().getUserId(),
                 userDetails.getUsername(),
                 jwt
         );

@@ -1,7 +1,5 @@
 package com.example.websocket_demo.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -14,8 +12,12 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "tbl_chatroom")
+@Table(name = "tbl_chat_room")
 public class ChatRoomEntity extends BaseEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long chatRoomId;
+
     @NotNull
     String chatId;
 

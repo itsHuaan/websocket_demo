@@ -16,6 +16,10 @@ import java.util.List;
 @Entity
 @Table(name = "tbl_test")
 public class TestEntity extends BaseEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
     @OneToMany(mappedBy = "testRecord", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<TestMediaEntity> testMedia;
 }

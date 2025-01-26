@@ -1,14 +1,10 @@
 package com.example.websocket_demo.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -19,6 +15,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "tbl_user")
 public class UserEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long userId;
+
     @Column(unique = true, nullable = false)
     @NotNull
     @Size(min = 3, max = 50)
@@ -33,5 +33,4 @@ public class UserEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     RoleEntity role;
-
 }

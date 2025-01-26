@@ -70,11 +70,11 @@ public class ChatMapper {
         );
 
         return ChatMessageDto.builder()
-                .messageId(chatMessageEntity.getId())
+                .messageId(chatMessageEntity.getChatMessageId())
                 .chatId(chatMessageEntity.getChatId())
-                .senderId(sender.getId())
+                .senderId(sender.getUserId())
                 .senderUsername(sender.getUsername())
-                .recipientId(recipient.getId())
+                .recipientId(recipient.getUserId())
                 .recipientUsername(recipient.getUsername())
                 .message(chatMessageEntity.getMessage())
                 .mediaUrls(chatMessageEntity.getChatMedias().stream()

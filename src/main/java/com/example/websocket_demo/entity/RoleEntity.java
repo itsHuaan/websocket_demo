@@ -14,6 +14,10 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "tbl_role")
 public class RoleEntity extends BaseEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long roleId;
+
     @NotNull
     String roleName;
 }

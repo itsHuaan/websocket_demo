@@ -13,6 +13,10 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "tbl_test_media")
 public class TestMediaEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
     String mediaUrl;
 
     @ManyToOne

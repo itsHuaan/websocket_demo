@@ -27,7 +27,7 @@ public class UserMapper {
 
     public UserDto toUserDto(UserEntity userEntity) {
         return UserDto.builder()
-                .userId(userEntity.getId())
+                .userId(userEntity.getUserId())
                 .username(userEntity.getUsername())
                 .profilePicture(userEntity.getProfilePicture())
                 .createdAt(userEntity.getCreatedAt())
@@ -43,7 +43,7 @@ public class UserMapper {
                     () -> new NoSuchElementException("Role not found")
             );
         } else {
-            role.setId(2L);
+            role.setRoleId(2L);
         }
         return UserEntity.builder()
                 .username(userModel.getUsername())
