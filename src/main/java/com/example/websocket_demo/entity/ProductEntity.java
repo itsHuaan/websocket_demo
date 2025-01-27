@@ -25,8 +25,8 @@ public class ProductEntity extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     Set<ProductOptionEntity> options;
 
-//    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-//    Set<ProductSkuEntity> skus;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<ProductSkuEntity> skus;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
