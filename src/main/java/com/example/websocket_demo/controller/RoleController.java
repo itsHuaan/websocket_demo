@@ -23,18 +23,18 @@ import lombok.experimental.FieldDefaults;
 public class RoleController {
     IRoleService roleService;
 
-    @Operation(summary = "Add role")
+    @Operation(summary = "Add role", description = "'ROLE_' prefix in role name is optional")
     @PostMapping
     public ResponseEntity<?> addRole(RoleModel roleModel) {
         ApiResponse<?> response = roleService.addRole(roleModel);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @Operation(summary = "Update role")
+    @Operation(summary = "Update role", description = "'ROLE_' prefix in role name is optional")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateRole(@PathVariable Long id,
-                                        String roleName) {
-        ApiResponse<?> response = roleService.updateRole(id, roleName);
+                                        @RequestBody RoleModel role) {
+        ApiResponse<?> response = roleService.updateRole(id, role.getRoleName());
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

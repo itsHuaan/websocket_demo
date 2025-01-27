@@ -1,6 +1,7 @@
 package com.example.websocket_demo.service.role.impl;
 
 import com.example.websocket_demo.dto.ApiResponse;
+import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.model.RoleModel;
 import com.example.websocket_demo.service.role.IRoleActionService;
 import com.example.websocket_demo.service.role.IRoleService;
@@ -44,7 +45,7 @@ public class RoleServiceImpl implements IRoleService {
             message = "Role name cannot be empty";
         }
         try {
-            if (roleActionService.updateRole(new RoleModel(id, roleName)) == 1) {
+            if (roleActionService.updateRole(new RoleEntity(id, roleName)) == 1) {
                 status = HttpStatus.OK;
                 message = "Role updated";
             }

@@ -81,20 +81,24 @@ public class CloudinaryService {
             throw new IllegalArgumentException("URL cannot be null or empty");
         }
         String mediaUrlLower = mediaUrl.toLowerCase();
-        if (mediaUrlLower.endsWith(".mp4") || mediaUrlLower.endsWith(".webm") ||
-                mediaUrlLower.endsWith(".mov") || mediaUrlLower.endsWith(".avi") ||
+        if (mediaUrlLower.endsWith(".mp4") ||
+                mediaUrlLower.endsWith(".webm") ||
+                mediaUrlLower.endsWith(".mov") ||
+                mediaUrlLower.endsWith(".avi") ||
                 mediaUrlLower.endsWith(".flv")) {
             return "video";
-        } else if (mediaUrlLower.endsWith(".mp3") || mediaUrlLower.endsWith(".ogg") ||
+        } else if (mediaUrlLower.endsWith(".mp3") ||
+                mediaUrlLower.endsWith(".ogg") ||
                 mediaUrlLower.endsWith(".wav")) {
             return "audio";
-        } else if (mediaUrlLower.endsWith(".pdf") || mediaUrlLower.endsWith(".zip") ||
-                mediaUrlLower.endsWith(".docx") || mediaUrlLower.endsWith(".psd")) {
+        } else if (mediaUrlLower.endsWith(".pdf") ||
+                mediaUrlLower.endsWith(".zip") ||
+                mediaUrlLower.endsWith(".docx") ||
+                mediaUrlLower.endsWith(".psd")) {
             return "raw";
         } else {
             return "image";
         }
     }
-
 }
 

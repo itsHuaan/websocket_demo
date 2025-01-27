@@ -39,8 +39,8 @@ public class RoleActionServiceImpl implements IRoleActionService {
     }
 
     @Override
-    public int updateRole(RoleModel role) {
-        RoleEntity roleEntity = roleRepository.findById(role.getId()).orElseThrow(
+    public int updateRole(RoleEntity role) {
+        RoleEntity roleEntity = roleRepository.findById(role.getRoleId()).orElseThrow(
                 () -> new NoSuchElementException("Role does not exist")
         );
         roleEntity.setRoleName(modifyRoleName(role.getRoleName().toUpperCase()));
