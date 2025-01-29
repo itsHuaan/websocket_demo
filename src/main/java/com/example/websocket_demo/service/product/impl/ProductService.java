@@ -1,6 +1,7 @@
 package com.example.websocket_demo.service.product.impl;
 
 import com.example.websocket_demo.dto.ApiResponse;
+import com.example.websocket_demo.dto.ProductDto;
 import com.example.websocket_demo.dto.ProductSummaryDto;
 import com.example.websocket_demo.model.ProductRequest;
 import com.example.websocket_demo.service.product.IProductActionService;
@@ -26,11 +27,11 @@ public class ProductService implements IProductService {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String message = "Failed to add product";
         try {
-            if (productActionService.addProduct(productRequest) == 1){
+            if (productActionService.addProduct(productRequest) == 1) {
                 status = HttpStatus.OK;
                 message = "Product added successfully";
             }
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             message = e.getMessage();
         }
         return new ApiResponse<>(status, message, null);
@@ -39,8 +40,26 @@ public class ProductService implements IProductService {
     @Override
     public ApiResponse<?> getAll() {
         List<ProductSummaryDto> products = productActionService.getAll();
-        HttpStatus status =  products != null && !products.isEmpty() ? HttpStatus.OK : HttpStatus.NO_CONTENT;
+        return getApiResponse(products);
+    }
+
+    @Override
+    public ApiResponse<?> getAllByUser(Long userId) {
+        List<ProductSummaryDto> products = productActionService.getAllByUser(userId);
+        return getApiResponse(products);
+    }
+
+    private ApiResponse<?> getApiResponse(List<ProductSummaryDto> products) {
+        HttpStatus status = products != null && !products.isEmpty() ? HttpStatus.OK : HttpStatus.NO_CONTENT;
         String message = products != null && !products.isEmpty() ? "Products fetched" : "No product fetched";
         return new ApiResponse<>(status, message, products);
+    }
+
+    @Override
+    public ApiResponse<?> getById(Long id) {
+        ProductDto product = productActionService.getById(id);
+        HttpStatus status = product != null ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        String message = product != null ? "Product fetched" : "Product not found";
+        return new ApiResponse<>(status, message, product);
     }
 }

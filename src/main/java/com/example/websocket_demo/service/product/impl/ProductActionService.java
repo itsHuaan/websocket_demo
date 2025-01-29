@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.product.impl;
 
+import com.example.websocket_demo.dto.ProductDto;
 import com.example.websocket_demo.dto.ProductSummaryDto;
 import com.example.websocket_demo.entity.*;
 import com.example.websocket_demo.mapper.ProductMapper;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -54,7 +56,7 @@ public class ProductActionService implements IProductActionService {
 
             return 1;
         } catch (Exception e) {
-            log.error("Failed to add product {}", e.getMessage());
+            log.error("Failed to add product: {}", e.getMessage());
             return 0;
         }
     }
@@ -64,6 +66,18 @@ public class ProductActionService implements IProductActionService {
         return productRepository.findAll().stream()
                 .map(productMapper::toProductSummaryDto)
                 .toList();
+    }
+
+    @Override
+    public List<ProductSummaryDto> getAllByUser(Long userId) {
+        return productRepository.findByUser_UserId(userId).stream()
+                .map(productMapper::toProductSummaryDto)
+                .toList();
+    }
+
+    @Override
+    public ProductDto getById(Long id) {
+        return productMapper.toProductDto(Objects.requireNonNull(productRepository.findById(id).orElse(null)));
     }
 
     private void handleNoOptionCase(ProductEntity product, List<ProductRequest.SkuRequest> skus) {
@@ -93,7 +107,7 @@ public class ProductActionService implements IProductActionService {
     private void handleOptionCases(ProductEntity product, List<ProductRequest.OptionRequest<?>> options, List<ProductRequest.SkuRequest> skus) {
         for (ProductRequest.OptionRequest<?> optionRequest : options) {
             ProductOptionEntity option = ProductOptionEntity.builder()
-                    .optionName(optionRequest.getOptionName())
+                    .optionName(optionRequest.getName())
                     .product(product)
                     .build();
             option = productOptionRepository.save(option);
@@ -113,11 +127,11 @@ public class ProductActionService implements IProductActionService {
                     .build();
             sku = productSkuRepository.save(sku);
 
-            for (ProductRequest.SkuRequest.SkuValueRequest skuValueRequest : skuRequest.getSkuValues()) {
-                ProductOptionEntity option = productOptionRepository.findByProductAndOptionName(product, skuValueRequest.getOptionName())
+            for (ProductRequest.SkuRequest.SkuValueRequest skuValueRequest : skuRequest.getValues()) {
+                ProductOptionEntity option = productOptionRepository.findByProductAndOptionName(product, skuValueRequest.getOption())
                         .orElseThrow(() -> new RuntimeException("Option not found"));
 
-                ProductOptionValueEntity optionValue = productOptionValueRepository.findByOptionAndValueName(option, skuValueRequest.getValueName())
+                ProductOptionValueEntity optionValue = productOptionValueRepository.findByOptionAndValueName(option, skuValueRequest.getValue())
                         .orElseThrow(() -> new RuntimeException("Option Value not found"));
 
                 ProductSkuValueEntity skuValue = ProductSkuValueEntity.builder()

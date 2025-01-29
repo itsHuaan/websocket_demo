@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +16,7 @@ public class ProductRequest {
     @Data
     @NoArgsConstructor
     public static class OptionRequest<T> {
-        private String optionName;
+        private String name;
         private List<T> values;
     }
 
@@ -25,13 +24,13 @@ public class ProductRequest {
     @NoArgsConstructor
     public static class SkuRequest {
         private Double price;
-        private List<SkuValueRequest> skuValues;
+        private List<SkuValueRequest> values;
 
         @Data
         @NoArgsConstructor
         public static class SkuValueRequest {
-            private String optionName;
-            private String valueName;
+            private String option;
+            private String value;
         }
     }
 }

@@ -7,4 +7,6 @@ import org.apache.commons.math3.stat.descriptive.summary.Product;
 public interface IProductService {
     ApiResponse<?> addProduct(ProductRequest productRequest);
     ApiResponse<?> getAll();
+    ApiResponse<?> getAllByUser(Long userId);
+    ApiResponse<?> getById(Long id);
 }

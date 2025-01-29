@@ -13,9 +13,8 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProductSummaryDto {
-    String productName;
-    List<ProductOptionDto> options;
+public class ProductSkuDto {
+    Long id;
+    List<String> values;
     double price;
-    String user;
 }

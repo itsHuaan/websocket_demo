@@ -28,9 +28,22 @@ public class ProductController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @Operation(summary = "Get all product")
+    @Operation(summary = "Get all products")
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getAll());
+    }
+
+    @Operation(summary = "Get all products by user")
+    @GetMapping("user/{id}")
+    public ResponseEntity<?> getAllProductsByUser(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllByUser(id));
+    }
+
+    @Operation(summary = "Get product by id")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        ApiResponse<?> response = productService.getById(id);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
