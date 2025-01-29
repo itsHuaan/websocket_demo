@@ -19,7 +19,7 @@ public class ProductEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long productId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     String productName;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

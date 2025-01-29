@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 public class AuthActionServiceImpl implements IAuthActionService {
     JwtProvider jwtProvider;
     AuthenticationManager authenticationManager;
-    ITokenBlackListRepository tokenBlacklistRepository;
 
     @Override
     public SignInResponse signIn(SignInRequest credentials) {

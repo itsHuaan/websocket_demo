@@ -15,22 +15,20 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "tbl_product_sku_value")
 public class ProductSkuValueEntity extends BaseEntity {
-    @EmbeddedId
-    SkuValueId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long skuValueId;
 
     @ManyToOne
-    @MapsId("skuId")
     @JoinColumn(name = "sku_id", nullable = false)
     ProductSkuEntity sku;
 
     @ManyToOne
-    @MapsId("optionId")
-    @JoinColumn(name = "option_id", nullable = false)
+    @JoinColumn(name = "option_id")
     ProductOptionEntity option;
 
     @ManyToOne
-    @MapsId("optionValueId")
-    @JoinColumn(name = "option_value_id", nullable = false)
+    @JoinColumn(name = "option_value_id")
     ProductOptionValueEntity optionValue;
 
     @Column(nullable = false)
