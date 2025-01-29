@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -50,25 +52,16 @@ public class ProductMapper {
                     .map(skuValue -> skuValue.getOptionValue() != null
                             ? skuValue.getOptionValue().getValueName()
                             : null)
-                    .collect(Collectors.toList()));
+                    .filter(Objects::nonNull)
+                    .toList());
 
+            dto.setPrice(sku.getSkuValues().iterator().next().getPrice());
+        } else {
+            dto.setValues(Collections.emptyList());
             dto.setPrice(sku.getSkuValues().iterator().next().getPrice());
         }
         return dto;
     }
-
-//    private ProductSkuValueDto toProductSkuValueDto(ProductSkuValueEntity skuValue) {
-//        return ProductSkuValueDto.builder()
-//                .id(skuValue.getSkuValueId())
-//                .price(skuValue.getPrice())
-//                .option(skuValue.getOption() != null
-//                        ? skuValue.getOption().getOptionName()
-//                        : null)
-//                .value(skuValue.getOptionValue() != null
-//                        ? skuValue.getOptionValue().getValueName()
-//                        : null)
-//                .build();
-//    }
 
     private ProductOptionDto toProductOptionDto(ProductOptionEntity option) {
         return ProductOptionDto.builder()
