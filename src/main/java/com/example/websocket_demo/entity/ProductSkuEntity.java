@@ -26,4 +26,7 @@ public class ProductSkuEntity extends BaseEntity {
 
     @OneToMany(mappedBy = "sku", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<ProductSkuValueEntity> skuValues;
+
+    @Column(nullable = false)
+    Double price;
 }

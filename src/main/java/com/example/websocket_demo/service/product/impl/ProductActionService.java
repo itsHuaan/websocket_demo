@@ -7,12 +7,14 @@ import com.example.websocket_demo.mapper.ProductMapper;
 import com.example.websocket_demo.model.ProductRequest;
 import com.example.websocket_demo.repository.*;
 import com.example.websocket_demo.service.product.IProductActionService;
+import com.example.websocket_demo.specification.ProductSpecification;
 import com.example.websocket_demo.util.NullChecker;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -63,21 +65,28 @@ public class ProductActionService implements IProductActionService {
 
     @Override
     public List<ProductSummaryDto> getAll() {
-        return productRepository.findAll().stream()
+        return productRepository.findAll(Specification.where(
+                        ProductSpecification.isNotDeleted()
+                )).stream()
                 .map(productMapper::toProductSummaryDto)
                 .toList();
     }
 
     @Override
     public List<ProductSummaryDto> getAllByUser(Long userId) {
-        return productRepository.findByUser_UserId(userId).stream()
+        return productRepository.findAll(Specification.where(
+                        ProductSpecification.isNotDeleted()
+                                .and(ProductSpecification.isNotDeleted())
+                )).stream()
                 .map(productMapper::toProductSummaryDto)
                 .toList();
     }
 
     @Override
     public ProductDto getById(Long id) {
-        return productMapper.toProductDto(Objects.requireNonNull(productRepository.findById(id).orElse(null)));
+        return productMapper.toProductDto(productRepository.findByProductIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("Product not found")
+        ));
     }
 
     private void handleNoOptionCase(ProductEntity product, List<ProductRequest.SkuRequest> skus) {
@@ -89,13 +98,13 @@ public class ProductActionService implements IProductActionService {
             ProductSkuEntity sku = ProductSkuEntity.builder()
                     .product(product)
                     .skuValues(new HashSet<>())
+                    .price(skuRequest.getPrice())
                     .build();
             productSkuRepository.save(sku);
             ProductSkuValueEntity skuValue = ProductSkuValueEntity.builder()
                     .sku(sku)
                     .option(null)
                     .optionValue(null)
-                    .price(skuRequest.getPrice())
                     .build();
             if (skuValue.getOption() == null) {
                 productSkuValueRepository.save(skuValue);
@@ -124,6 +133,7 @@ public class ProductActionService implements IProductActionService {
         for (ProductRequest.SkuRequest skuRequest : skus) {
             ProductSkuEntity sku = ProductSkuEntity.builder()
                     .product(product)
+                    .price(skuRequest.getPrice())
                     .build();
             sku = productSkuRepository.save(sku);
 
@@ -138,7 +148,6 @@ public class ProductActionService implements IProductActionService {
                         .sku(sku)
                         .option(option)
                         .optionValue(optionValue)
-                        .price(skuRequest.getPrice())
                         .build();
                 productSkuValueRepository.save(skuValue);
             }

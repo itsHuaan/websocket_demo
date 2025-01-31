@@ -23,8 +23,7 @@ public class ProductMapper {
                         .map(this::toProductOptionDto)
                         .toList())
                 .price(product.getSkus().stream()
-                        .flatMap(sku -> sku.getSkuValues().stream())
-                        .mapToDouble(ProductSkuValueEntity::getPrice)
+                        .mapToDouble(ProductSkuEntity::getPrice)
                         .min()
                         .orElse(0.0))
                 .build();
@@ -45,22 +44,16 @@ public class ProductMapper {
     }
 
     private ProductSkuDto toProductSkuDto(ProductSkuEntity sku) {
-        ProductSkuDto dto = new ProductSkuDto();
-        dto.setId(sku.getSkuId());
-        if (sku.getSkuValues() != null && !sku.getSkuValues().isEmpty()) {
-            dto.setValues(sku.getSkuValues().stream()
-                    .map(skuValue -> skuValue.getOptionValue() != null
-                            ? skuValue.getOptionValue().getValueName()
-                            : null)
-                    .filter(Objects::nonNull)
-                    .toList());
-
-            dto.setPrice(sku.getSkuValues().iterator().next().getPrice());
-        } else {
-            dto.setValues(Collections.emptyList());
-            dto.setPrice(sku.getSkuValues().iterator().next().getPrice());
-        }
-        return dto;
+        return ProductSkuDto.builder()
+                .id(sku.getSkuId())
+                .values(sku.getSkuValues().stream()
+                        .map(skuValue -> skuValue.getOptionValue() != null
+                                ? skuValue.getOptionValue().getValueName()
+                                : null)
+                        .filter(Objects::nonNull)
+                        .toList())
+                .price(sku.getPrice())
+                .build();
     }
 
     private ProductOptionDto toProductOptionDto(ProductOptionEntity option) {

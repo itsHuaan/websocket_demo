@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -57,9 +58,19 @@ public class ProductService implements IProductService {
 
     @Override
     public ApiResponse<?> getById(Long id) {
-        ProductDto product = productActionService.getById(id);
-        HttpStatus status = product != null ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-        String message = product != null ? "Product fetched" : "Product not found";
+        ProductDto product;
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        String message = "Product not found";
+        try {
+            product = productActionService.getById(id);
+            if (product != null) {
+                status = HttpStatus.OK;
+                message = "Product fetched";
+            }
+        } catch (NoSuchElementException e) {
+            product = null;
+        }
+
         return new ApiResponse<>(status, message, product);
     }
 }

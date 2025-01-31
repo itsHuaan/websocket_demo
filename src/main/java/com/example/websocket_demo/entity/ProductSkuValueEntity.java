@@ -30,7 +30,4 @@ public class ProductSkuValueEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "option_value_id")
     ProductOptionValueEntity optionValue;
-
-    @Column(nullable = false)
-    Double price;
 }
