@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.product.impl;
 
+import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
 import com.example.websocket_demo.dto.ProductDto;
 import com.example.websocket_demo.dto.ProductSummaryDto;
 import com.example.websocket_demo.entity.*;
@@ -17,10 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -34,12 +34,16 @@ public class ProductActionService implements IProductActionService {
     IProductOptionValueRepository productOptionValueRepository;
     IProductSkuValueRepository productSkuValueRepository;
     ProductMapper productMapper;
+    CloudinaryService mediaUploader;
 
     @Transactional
     @Override
     public int addProduct(ProductRequest productRequest) {
         if (NullChecker.hasNullField(productRequest)) {
             throw new IllegalArgumentException("Please fill all the required fields");
+        }
+        if (productRequest.getMedia() == null) {
+            throw new IllegalArgumentException("Product needs to have at least 6 media items");
         }
         try {
             UserEntity user = userRepository.findById(productRequest.getUserId()).orElseThrow(
@@ -49,6 +53,19 @@ public class ProductActionService implements IProductActionService {
                     .productName(productRequest.getProductName())
                     .user(user)
                     .build();
+            List<ProductMediaEntity> productMedias = Arrays.stream(productRequest.getMedia())
+                    .map(media -> {
+                        try {
+                            return ProductMediaEntity.builder()
+                                    .product(product)
+                                    .mediaUrl(mediaUploader.uploadMediaFile(media))
+                                    .build();
+                        } catch (IOException e) {
+                            log.error("Failed to parse media: {}", e.getMessage());
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
+            product.setMediaUrls(productMedias);
             productRepository.save(product);
             if (productRequest.getOptions() == null || productRequest.getOptions().isEmpty()) {
                 handleNoOptionCase(product, productRequest.getSkus());

@@ -4,14 +4,19 @@ import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.ProductRequest;
 import com.example.websocket_demo.service.product.IProductService;
 import com.example.websocket_demo.util.Const;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Tag(name = "Product Controller")
@@ -22,8 +27,20 @@ public class ProductController {
     IProductService productService;
 
     @Operation(summary = "Add a product")
-    @PostMapping
-    public ResponseEntity<?> addProduct(@RequestBody ProductRequest request) {
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<?> addProduct(@RequestPart("product") @Valid String productJson,
+                                        @RequestPart(value = "media", required = false) MultipartFile[] media) {
+        ProductRequest request;
+        try {
+            request = new ObjectMapper().readValue(productJson, ProductRequest.class);
+            request.setMedia(media);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid Json",
+                    null
+            ));
+        }
         ApiResponse<?> response = productService.addProduct(request);
         return ResponseEntity.status(response.getStatus()).body(response);
     }

@@ -1,36 +1,41 @@
 package com.example.websocket_demo.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Data
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductRequest {
-    private String productName;
-    private Long userId;
-    private List<OptionRequest<?>> options;
-    private List<SkuRequest> skus;
+    String productName;
+    Long userId;
+    MultipartFile[] media;
+    List<OptionRequest<?>> options;
+    List<SkuRequest> skus;
 
     @Data
     @NoArgsConstructor
     public static class OptionRequest<T> {
-        private String name;
-        private List<T> values;
+        String name;
+        List<T> values;
     }
 
     @Data
     @NoArgsConstructor
     public static class SkuRequest {
-        private Double price;
-        private List<SkuValueRequest> values;
+        Double price;
+        List<SkuValueRequest> values;
 
         @Data
         @NoArgsConstructor
         public static class SkuValueRequest {
-            private String option;
-            private String value;
+            String option;
+            String value;
         }
     }
 }
