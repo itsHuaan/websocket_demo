@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ChatActionService implements IChatActionService {
+public class ChatActionServiceImpl implements IChatActionService {
     SimpMessagingTemplate messagingTemplate;
     IChatMessageService chatMessageService;
     IChatRoomService chatRoomService;

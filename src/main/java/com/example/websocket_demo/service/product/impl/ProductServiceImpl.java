@@ -20,7 +20,7 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ProductService implements IProductService {
+public class ProductServiceImpl implements IProductService {
     IProductActionService productActionService;
 
     @Override

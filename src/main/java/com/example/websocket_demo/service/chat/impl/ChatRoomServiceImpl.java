@@ -23,7 +23,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ChatRoomService implements IChatRoomService {
+public class ChatRoomServiceImpl implements IChatRoomService {
     IChatRoomRepository chatRoomRepository;
     ChatMapper chatMapper;
     IUserRepository userRepository;

@@ -25,7 +25,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ChatMessageService implements IChatMessageService {
+public class ChatMessageServiceImpl implements IChatMessageService {
     IChatMessageRepository chatMessageRepository;
     ChatMapper chatMapper;
     IChatRoomService chatRoomService;
