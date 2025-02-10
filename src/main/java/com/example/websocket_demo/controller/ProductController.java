@@ -29,19 +29,9 @@ public class ProductController {
     @Operation(summary = "Add a product")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> addProduct(@RequestPart("product") @Valid String productJson,
-                                        @RequestPart(value = "media", required = false) MultipartFile[] media) {
-        ProductRequest request;
-        try {
-            request = new ObjectMapper().readValue(productJson, ProductRequest.class);
-            request.setMedia(media);
-        } catch (JsonProcessingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    HttpStatus.BAD_REQUEST,
-                    "Invalid Json",
-                    null
-            ));
-        }
-        ApiResponse<?> response = productService.addProduct(request);
+                                        @RequestPart(value = "productMedia", required = false) MultipartFile[] productMedia,
+                                        @RequestPart(value = "skuMedia", required = false) MultipartFile[] skuMedia) {
+        ApiResponse<?> response = productService.addProduct(productJson, productMedia, skuMedia);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 

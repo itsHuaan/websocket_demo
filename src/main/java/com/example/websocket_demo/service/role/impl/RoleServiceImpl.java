@@ -24,34 +24,31 @@ public class RoleServiceImpl implements IRoleService {
 
     @Override
     public ApiResponse<?> addRole(RoleModel role) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        String message = "Failed to add role";
         try {
-            if (roleActionService.addRole(role) == 1) {
-                status = HttpStatus.OK;
-                message = "Role added";
-            }
+            return roleActionService.addRole(role) == 1
+                    ? new ApiResponse<>(HttpStatus.OK, "Role added", null)
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add role", null);
+        } catch (IllegalArgumentException e) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
         } catch (Exception e) {
-            message = e.getMessage();
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), null);
         }
-        return new ApiResponse<>(status, message, null);
     }
 
     @Override
     public ApiResponse<?> updateRole(Long id, String roleName) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        String message = "Failed to update role";
         if (roleName == null || roleName.isEmpty()) {
-            message = "Role name cannot be empty";
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Role name cannot be empty", null);
         }
         try {
             if (roleActionService.updateRole(new RoleEntity(id, roleName)) == 1) {
-                status = HttpStatus.OK;
-                message = "Role updated";
+                return new ApiResponse<>(HttpStatus.OK, "Role updated", null);
             }
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to update role", null);
         } catch (NoSuchElementException e) {
-            message = e.getMessage();
+            return new ApiResponse<>(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        } catch (Exception e) {
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
         }
-        return new ApiResponse<>(status, message, null);
     }
 }

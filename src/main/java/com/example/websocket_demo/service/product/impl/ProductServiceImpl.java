@@ -6,12 +6,16 @@ import com.example.websocket_demo.dto.ProductSummaryDto;
 import com.example.websocket_demo.model.ProductRequest;
 import com.example.websocket_demo.service.product.IProductActionService;
 import com.example.websocket_demo.service.product.IProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -24,18 +28,23 @@ public class ProductServiceImpl implements IProductService {
     IProductActionService productActionService;
 
     @Override
-    public ApiResponse<?> addProduct(ProductRequest productRequest) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        String message = "Failed to add product";
+    public ApiResponse<?> addProduct(String productJson, MultipartFile[] productMedia, MultipartFile[] skuMedia) {
         try {
-            if (productActionService.addProduct(productRequest) == 1) {
-                status = HttpStatus.OK;
-                message = "Product added successfully";
-            }
+            ProductRequest productRequest = new ObjectMapper().readValue(productJson, ProductRequest.class);
+            productRequest.setMedia(productMedia);
+            return productActionService.addProduct(productRequest) == 1
+                    ? new ApiResponse<>(HttpStatus.CREATED, "Product added successfully", null)
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add product", null);
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing JSON: {}", e.getMessage());
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Invalid JSON", null);
         } catch (IllegalArgumentException e) {
-            message = e.getMessage();
+            log.error("Error adding product: {}", e.getMessage());
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("An unexpected error occurred: {}", e.getMessage());
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
         }
-        return new ApiResponse<>(status, message, null);
     }
 
     @Override
@@ -51,26 +60,20 @@ public class ProductServiceImpl implements IProductService {
     }
 
     private ApiResponse<?> getApiResponse(List<ProductSummaryDto> products) {
-        HttpStatus status = products != null && !products.isEmpty() ? HttpStatus.OK : HttpStatus.NO_CONTENT;
-        String message = products != null && !products.isEmpty() ? "Products fetched" : "No product fetched";
-        return new ApiResponse<>(status, message, products);
+        return products != null
+                ? new ApiResponse<>(HttpStatus.OK, "Product fetched", products)
+                : new ApiResponse<>(HttpStatus.NO_CONTENT, "No products fetched", null);
     }
 
     @Override
     public ApiResponse<?> getById(Long id) {
-        ProductDto product;
-        HttpStatus status = HttpStatus.NOT_FOUND;
-        String message = "Product not found";
         try {
-            product = productActionService.getById(id);
-            if (product != null) {
-                status = HttpStatus.OK;
-                message = "Product fetched";
-            }
+            ProductDto product = productActionService.getById(id);
+            return new ApiResponse<>(HttpStatus.OK, "Product fetched", product);
         } catch (NoSuchElementException e) {
-            product = null;
+            return new ApiResponse<>(HttpStatus.NOT_FOUND, "Product not found", null);
+        } catch (Exception e) {
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
         }
-
-        return new ApiResponse<>(status, message, product);
     }
 }

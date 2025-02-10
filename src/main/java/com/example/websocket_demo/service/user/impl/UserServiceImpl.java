@@ -26,64 +26,52 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ApiResponse<?> getAllUsers(Pageable pageable) {
         Page<UserDto> users = userService.getAllUsers(pageable);
-        String message = users.isEmpty() ? "No users fetched" : "Users fetched";
-        HttpStatus status = users.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK;
-        return new ApiResponse<>(status, message, users);
+        return users.isEmpty()
+                ? new ApiResponse<>(HttpStatus.NO_CONTENT, "No users fetched", users)
+                : new ApiResponse<>(HttpStatus.OK, "Users fetched", users);
     }
 
     @Override
     public ApiResponse<?> createUser(UserModel userModel) {
-        String message;
-        HttpStatus status;
-
         try {
-            int result = userService.createUser(userModel);
-            message = result == 1 ? "User created successfully" : "Failed to create user";
-            status = result == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
+            return userService.createUser(userModel) == 1
+                    ? new ApiResponse<>(HttpStatus.CREATED, "User created successfully", null)
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to create user", null);
         } catch (IllegalArgumentException e) {
-            message = e.getMessage();
-            status = HttpStatus.BAD_REQUEST;
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
         } catch (Exception e) {
-            message = "An unexpected error occurred: " + e.getMessage();
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + e.getMessage(), null);
         }
-
-        return new ApiResponse<>(status, message, null);
     }
 
     @Override
     public ApiResponse<?> updateUser(Long id, UserModel userModel) {
-        String message;
-        HttpStatus status;
-
         try {
-            int result = userService.updateUser(id, userModel);
-            message = result == 1 ? "User updated successfully" : "Failed to update user";
-            status = result == 1 ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
+            return userService.updateUser(id, userModel) == 1
+                    ? new ApiResponse<>(HttpStatus.OK, "User updated successfully", null)
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to update user", null);
         } catch (UsernameNotFoundException e) {
-            message = e.getMessage();
-            status = HttpStatus.BAD_REQUEST;
+            return new ApiResponse<>(HttpStatus.NOT_FOUND, e.getMessage(), null);
         } catch (Exception e) {
-            message = "An unexpected error occurred: " + e.getMessage();
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + e.getMessage(), null);
         }
-        return new ApiResponse<>(status, message, null);
     }
 
     @Override
     public ApiResponse<?> getUserByUsername(String username) {
         UserDto user = userService.getUserByUsername(username);
-        String message = user == null ? "User not found" : "User found";
-        HttpStatus status = user == null ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-        return new ApiResponse<>(status, message, user);
+        return getApiResponse(user);
     }
 
     @Override
     public ApiResponse<?> getUserById(Long id) {
         UserDto user = userService.getUserById(id);
-        String message = user == null ? "User not found" : "User found";
-        HttpStatus status = user == null ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-        return new ApiResponse<>(status, message, user);
+        return getApiResponse(user);
     }
 
+    private ApiResponse<?> getApiResponse(UserDto user) {
+        return user == null
+                ? new ApiResponse<>(HttpStatus.NOT_FOUND, "User not found", null)
+                : new ApiResponse<>(HttpStatus.OK, "User fetched", user);
+    }
 }
