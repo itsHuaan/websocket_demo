@@ -33,7 +33,9 @@ public class ChatMessageServiceImpl implements IChatMessageService {
 
     @Override
     public ChatMessageDto getChatMessageById(Long id) {
-        return chatMapper.toChatMessageDto(Objects.requireNonNull(chatMessageRepository.findById(id).orElse(null)));
+        return chatMessageRepository.findById(id)
+                .map(chatMapper::toChatMessageDto)
+                .orElseThrow(() -> new NoSuchElementException("Message not found"));
     }
 
     @Override

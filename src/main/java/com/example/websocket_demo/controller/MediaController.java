@@ -1,6 +1,7 @@
 package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
+import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.util.Const;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -50,10 +51,18 @@ public class MediaController {
                     deletedFilesCount++;
                 }
             }
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted " + deletedFilesCount + "/" + Arrays.stream(urls).count() + " files");
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
+                    HttpStatus.OK,
+                    "Deleted " + deletedFilesCount + "/" + Arrays.stream(urls).count() + " files",
+                    null
+            ));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(List.of("Failed to upload files: " + e.getMessage()));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to delete files: " + e.getMessage(),
+                            null
+                    ));
         }
     }
 }
