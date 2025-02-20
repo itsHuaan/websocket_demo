@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: websocket_demo
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: websocket_demo
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/websocket_demo?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_MAIL_USERNAME: itshuaan@gmail.com
+      SPRING_MAIL_PASSWORD: ckeyvntiacdyhwrb
+      JWT_SECRET_KEY: askhdqiwu48123y123cxv2134123/123u1t238gqhjwdnjaqwhuie412/312i3o1y28712iekjasbdiuqw9e812739jasldk/zxkcbaskanskdlasda/scaksjcoiasjdoi12312o123/qwkjehqwuiehjiqwueiqwuejkqwndoqwd/129831yu293h12ui3qhwiuehqwuieiwheiqwe
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  db_data:

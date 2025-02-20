@@ -2,6 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.model.MediaUploadTestModel;
 import com.example.websocket_demo.service.unclassified.ITestService;
+import com.example.websocket_demo.service.unclassified.impl.MessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +29,7 @@ import java.util.regex.Pattern;
 public class TestController {
 
     ITestService testService;
+    MessageService messageService;
 
     @Operation(summary = "This is my first test controller")
     @GetMapping("/first")
@@ -57,5 +60,14 @@ public class TestController {
     public ResponseEntity<?> deleteMedia(@PathVariable Long id) {
         ApiResponse<?> response = testService.deleteMedia(id);
         return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @GetMapping("{lang}/test")
+    public ResponseEntity<?> test(@PathVariable String lang) {
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
+                HttpStatus.OK,
+                messageService.getMessage("test.greeting", lang),
+                null
+        ));
     }
 }
