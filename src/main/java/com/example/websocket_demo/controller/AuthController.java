@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "Authentication Controller")
-@RequestMapping(value = Const.API_PREFIX + "/authentication")
+@RequestMapping(value = Const.API_PREFIX + "/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {

@@ -8,5 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import com.example.websocket_demo.entity.UserEntity;
 
 public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
-    Optional<UserEntity> findByUsername(String username);
+    Optional<UserEntity> findByUsernameAndDeletedAtIsNull(String username);
+    Optional<UserEntity> findByUserIdAndDeletedAtIsNull(Long userId);
 }

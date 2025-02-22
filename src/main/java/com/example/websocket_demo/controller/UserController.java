@@ -18,7 +18,7 @@ import lombok.AccessLevel;
 
 @RestController
 @Tag(name = "User Controller")
-@RequestMapping(value = Const.API_PREFIX + "/user")
+@RequestMapping(value = Const.API_PREFIX + "/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by username")
-    @GetMapping("/username/{username}")
+    @GetMapping("/u/{username}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         ApiResponse<?> response = userManagementService.getUserByUsername(username);
         return ResponseEntity.status(response.getStatus()).body(response);
@@ -61,4 +61,10 @@ public class UserController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @Operation(summary = "Delete an user")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id) {
+        ApiResponse<?> response = userManagementService.deleteUser(id);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 }

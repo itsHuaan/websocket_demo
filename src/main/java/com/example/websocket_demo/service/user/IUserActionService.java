@@ -16,4 +16,6 @@ public interface IUserActionService {
     UserDto getUserByUsername(String username);
 
     UserDto getUserById(Long id);
+
+    int deleteUser(Long id);
 }

@@ -16,6 +16,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -50,7 +52,7 @@ public class UserServiceImpl implements IUserService {
             return userService.updateUser(id, userModel) == 1
                     ? new ApiResponse<>(HttpStatus.OK, "User updated successfully", null)
                     : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to update user", null);
-        } catch (UsernameNotFoundException e) {
+        } catch (NoSuchElementException e) {
             return new ApiResponse<>(HttpStatus.NOT_FOUND, e.getMessage(), null);
         } catch (Exception e) {
             return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + e.getMessage(), null);
@@ -67,6 +69,17 @@ public class UserServiceImpl implements IUserService {
     public ApiResponse<?> getUserById(Long id) {
         UserDto user = userService.getUserById(id);
         return getApiResponse(user);
+    }
+
+    @Override
+    public ApiResponse<?> deleteUser(Long id) {
+        try {
+            return userService.deleteUser(id) == 1
+                    ? new ApiResponse<>(HttpStatus.OK, "User deleted", null)
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to delete user", null);
+        } catch (NoSuchElementException e) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+        }
     }
 
     private ApiResponse<?> getApiResponse(UserDto user) {

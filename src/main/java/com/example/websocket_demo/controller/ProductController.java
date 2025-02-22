@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Tag(name = "Product Controller")
-@RequestMapping(value = Const.API_PREFIX + "/product")
+@RequestMapping(value = Const.API_PREFIX + "/products")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {

@@ -1,12 +1,15 @@
 package com.example.websocket_demo.service.user.impl;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
 import com.example.websocket_demo.entity.UserEntity;
+import com.example.websocket_demo.specification.UserSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,7 @@ public class UserActionServiceImpl implements IUserActionService {
 
     @Override
     public Page<UserDto> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
+        return userRepository.findAll(Specification.where(UserSpecification.isNotDeleted()), pageable)
                 .map(userMapper::toUserDto);
     }
 
@@ -45,7 +48,7 @@ public class UserActionServiceImpl implements IUserActionService {
         if (userModel.getUsername() == null || userModel.getUsername().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        if (userRepository.findByUsername(userModel.getUsername()).isPresent()) {
+        if (userRepository.findByUsernameAndDeletedAtIsNull(userModel.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
         if (userModel.getPassword() == null || userModel.getPassword().isEmpty()) {
@@ -55,7 +58,7 @@ public class UserActionServiceImpl implements IUserActionService {
             userRepository.save(userMapper.toUserEntity(userModel));
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             throw new RuntimeException(e.getMessage());
         }
         return 1;
@@ -63,8 +66,8 @@ public class UserActionServiceImpl implements IUserActionService {
 
     @Override
     public int updateUser(Long id, UserModel userModel) {
-        UserEntity currentUser = userRepository.findById(id).orElseThrow(
-                () -> new UsernameNotFoundException("User with id " + id + " not found")
+        UserEntity currentUser = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("User not found")
         );
         currentUser.setUsername(userModel.getUsername() != null
                 ? userModel.getUsername()
@@ -87,15 +90,29 @@ public class UserActionServiceImpl implements IUserActionService {
 
     @Override
     public UserDto getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameAndDeletedAtIsNull(username)
                 .map(userMapper::toUserDto)
                 .orElse(null);
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        return userRepository.findById(id)
+        return userRepository.findByUserIdAndDeletedAtIsNull(id)
                 .map(userMapper::toUserDto)
                 .orElse(null);
+    }
+
+    @Override
+    public int deleteUser(Long id) {
+        UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("User not found")
+        );
+        try {
+            user.setDeletedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return 1;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

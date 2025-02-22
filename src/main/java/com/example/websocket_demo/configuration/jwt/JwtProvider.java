@@ -23,24 +23,24 @@ public class JwtProvider {
     private final IUserRepository userRepository;
 
     public String generateTokenByUsername(String username) {
-    Date now = new Date();
-    Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
-    UserEntity user = userRepository.findByUsername(username).get();
-    return Jwts.builder()
-    .setSubject(Long.toString(user.getUserId()))
-    .claim("username", user.getUsername())
-    .claim("RoleActionService", user.getRole().getRoleId())
-    .setExpiration(expiryDate)
-    .setIssuedAt(new Date())
-    .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
-    .compact();
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
+        UserEntity user = userRepository.findByUsernameAndDeletedAtIsNull(username).get();
+        return Jwts.builder()
+                .setSubject(Long.toString(user.getUserId()))
+                .claim("username", user.getUsername())
+                .claim("RoleActionService", user.getRole().getRoleId())
+                .setExpiration(expiryDate)
+                .setIssuedAt(new Date())
+                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+                .compact();
     }
 
 
     public String generateForgetPasswordToken(String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
-        UserEntity userEntity = userRepository.findByUsername(username).get();
+        UserEntity userEntity = userRepository.findByUsernameAndDeletedAtIsNull(username).get();
         return Jwts.builder()
                 .setSubject(username)
                 .claim("username", userEntity.getUsername())

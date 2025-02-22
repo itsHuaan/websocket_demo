@@ -15,4 +15,6 @@ public interface IUserService {
     ApiResponse<?> getUserByUsername(String username);
 
     ApiResponse<?> getUserById(Long id);
+
+    ApiResponse<?> deleteUser(Long id);
 }
