@@ -9,9 +9,9 @@ spring:
     encoding: UTF-8
 
   datasource:
-    url: jdbc:mysql://localhost:3306/websocket_demo?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf-8
-    username: root
-    password: ""
+    url: ${MYSQL_URL}
+    username: ${MYSQLUSER}
+    password: ${MYSQLPASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   servlet:
@@ -24,6 +24,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
 
   mail:
     host: smtp.gmail.com
