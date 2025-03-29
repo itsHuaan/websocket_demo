@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: websocket_demo
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/websocket_demo?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: itshuaan@gmail.com
+    password: ckeyvntiacdyhwrb
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  main:
+    allow-circular-references: true
+
+jwt:
+  secret-key: askhdqiwu48123y123cxv2134123/123u1t238gqhjwdnjaqwhuie412/312i3o1y28712iekjasbdiuqw9e812739jasldk/zxkcbaskanskdlasda/scaksjcoiasjdoi12312o123/qwkjehqwuiehjiqwueiqwuejkqwndoqwd/129831yu293h12ui3qhwiuehqwuieiwheiqwe
+  expiration: 28800000
+
+cloudinary:
+  name: dpt7g5sxd
+  api-key: 974323932978374
+  secret-key: ZwTSllWoNsr2f3eGctZ4UkYtMVk
