@@ -9,9 +9,9 @@ spring:
     encoding: UTF-8
 
   datasource:
-    url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}
-    username: ${MYSQLUSER}
-    password: ${MYSQLPASSWORD}
+    url: jdbc:mysql://mysql.railway.internal:3306/railway
+    username: root
+    password: pJhdMsbbtmbZKRxASoJLFGkbbZMKsKYQ
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   servlet:
