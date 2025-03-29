@@ -9,7 +9,7 @@ spring:
     encoding: UTF-8
 
   datasource:
-    url: ${MYSQL_URL}
+    url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}
     username: ${MYSQLUSER}
     password: ${MYSQLPASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
