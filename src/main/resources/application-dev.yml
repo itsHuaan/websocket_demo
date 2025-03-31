@@ -9,9 +9,9 @@ spring:
     encoding: UTF-8
 
   datasource:
-    url: jdbc:mysql://mysql.railway.internal:3306/railway
-    username: root
-    password: pJhdMsbbtmbZKRxASoJLFGkbbZMKsKYQ
+    url: jdbc:mysql://mysql-1b1d6f5-doquanghuan1909-6433.h.aivencloud.com:20194/defaultdb
+    username: avnadmin
+    password: AVNS_mx4PpoEsY1k4HedtoKc
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   servlet:
