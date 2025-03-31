@@ -2,48 +2,159 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Chat Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
             padding: 20px;
         }
 
-        #chat-messages {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #007bff;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            max-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 75%;
             padding: 10px;
+            border-radius: 8px;
             margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .sent {
+            align-self: flex-end;
+            background: #007bff;
+            color: white;
+        }
+
+        .received {
+            align-self: flex-start;
+            background: #e0e0e0;
+            color: black;
+        }
+
+        .chat-footer {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background: #fff;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input {
+            flex: 1;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .media-preview {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        img, video {
+            max-width: 100px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 500px) {
+            .chat-container {
+                width: 100%;
+            }
+
+            .message {
+                max-width: 85%;
+            }
         }
     </style>
 </head>
 <body>
-<h1>WebSocket Chat Test</h1>
 
-<div>
-    <label for="senderId">Sender ID:</label>
-    <input type="number" id="senderId">
+<div class="chat-container">
+    <div class="chat-header">WebSocket Chat</div>
 
-    <label for="recipientId">Recipient ID:</label>
-    <input type="number" id="recipientId">
+    <div class="chat-body" id="chat-messages"></div>
+
+    <div class="chat-footer">
+        <div class="input-group">
+            <input type="number" id="senderId" placeholder="Sender ID">
+            <input type="number" id="recipientId" placeholder="Recipient ID">
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+        <div class="input-group">
+            <input type="file" id="mediaFiles" multiple accept="image/*,video/*">
+        </div>
+    </div>
 </div>
-
-<div>
-    <label for="messageInput">Message:</label>
-    <input type="text" id="messageInput">
-    <br>
-    <label for="mediaFiles">Media Files:</label>
-    <input type="file" id="mediaFiles" multiple accept="image/*,video/*">
-    <br>
-    <button onclick="sendMessage()">Send</button>
-</div>
-
-<div id="chat-messages"></div>
 
 <script>
     let stompClient = null;
@@ -56,10 +167,8 @@
             console.log('Connected: ' + frame);
 
             const userId = document.getElementById('senderId').value;
-
             stompClient.subscribe(`/user/${userId}/queue/messages`, function (message) {
                 const messageData = JSON.parse(message.body);
-                console.log("Received message:", messageData);
                 showMessage(messageData);
             });
         });
@@ -75,14 +184,12 @@
             senderId: senderId,
             recipientId: recipientId,
             message: messageInput.value,
-            senderVisibility: 1,
-            recipientVisibility: 1,
             mediaUrls: []
         };
 
         const files = mediaFilesInput.files;
 
-        if (files && files.length > 0) {
+        if (files.length > 0) {
             const formData = new FormData();
             for (const file of files) {
                 formData.append("files", file);
@@ -90,10 +197,8 @@
 
             uploadMediaFiles(formData).then(mediaUrls => {
                 chatMessage.mediaUrls = mediaUrls;
-
                 stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
                 showMessage(chatMessage, true);
-
                 messageInput.value = '';
                 mediaFilesInput.value = '';
             });
@@ -110,12 +215,7 @@
                 method: 'POST',
                 body: formData
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Failed to upload media files");
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => resolve(data))
                 .catch(error => reject(error));
         });
@@ -124,42 +224,24 @@
     function showMessage(messageData, isSender = false) {
         const chatMessages = document.getElementById('chat-messages');
         const messageElement = document.createElement('div');
-        messageElement.style.marginBottom = '10px';
-
-        if (isSender || messageData.senderId === document.getElementById('senderId').value) {
-            messageElement.style.textAlign = 'right';
-            messageElement.style.color = 'blue';
-            messageElement.innerHTML = `
-                <strong>You:</strong>
-                <p>${messageData.message}</p>
-            `;
-        } else {
-            messageElement.style.textAlign = 'left';
-            messageElement.style.color = 'green';
-            messageElement.innerHTML = `
-                <strong>From ${messageData.senderId}:</strong>
-                <p>${messageData.message}</p>
-            `;
-        }
+        messageElement.classList.add('message', isSender ? 'sent' : 'received');
+        messageElement.innerHTML = `<p>${messageData.message}</p>`;
 
         if (messageData.mediaUrls && messageData.mediaUrls.length > 0) {
             const mediaContainer = document.createElement('div');
-            for (const url of messageData.mediaUrls) {
-                if (url.match(/\.(jpeg|jpg|gif|png)$/)) {
+            mediaContainer.classList.add('media-preview');
+            messageData.mediaUrls.forEach(url => {
+                if (url.match(/\.(jpeg|jpg|png|gif)$/)) {
                     const img = document.createElement('img');
                     img.src = url;
-                    img.style.maxWidth = '100px';
-                    img.style.marginRight = '5px';
                     mediaContainer.appendChild(img);
                 } else if (url.match(/\.(mp4|webm|ogg)$/)) {
                     const video = document.createElement('video');
                     video.src = url;
                     video.controls = true;
-                    video.style.maxWidth = '200px';
-                    video.style.marginRight = '5px';
                     mediaContainer.appendChild(video);
                 }
-            }
+            });
             messageElement.appendChild(mediaContainer);
         }
 
