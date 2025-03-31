@@ -2,75 +2,515 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Chat Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Chat Application</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+        :root {
+            --primary-color: #4a6ee0;
+            --secondary-color: #e9f0ff;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --success-color: #28a745;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        #chat-messages {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark-color);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px);
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .user-info {
+            display: flex;
+            gap: 10px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .user-info-field {
+            display: flex;
+            flex: 1;
+            align-items: center;
+        }
+
+        .user-info label {
+            margin-right: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .user-info input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .message-sent {
+            align-self: flex-end;
+        }
+
+        .message-received {
+            align-self: flex-start;
+        }
+
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 18px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            word-break: break-word;
+        }
+
+        .message-sent .message-content {
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-received .message-content {
+            background-color: #e9e9eb;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-info {
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+            opacity: 0.8;
+        }
+
+        .message-sent .message-info {
+            text-align: right;
+        }
+
+        .media-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .media-container img {
+            border-radius: 8px;
+            max-width: 150px;
+            max-height: 150px;
+            object-fit: cover;
+        }
+
+        .media-container video {
+            border-radius: 8px;
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        .chat-input {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .message-input-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .send-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover {
+            background-color: #3a5bbf;
+        }
+
+        .send-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .media-input-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .media-label {
+            display: flex;
+            align-items: center;
+            background-color: #f0f2f5;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .media-label:hover {
+            background-color: #e4e6e9;
+        }
+
+        .media-input {
+            display: none;
+        }
+
+        .file-count {
+            margin-left: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        .connection-status {
+            text-align: center;
             padding: 10px;
-            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            background-color: #ccc;
+        }
+
+        .status-connected {
+            background-color: var(--success-color);
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .chat-container {
+                height: calc(100vh - 200px);
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .media-container img,
+            .media-container video {
+                max-width: 120px;
+                max-height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .media-container img,
+            .media-container video {
+                max-width: 100px;
+                max-height: 100px;
+            }
         }
     </style>
 </head>
 <body>
-<h1>WebSocket Chat Test</h1>
+<div class="container">
+    <div class="header">
+        <h1>Modern Chat Application</h1>
+    </div>
 
-<div>
-    <label for="senderId">Sender ID:</label>
-    <input type="number" id="senderId">
+    <div class="chat-container">
+        <div class="user-info">
+            <div class="user-info-field">
+                <label for="senderId">Your ID:</label>
+                <input type="number" id="senderId" placeholder="Enter your ID">
+            </div>
+            <div class="user-info-field">
+                <label for="recipientId">Recipient ID:</label>
+                <input type="number" id="recipientId" placeholder="Enter recipient ID">
+            </div>
+        </div>
 
-    <label for="recipientId">Recipient ID:</label>
-    <input type="number" id="recipientId">
+        <div class="connection-status">
+            <span class="status-indicator" id="connectionIndicator"></span>
+            <span id="connectionText">Disconnected</span>
+        </div>
+
+        <div id="chat-messages" class="chat-messages"></div>
+
+        <div class="chat-input">
+            <div class="preview-container" id="filePreviewContainer"></div>
+            
+            <div class="message-input-container">
+                <input type="text" id="messageInput" class="message-input" placeholder="Type a message...">
+                <button id="sendButton" class="send-button" onclick="sendMessage()" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="media-input-container">
+                <label for="mediaFiles" class="media-label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    Attach Media
+                    <span class="file-count" id="fileCount">0</span>
+                </label>
+                <input type="file" id="mediaFiles" class="media-input" multiple accept="image/*,video/*">
+            </div>
+        </div>
+    </div>
 </div>
-
-<div>
-    <label for="messageInput">Message:</label>
-    <input type="text" id="messageInput">
-    <br>
-    <label for="mediaFiles">Media Files:</label>
-    <input type="file" id="mediaFiles" multiple accept="image/*,video/*">
-    <br>
-    <button onclick="sendMessage()">Send</button>
-</div>
-
-<div id="chat-messages"></div>
 
 <script>
     let stompClient = null;
+    let connected = false;
+    let selectedFiles = [];
 
+    // DOM elements
+    const senderIdInput = document.getElementById('senderId');
+    const recipientIdInput = document.getElementById('recipientId');
+    const messageInput = document.getElementById('messageInput');
+    const mediaFilesInput = document.getElementById('mediaFiles');
+    const chatMessages = document.getElementById('chat-messages');
+    const connectionIndicator = document.getElementById('connectionIndicator');
+    const connectionText = document.getElementById('connectionText');
+    const sendButton = document.getElementById('sendButton');
+    const fileCount = document.getElementById('fileCount');
+    const filePreviewContainer = document.getElementById('filePreviewContainer');
+
+    // Update UI based on connection state
+    function updateConnectionStatus(isConnected) {
+        connected = isConnected;
+        
+        if (isConnected) {
+            connectionIndicator.classList.add('status-connected');
+            connectionText.textContent = 'Connected';
+        } else {
+            connectionIndicator.classList.remove('status-connected');
+            connectionText.textContent = 'Disconnected';
+        }
+        
+        updateSendButtonState();
+    }
+
+    // Update send button state
+    function updateSendButtonState() {
+        const hasContent = messageInput.value.trim() !== '' || selectedFiles.length > 0;
+        const canSend = connected && 
+                        senderIdInput.value.trim() !== '' && 
+                        recipientIdInput.value.trim() !== '' &&
+                        hasContent;
+        
+        sendButton.disabled = !canSend;
+    }
+
+    // Connect to WebSocket
     function connect() {
+        if (senderIdInput.value.trim() === '') {
+            updateConnectionStatus(false);
+            return;
+        }
+
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
+        
+        // Disable console logs from STOMP
+        stompClient.debug = null;
 
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
+            updateConnectionStatus(true);
 
-            const userId = document.getElementById('senderId').value;
+            const userId = senderIdInput.value;
 
             stompClient.subscribe(`/user/${userId}/queue/messages`, function (message) {
                 const messageData = JSON.parse(message.body);
                 console.log("Received message:", messageData);
                 showMessage(messageData);
             });
+        }, function(error) {
+            console.error('Connection error:', error);
+            updateConnectionStatus(false);
+            
+            // Attempt to reconnect after 5 seconds
+            setTimeout(connect, 5000);
         });
     }
 
+    // Send message
     function sendMessage() {
-        const senderId = document.getElementById('senderId').value;
-        const recipientId = document.getElementById('recipientId').value;
-        const messageInput = document.getElementById('messageInput');
-        const mediaFilesInput = document.getElementById('mediaFiles');
+        if (!connected || 
+            senderIdInput.value.trim() === '' || 
+            recipientIdInput.value.trim() === '') {
+            return;
+        }
+        
+        const hasContent = messageInput.value.trim() !== '' || selectedFiles.length > 0;
+        if (!hasContent) return;
 
+        const senderId = senderIdInput.value;
+        const recipientId = recipientIdInput.value;
+        
         const chatMessage = {
             senderId: senderId,
             recipientId: recipientId,
@@ -80,11 +520,9 @@
             mediaUrls: []
         };
 
-        const files = mediaFilesInput.files;
-
-        if (files && files.length > 0) {
+        if (selectedFiles.length > 0) {
             const formData = new FormData();
-            for (const file of files) {
+            for (const file of selectedFiles) {
                 formData.append("files", file);
             }
 
@@ -94,72 +532,87 @@
                 stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
                 showMessage(chatMessage, true);
 
+                // Clear inputs
                 messageInput.value = '';
-                mediaFilesInput.value = '';
+                clearFileSelection();
+                updateSendButtonState();
+            }).catch(error => {
+                console.error("Error uploading files:", error);
+                alert("Failed to upload media files.");
             });
         } else {
             stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
             showMessage(chatMessage, true);
+            
+            // Clear message input
             messageInput.value = '';
+            updateSendButtonState();
         }
     }
 
+    // Upload media files
     function uploadMediaFiles(formData) {
         return new Promise((resolve, reject) => {
             fetch('/v1/api/media/chat', {
                 method: 'POST',
                 body: formData
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Failed to upload media files");
-                    }
-                    return response.json();
-                })
-                .then(data => resolve(data))
-                .catch(error => reject(error));
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to upload media files");
+                }
+                return response.json();
+            })
+            .then(data => resolve(data))
+            .catch(error => reject(error));
         });
     }
 
+    // Show message in chat
     function showMessage(messageData, isSender = false) {
-        const chatMessages = document.getElementById('chat-messages');
         const messageElement = document.createElement('div');
-        messageElement.style.marginBottom = '10px';
+        messageElement.className = isSender || messageData.senderId === senderIdInput.value 
+            ? 'message message-sent' 
+            : 'message message-received';
 
-        if (isSender || messageData.senderId === document.getElementById('senderId').value) {
-            messageElement.style.textAlign = 'right';
-            messageElement.style.color = 'blue';
-            messageElement.innerHTML = `
-                <strong>You:</strong>
-                <p>${messageData.message}</p>
-            `;
-        } else {
-            messageElement.style.textAlign = 'left';
-            messageElement.style.color = 'green';
-            messageElement.innerHTML = `
-                <strong>From ${messageData.senderId}:</strong>
-                <p>${messageData.message}</p>
-            `;
-        }
+        const infoElement = document.createElement('div');
+        infoElement.className = 'message-info';
+        
+        const now = new Date();
+        const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        infoElement.textContent = isSender || messageData.senderId === senderIdInput.value
+            ? `You • ${timeString}`
+            : `From ${messageData.senderId} • ${timeString}`;
+            
+        const contentElement = document.createElement('div');
+        contentElement.className = 'message-content';
+        contentElement.textContent = messageData.message;
+        
+        messageElement.appendChild(infoElement);
+        messageElement.appendChild(contentElement);
 
         if (messageData.mediaUrls && messageData.mediaUrls.length > 0) {
             const mediaContainer = document.createElement('div');
+            mediaContainer.className = 'media-container';
+            
             for (const url of messageData.mediaUrls) {
-                if (url.match(/\.(jpeg|jpg|gif|png)$/)) {
+                if (url.match(/\.(jpeg|jpg|gif|png)$/i)) {
                     const img = document.createElement('img');
                     img.src = url;
-                    img.style.maxWidth = '100px';
-                    img.style.marginRight = '5px';
+                    img.addEventListener('click', () => {
+                        // Image preview functionality could be added here
+                        window.open(url, '_blank');
+                    });
                     mediaContainer.appendChild(img);
-                } else if (url.match(/\.(mp4|webm|ogg)$/)) {
+                } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
                     const video = document.createElement('video');
                     video.src = url;
                     video.controls = true;
-                    video.style.maxWidth = '200px';
-                    video.style.marginRight = '5px';
                     mediaContainer.appendChild(video);
                 }
             }
+            
             messageElement.appendChild(mediaContainer);
         }
 
@@ -167,8 +620,95 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    document.getElementById('senderId').addEventListener('change', connect);
+    // Handle file selection
+    function handleFileSelection() {
+        const files = mediaFilesInput.files;
+        selectedFiles = Array.from(files);
+        
+        // Update file count display
+        fileCount.textContent = selectedFiles.length;
+        fileCount.style.display = selectedFiles.length > 0 ? 'flex' : 'none';
+        
+        // Clear previous previews
+        filePreviewContainer.innerHTML = '';
+        
+        // Generate previews
+        selectedFiles.forEach((file, index) => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                previewItem.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const img = document.createElement('img');
+                img.src = '/api/placeholder/80/80';
+                img.alt = 'Video';
+                previewItem.appendChild(img);
+                
+                const videoIcon = document.createElement('div');
+                videoIcon.innerHTML = '▶';
+                videoIcon.style.position = 'absolute';
+                videoIcon.style.top = '50%';
+                videoIcon.style.left = '50%';
+                videoIcon.style.transform = 'translate(-50%, -50%)';
+                videoIcon.style.color = 'white';
+                videoIcon.style.fontSize = '24px';
+                previewItem.appendChild(videoIcon);
+            }
+            
+            const removeButton = document.createElement('button');
+            removeButton.className = 'preview-remove';
+            removeButton.innerHTML = '×';
+            removeButton.onclick = (e) => {
+                e.preventDefault();
+                removeFile(index);
+            };
+            
+            previewItem.appendChild(removeButton);
+            filePreviewContainer.appendChild(previewItem);
+        });
+        
+        // Show/hide preview container
+        filePreviewContainer.style.display = selectedFiles.length > 0 ? 'flex' : 'none';
+        
+        updateSendButtonState();
+    }
+
+    // Remove file from selection
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        handleFileSelection();
+    }
+
+    // Clear file selection
+    function clearFileSelection() {
+        mediaFilesInput.value = '';
+        selectedFiles = [];
+        fileCount.textContent = '0';
+        fileCount.style.display = 'none';
+        filePreviewContainer.innerHTML = '';
+        filePreviewContainer.style.display = 'none';
+        updateSendButtonState();
+    }
+
+    // Event listeners
+    senderIdInput.addEventListener('change', connect);
+    senderIdInput.addEventListener('keyup', updateSendButtonState);
+    recipientIdInput.addEventListener('keyup', updateSendButtonState);
+    messageInput.addEventListener('keyup', updateSendButtonState);
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !sendButton.disabled) {
+            sendMessage();
+        }
+    });
+    mediaFilesInput.addEventListener('change', handleFileSelection);
+
+    // Initialize UI
+    updateConnectionStatus(false);
+    filePreviewContainer.style.display = 'none';
 </script>
 
 </body>
-</html>
+    </html>
