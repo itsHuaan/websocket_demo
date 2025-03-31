@@ -9,9 +9,9 @@ spring:
     encoding: UTF-8
 
   datasource:
-    url: jdbc:mysql://mysql-1b1d6f5-doquanghuan1909-6433.h.aivencloud.com:20194/defaultdb
-    username: avnadmin
-    password: AVNS_mx4PpoEsY1k4HedtoKc
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   servlet:
