@@ -44,6 +44,15 @@ public class TestController {
                         publicId));
     }
 
+    @GetMapping("/ping")
+    public ResponseEntity<?> ping() {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(
+                        HttpStatus.OK,
+                        "Server is running",
+                        null));
+    }
+
     @GetMapping("/get-upload")
     public ResponseEntity<?> getMedia() {
         ApiResponse<?> response = testService.getMedias();
