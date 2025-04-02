@@ -21,6 +21,7 @@ public class SwaggerConfig {
     OpenAPI OpenAPI() {
         List<Server> server = new ArrayList<>();
         server.add(new Server().url("http://localhost:8080").description("Server URL in Local environment"));
+        server.add(new Server().url("https://websocket-demo-7pab.onrender.com").description("Server URL in Domain environment"));
 
         Info info = new Info()
                 .title("Project: Websocket DemoDemo")

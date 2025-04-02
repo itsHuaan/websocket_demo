@@ -17,5 +17,5 @@ public interface IUserActionService {
 
     UserDto getUserById(Long id);
 
-    int deleteUser(Long id);
+    int deleteUser(Long id, Integer isHardDelete);
 }

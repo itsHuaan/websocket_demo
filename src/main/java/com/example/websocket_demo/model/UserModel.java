@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserModel {
+    String email;
     String username;
     String password;
     MultipartFile profilePicture;

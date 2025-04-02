@@ -15,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
     Long userId;
+    String email;
     String username;
     String profilePicture;
     LocalDateTime createdAt;

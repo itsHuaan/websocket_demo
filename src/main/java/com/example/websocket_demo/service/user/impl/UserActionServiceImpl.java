@@ -103,13 +103,20 @@ public class UserActionServiceImpl implements IUserActionService {
     }
 
     @Override
-    public int deleteUser(Long id) {
-        UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new NoSuchElementException("User not found")
-        );
+    public int deleteUser(Long id, Integer isHardDelete) {
+        boolean check = isHardDelete != null && isHardDelete == 1;
+        UserEntity user = check
+                ? userRepository.findById(id).orElseThrow(
+                () -> new NoSuchElementException("User not found"))
+                : userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("User not found"));
         try {
-            user.setDeletedAt(LocalDateTime.now());
-            userRepository.save(user);
+            if (check) {
+                userRepository.delete(user);
+            } else {
+                user.setDeletedAt(LocalDateTime.now());
+                userRepository.save(user);
+            }
             return 1;
         } catch (Exception e) {
             return 0;

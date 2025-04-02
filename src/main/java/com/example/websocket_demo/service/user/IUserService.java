@@ -16,5 +16,5 @@ public interface IUserService {
 
     ApiResponse<?> getUserById(Long id);
 
-    ApiResponse<?> deleteUser(Long id);
+    ApiResponse<?> deleteUser(Long id, Integer isHardDelete);
 }

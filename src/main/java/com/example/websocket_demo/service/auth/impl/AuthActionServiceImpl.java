@@ -3,9 +3,14 @@ package com.example.websocket_demo.service.auth.impl;
 import com.example.websocket_demo.configuration.UserDetailsImpl;
 import com.example.websocket_demo.configuration.jwt.JwtProvider;
 import com.example.websocket_demo.dto.SignInResponse;
+import com.example.websocket_demo.dto.UserDto;
+import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AuthValidation;
+import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.model.SignInRequest;
+import com.example.websocket_demo.model.SignUpRequest;
 import com.example.websocket_demo.repository.ITokenBlackListRepository;
+import com.example.websocket_demo.repository.IUserRepository;
 import com.example.websocket_demo.service.auth.IAuthActionService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +25,8 @@ import org.springframework.stereotype.Service;
 public class AuthActionServiceImpl implements IAuthActionService {
     JwtProvider jwtProvider;
     AuthenticationManager authenticationManager;
+    IUserRepository userRepository;
+    UserMapper userMapper;
 
     @Override
     public SignInResponse signIn(SignInRequest credentials) {
@@ -41,5 +48,14 @@ public class AuthActionServiceImpl implements IAuthActionService {
                 userDetails.getUsername(),
                 jwt
         );
+    }
+
+    @Override
+    public UserDto signUp(SignUpRequest credentials) {
+        try {
+            return userMapper.toUserDto(userRepository.save(userMapper.toUserEntity(credentials)));
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred during registration");
+        }
     }
 }

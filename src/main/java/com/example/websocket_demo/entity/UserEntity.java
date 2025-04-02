@@ -24,6 +24,10 @@ public class UserEntity extends BaseEntity {
 
     @Column(unique = true, nullable = false)
     @NotNull
+    String email;
+
+    @Column(unique = true, nullable = false)
+    @NotNull
     @Size(min = 3, max = 50)
     String username;
 
@@ -32,6 +36,10 @@ public class UserEntity extends BaseEntity {
     String password;
 
     String profilePicture;
+
+    @Column(nullable = false)
+    @NotNull
+    int status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)

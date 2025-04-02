@@ -2,7 +2,9 @@ package com.example.websocket_demo.service.auth.impl;
 
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.dto.SignInResponse;
+import com.example.websocket_demo.dto.UserDto;
 import com.example.websocket_demo.model.SignInRequest;
+import com.example.websocket_demo.model.SignUpRequest;
 import com.example.websocket_demo.service.auth.IAuthActionService;
 import com.example.websocket_demo.service.auth.IAuthService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,16 @@ public class AuthServiceImpl implements IAuthService {
         try {
             SignInResponse signInResponse = authActionService.signIn(credentials);
             return new ApiResponse<>(HttpStatus.OK, "You're now logged in", signInResponse);
+        } catch (RuntimeException e) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+        }
+    }
+
+    @Override
+    public ApiResponse<?> signUp(SignUpRequest credentials) {
+        try {
+            UserDto user = authActionService.signUp(credentials);
+            return new ApiResponse<>(HttpStatus.OK, "An activation code was sent to email "+credentials.getEmail(), null);
         } catch (RuntimeException e) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
         }

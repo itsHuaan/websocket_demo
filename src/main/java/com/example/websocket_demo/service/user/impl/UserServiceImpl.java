@@ -72,9 +72,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public ApiResponse<?> deleteUser(Long id) {
+    public ApiResponse<?> deleteUser(Long id, Integer isHardDelete) {
         try {
-            return userService.deleteUser(id) == 1
+            return userService.deleteUser(id, isHardDelete) == 1
                     ? new ApiResponse<>(HttpStatus.OK, "User deleted", null)
                     : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to delete user", null);
         } catch (NoSuchElementException e) {

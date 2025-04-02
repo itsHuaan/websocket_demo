@@ -63,8 +63,9 @@ public class UserController {
 
     @Operation(summary = "Delete an user")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id) {
-        ApiResponse<?> response = userManagementService.deleteUser(id);
+    public ResponseEntity<?> updateUser(@PathVariable Long id,
+                                        @RequestParam(required = false) Integer isHardDelete) {
+        ApiResponse<?> response = userManagementService.deleteUser(id, isHardDelete);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
