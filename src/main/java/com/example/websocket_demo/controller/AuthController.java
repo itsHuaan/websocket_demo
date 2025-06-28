@@ -27,6 +27,6 @@ public class AuthController {
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest credentials) {
         ApiResponse<?> response = authService.signIn(credentials);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 }

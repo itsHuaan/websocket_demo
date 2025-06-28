@@ -17,7 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Locale;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,26 +50,26 @@ public class TestController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse<>(
                         HttpStatus.OK,
-                        "Server is running",
-                        null));
+                        "Hello, World!",
+                        LocalDate.of(2001, 9, 19)));
     }
 
     @GetMapping("/get-upload")
     public ResponseEntity<?> getMedia() {
         ApiResponse<?> response = testService.getMedias();
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadMedia(MediaUploadTestModel model) {
         ApiResponse<?> response = testService.uploadMedia(model);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMedia(@PathVariable Long id) {
         ApiResponse<?> response = testService.deleteMedia(id);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @GetMapping("{lang}/test")

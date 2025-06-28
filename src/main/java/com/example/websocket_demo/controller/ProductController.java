@@ -1,11 +1,8 @@
 package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.ProductRequest;
 import com.example.websocket_demo.service.product.IProductService;
 import com.example.websocket_demo.util.Const;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,7 +29,7 @@ public class ProductController {
                                         @RequestPart(value = "productMedia", required = false) MultipartFile[] productMedia,
                                         @RequestPart(value = "skuMedia", required = false) MultipartFile[] skuMedia) {
         ApiResponse<?> response = productService.addProduct(productJson, productMedia, skuMedia);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @Operation(summary = "Get all products")
@@ -51,6 +48,6 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         ApiResponse<?> response = productService.getById(id);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 }

@@ -36,21 +36,21 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         ApiResponse<?> response = userManagementService.getUserById(id);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @Operation(summary = "Get user by username")
     @GetMapping("/u/{username}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         ApiResponse<?> response = userManagementService.getUserByUsername(username);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @Operation(summary = "Create a new user")
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserModel userModel) {
         ApiResponse<?> response = userManagementService.createUser(userModel);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @Operation(summary = "Update an user")
@@ -58,7 +58,7 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable Long id,
                                         UserModel userModel) {
         ApiResponse<?> response = userManagementService.updateUser(id, userModel);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @Operation(summary = "Delete an user")
@@ -66,6 +66,6 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable Long id,
                                         @RequestParam(required = false) Integer isHardDelete) {
         ApiResponse<?> response = userManagementService.deleteUser(id, isHardDelete);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 }

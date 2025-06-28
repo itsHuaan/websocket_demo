@@ -18,13 +18,13 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    int status;
+    int code;
     String message;
     T data;
     LocalDateTime timestamp;
 
-    public ApiResponse(HttpStatus status, String message, T data) {
-        this.status = status.value();
+    public ApiResponse(HttpStatus code, String message, T data) {
+        this.code = code.value();
         this.message = message;
         this.data = data;
         this.timestamp = LocalDateTime.now();

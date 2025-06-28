@@ -1,7 +1,6 @@
 package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.MediaUploadTestModel;
 import com.example.websocket_demo.model.RoleModel;
 import com.example.websocket_demo.service.role.IRoleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +26,7 @@ public class RoleController {
     @PostMapping
     public ResponseEntity<?> addRole(RoleModel roleModel) {
         ApiResponse<?> response = roleService.addRole(roleModel);
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @Operation(summary = "Update role", description = "'ROLE_' prefix in role name is optional")
@@ -35,6 +34,6 @@ public class RoleController {
     public ResponseEntity<?> updateRole(@PathVariable Long id,
                                         @RequestBody RoleModel role) {
         ApiResponse<?> response = roleService.updateRole(id, role.getRoleName());
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 }
