@@ -1,17 +1,13 @@
 FROM oraclelinux:9
 
-# Cài đặt JDK 23 từ Oracle
-RUN dnf install -y wget \
-    && wget -O /tmp/jdk-23_linux-x64_bin.tar.gz \
-       "https://download.oracle.com/java/23/latest/jdk-23_linux-x64_bin.tar.gz" \
+RUN dnf install -y curl tar gzip \
+    && curl -L -o /tmp/jdk.tar.gz https://github.com/adoptium/temurin23-binaries/releases/download/jdk-23%2B20/OpenJDK23U-jdk_x64_linux_hotspot_23_20.tar.gz \
     && mkdir -p /usr/java \
-    && tar -xzf /tmp/jdk-23_linux-x64_bin.tar.gz --strip-components=1 -C /usr/java \
-    && rm /tmp/jdk-23_linux-x64_bin.tar.gz
+    && tar -xzf /tmp/jdk.tar.gz -C /usr/java --strip-components=1 \
+    && rm /tmp/jdk.tar.gz
 
-# Kiểm tra thư mục JDK
 RUN ls -la /usr/java && ls -la /usr/java/bin
 
-# Thiết lập JAVA_HOME và PATH
 ENV JAVA_HOME=/usr/java
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
@@ -19,7 +15,6 @@ WORKDIR /app
 
 COPY . .
 
-# Đảm bảo Gradle có quyền chạy
 RUN chmod +x gradlew \
     && ./gradlew build -x test
 
