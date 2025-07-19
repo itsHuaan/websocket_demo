@@ -15,8 +15,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x gradlew && ./gradlew build -x test
+RUN chmod +x gradlew && ./gradlew build -x test \
+    && mv build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "build/libs/websocket_demo.jar"]
+CMD ["java", "-jar", "app.jar"]
