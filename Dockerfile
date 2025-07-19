@@ -15,8 +15,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x gradlew && ./gradlew build -x test \
-    && mv build/libs/*.jar app.jar
+RUN chmod +x gradlew \
+    && ./gradlew build -x test \
+    && sh -c 'mv build/libs/*.jar app.jar'
 
 EXPOSE 8080
 
