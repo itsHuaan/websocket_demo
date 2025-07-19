@@ -17,7 +17,7 @@ COPY . .
 
 RUN chmod +x gradlew \
     && ./gradlew build -x test \
-    && sh -c 'mv build/libs/*.jar app.jar'
+    && find build/libs -name '*.jar' ! -name '*-plain.jar' -exec mv {} app.jar \;
 
 EXPOSE 8080
 
