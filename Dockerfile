@@ -1,22 +1,21 @@
 FROM oraclelinux:9
 
-RUN dnf install -y curl tar gzip \
-    && curl -L -o /tmp/jdk.tar.gz https://github.com/adoptium/temurin23-binaries/releases/download/jdk-23%2B20/OpenJDK23U-jdk_x64_linux_hotspot_23_20.tar.gz \
+RUN dnf install -y curl tar gzip
+
+RUN curl -L -o /tmp/jdk.tar.gz \
+    https://github.com/adoptium/temurin23-binaries/releases/download/jdk-23%2B20/OpenJDK23U-jdk_x64_linux_hotspot_23_20.tar.gz \
     && mkdir -p /usr/java \
     && tar -xzf /tmp/jdk.tar.gz -C /usr/java --strip-components=1 \
     && rm /tmp/jdk.tar.gz
 
-RUN ls -la /usr/java && ls -la /usr/java/bin
-
 ENV JAVA_HOME=/usr/java
-ENV PATH="$JAVA_HOME/bin:$PATH"
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 WORKDIR /app
 
 COPY . .
 
-RUN chmod +x gradlew \
-    && ./gradlew build -x test
+RUN chmod +x gradlew && ./gradlew build -x test
 
 EXPOSE 8080
 
