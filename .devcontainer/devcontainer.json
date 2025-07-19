@@ -1,0 +1,13 @@
+{
+  "name": "My Docker Project",
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  "postCreateCommand": "docker compose up -d",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-azuretools.vscode-docker"]
+    }
+  }
+}
