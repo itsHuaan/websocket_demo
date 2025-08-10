@@ -1,13 +1,14 @@
 {
-  "name": "My Docker Project",
+  "name": "spring-boot-dev",
   "build": {
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../Dockerfile",
+    "context": ".."
   },
-  "postCreateCommand": "docker compose up -d",
-  "features": {},
+  "postStartCommand": "./gradlew bootRun",
+  "forwardPorts": [8080],
   "customizations": {
     "vscode": {
-      "extensions": ["ms-azuretools.vscode-docker"]
+      "extensions": ["vscjava.vscode-spring-boot"]
     }
   }
 }
