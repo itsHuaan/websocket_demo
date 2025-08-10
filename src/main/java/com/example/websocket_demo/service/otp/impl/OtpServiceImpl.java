@@ -1,9 +1,12 @@
 package com.example.websocket_demo.service.otp.impl;
 
+import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.service.otp.IOtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -18,7 +21,7 @@ public class OtpServiceImpl implements IOtpService {
     String SALT_CHARS = "0123456789";
 
     @Override
-    public void generateAndStoreOtp(String email) {
+    public ApiResponse<String> generateAndStoreOtp(String email) {
         SecureRandom secureRandom = new SecureRandom();
         StringBuilder otp = new StringBuilder(OTP_LENGTH);
         String key = "otp: " + email;
@@ -27,6 +30,7 @@ public class OtpServiceImpl implements IOtpService {
             otp.append(SALT_CHARS.charAt(index));
         }
         redisTemplate.opsForValue().set(key, otp.toString(), 3, TimeUnit.MINUTES);
+        return new ApiResponse<>(HttpStatus.CREATED, "OTP generated successfully", otp.toString());
     }
 
     @Override

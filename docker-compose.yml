@@ -21,7 +21,7 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_MAIL_USERNAME: itshuaan@gmail.com
-      SPRING_MAIL_PASSWORD: ckeyvntiacdyhwrb
+      SPRING_MAIL_PASSWORD: srvcwuuztmtfzqxb
       JWT_SECRET_KEY: askhdqiwu48123y123cxv2134123/123u1t238gqhjwdnjaqwhuie412/312i3o1y28712iekjasbdiuqw9e812739jasldk/zxkcbaskanskdlasda/scaksjcoiasjdoi12312o123/qwkjehqwuiehjiqwueiqwuejkqwndoqwd/129831yu293h12ui3qhwiuehqwuieiwheiqwe
     ports:
       - "8080:8080"

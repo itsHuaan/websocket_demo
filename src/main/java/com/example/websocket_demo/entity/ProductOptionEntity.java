@@ -3,6 +3,7 @@ package com.example.websocket_demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
 
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 @Table(name = "tbl_product_option", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"product_id", "option_name"})
 })
+@FieldNameConstants
 public class ProductOptionEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

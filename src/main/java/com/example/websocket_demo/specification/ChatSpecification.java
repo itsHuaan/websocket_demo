@@ -9,8 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 public class ChatSpecification {
     public static Specification<ChatRoomEntity> hasNormalizedChat(Long firstId, Long secondId) {
         return (Root<ChatRoomEntity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> criteriaBuilder.and(
-                criteriaBuilder.equal(root.get("senderId"), firstId),
-                criteriaBuilder.equal(root.get("recipientId"), secondId)
+                criteriaBuilder.equal(root.get(ChatRoomEntity.Fields.senderId), firstId),
+                criteriaBuilder.equal(root.get(ChatRoomEntity.Fields.recipientId), secondId)
         );
     }
 }

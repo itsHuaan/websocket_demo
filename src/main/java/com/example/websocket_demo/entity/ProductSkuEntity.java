@@ -3,6 +3,7 @@ package com.example.websocket_demo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
 import org.apache.commons.math3.stat.descriptive.summary.Product;
 
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tbl_product_sku")
+@FieldNameConstants
 public class ProductSkuEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,6 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.SignInRequest;
+import com.example.websocket_demo.model.SignUpRequest;
 import com.example.websocket_demo.service.auth.IAuthService;
 import com.example.websocket_demo.util.Const;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,13 @@ public class AuthController {
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest credentials) {
         ApiResponse<?> response = authService.signIn(credentials);
+        return ResponseEntity.status(response.getCode()).body(response);
+    }
+
+    @Operation(summary = "Sign users up")
+    @PostMapping("/sign-up")
+    public ResponseEntity<?> signUp(@RequestBody SignUpRequest credentials) {
+        ApiResponse<?> response = authService.signUp(credentials);
         return ResponseEntity.status(response.getCode()).body(response);
     }
 }

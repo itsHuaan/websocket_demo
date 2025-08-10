@@ -18,6 +18,7 @@ public class UserDto {
     String email;
     String username;
     String profilePicture;
+    String status;
     LocalDateTime createdAt;
     LocalDateTime modifiedAt;
     LocalDateTime deletedAt;

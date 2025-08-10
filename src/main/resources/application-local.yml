@@ -11,7 +11,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/websocket_demo?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf-8
     username: root
-    password: "QHuan1909!"
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   servlet:
@@ -29,7 +29,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: itshuaan@gmail.com
-    password: ckeyvntiacdyhwrb
+    password: srvcwuuztmtfzqxb
     properties:
       mail:
         smtp:
@@ -48,3 +48,8 @@ cloudinary:
   name: dpt7g5sxd
   api-key: 974323932978374
   secret-key: ZwTSllWoNsr2f3eGctZ4UkYtMVk
+
+app:
+  otp:
+    expires-minutes: 3
+

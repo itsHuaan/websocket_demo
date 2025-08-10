@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1'
 	implementation 'org.apache.poi:poi-ooxml:5.0.0'
 	implementation 'com.google.zxing:core:3.4.0'

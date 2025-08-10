@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum AuthValidation {
-    BAD_CREDENTIAL("Invalid email or password.");
+    BAD_CREDENTIAL("Invalid email or password."),
+    USER_EXISTING_BY_EMAIL("This email is already taken."),
+    USER_EXISTING_BY_USERNAME("This username is already taken.");
     String message;
 }

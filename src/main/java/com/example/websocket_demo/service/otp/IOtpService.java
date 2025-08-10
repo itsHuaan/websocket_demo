@@ -1,7 +1,9 @@
 package com.example.websocket_demo.service.otp;
 
+import com.example.websocket_demo.dto.ApiResponse;
+
 public interface IOtpService {
-    void generateAndStoreOtp(String email);
+    ApiResponse<String> generateAndStoreOtp(String email);
 
     String getOtp(String email);
 }
