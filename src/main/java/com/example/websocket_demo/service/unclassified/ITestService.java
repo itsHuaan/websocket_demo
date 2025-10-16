@@ -11,4 +11,6 @@ public interface ITestService {
     ApiResponse<?> updateMedia(Long id, MediaUploadTestModel model);
 
     ApiResponse<?> deleteMedia(Long id);
+    
+    ApiResponse<?> keepServiceAlive();
 }

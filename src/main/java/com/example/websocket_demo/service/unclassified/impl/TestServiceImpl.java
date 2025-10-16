@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -125,6 +126,14 @@ public class TestServiceImpl implements ITestService {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         return new ApiResponse<>(status, message, null);
+    }
+
+    @Override
+    public ApiResponse<?> keepServiceAlive() {
+        return new ApiResponse<>(
+                HttpStatus.OK,
+                "Hello, World!",
+                testRepository.getAllIds());
     }
 
 }

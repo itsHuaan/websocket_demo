@@ -47,11 +47,7 @@ public class TestController {
 
     @GetMapping("/ping")
     public ResponseEntity<?> ping() {
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ApiResponse<>(
-                        HttpStatus.OK,
-                        "Hello, World!",
-                        LocalDate.of(2001, 9, 19)));
+        return ResponseEntity.status(HttpStatus.OK).body(testService.keepServiceAlive());
     }
 
     @GetMapping("/get-upload")
