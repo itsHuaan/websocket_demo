@@ -8,6 +8,7 @@ import com.example.websocket_demo.entity.TestMediaEntity;
 import com.example.websocket_demo.model.MediaUploadTestModel;
 import com.example.websocket_demo.repository.ITestRepository;
 import com.example.websocket_demo.service.unclassified.ITestService;
+import com.example.websocket_demo.util.DateFormatter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.List;
 
 @Slf4j
@@ -131,7 +133,7 @@ public class TestServiceImpl implements ITestService {
 
     @Override
     public ApiResponse<?> keepServiceAlive() {
-        log.info("Keep service alive at {}", LocalDate.now());
+        log.info("Keep service alive at {}", DateFormatter.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy"));
         return new ApiResponse<>(
                 HttpStatus.OK,
                 "Hello, World!",

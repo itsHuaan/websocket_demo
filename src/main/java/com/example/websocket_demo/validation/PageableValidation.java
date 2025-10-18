@@ -1,4 +1,4 @@
-package com.example.websocket_demo.util;
+package com.example.websocket_demo.validation;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

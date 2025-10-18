@@ -8,7 +8,7 @@ import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.UserModel;
 import com.example.websocket_demo.service.user.IUserService;
 import com.example.websocket_demo.util.Const;
-import com.example.websocket_demo.util.PageableValidation;
+import com.example.websocket_demo.validation.PageableValidation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
