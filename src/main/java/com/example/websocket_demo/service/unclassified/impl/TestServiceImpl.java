@@ -130,6 +130,7 @@ public class TestServiceImpl implements ITestService {
 
     @Override
     public ApiResponse<?> keepServiceAlive() {
+        log.info("Keep service alive at {}", LocalDate.now());
         return new ApiResponse<>(
                 HttpStatus.OK,
                 "Hello, World!",
