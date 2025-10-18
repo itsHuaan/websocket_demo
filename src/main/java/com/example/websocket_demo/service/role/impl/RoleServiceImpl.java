@@ -26,29 +26,29 @@ public class RoleServiceImpl implements IRoleService {
     public ApiResponse<?> addRole(RoleModel role) {
         try {
             return roleActionService.addRole(role) == 1
-                    ? new ApiResponse<>(HttpStatus.OK, "Role added", null)
-                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add role", null);
+                    ? new ApiResponse<>(HttpStatus.OK, "Role added")
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add role");
         } catch (IllegalArgumentException e) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
     @Override
     public ApiResponse<?> updateRole(Long id, String roleName) {
         if (roleName == null || roleName.isEmpty()) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Role name cannot be empty", null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Role name cannot be empty");
         }
         try {
             if (roleActionService.updateRole(new RoleEntity(id, roleName)) == 1) {
-                return new ApiResponse<>(HttpStatus.OK, "Role updated", null);
+                return new ApiResponse<>(HttpStatus.OK, "Role updated");
             }
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to update role", null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to update role");
         } catch (NoSuchElementException e) {
-            return new ApiResponse<>(HttpStatus.NOT_FOUND, e.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
         }
     }
 }

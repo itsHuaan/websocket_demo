@@ -93,7 +93,7 @@ public class TestServiceImpl implements ITestService {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
-        return new ApiResponse<>(status, message, null);
+        return new ApiResponse<>(status, message);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class TestServiceImpl implements ITestService {
             message = "An unexpected error occurred: " + e.getMessage();
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
-        return new ApiResponse<>(status, message, null);
+        return new ApiResponse<>(status, message);
     }
 
     @Override

@@ -48,9 +48,9 @@ public class AuthServiceImpl implements IAuthService {
                     new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (BadCredentialsException e) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, AuthValidation.BAD_CREDENTIAL.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, AuthValidation.BAD_CREDENTIAL.getMessage());
         } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -67,19 +67,19 @@ public class AuthServiceImpl implements IAuthService {
         boolean isExistingByEmail = userRepository.existsByEmailAndDeletedAtIsNull(email);
         boolean isExistingByUsername = userRepository.existsByUsernameAndDeletedAtIsNull(credentials.getUsername());
         if (isExistingByEmail && isExistingByUsername) {
-            return new ApiResponse<>(HttpStatus.OK, "User is existing", null);
+            return new ApiResponse<>(HttpStatus.OK, "User is existing");
         } else if (isExistingByEmail) {
-            return new ApiResponse<>(HttpStatus.OK, AuthValidation.USER_EXISTING_BY_EMAIL.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.OK, AuthValidation.USER_EXISTING_BY_EMAIL.getMessage());
         } else if (isExistingByUsername) {
-            return new ApiResponse<>(HttpStatus.OK, AuthValidation.USER_EXISTING_BY_USERNAME.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.OK, AuthValidation.USER_EXISTING_BY_USERNAME.getMessage());
         }
         try {
             UserDto user = userMapper.toUserDto(userRepository.save(userMapper.toUserEntity(credentials)));
             EmailModel emailModel = new EmailModel(email, "OTP", getEmailContent(otpService.generateAndStoreOtp(email).getData(), 3));
             emailService.sendEmail(emailModel);
-            return new ApiResponse<>(HttpStatus.OK, "An activation code was sent to email " + user.getEmail(), null);
+            return new ApiResponse<>(HttpStatus.OK, "An activation code was sent to email " + user.getEmail());
         } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

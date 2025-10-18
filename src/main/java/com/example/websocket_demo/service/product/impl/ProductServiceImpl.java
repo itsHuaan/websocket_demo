@@ -33,17 +33,17 @@ public class ProductServiceImpl implements IProductService {
             ProductRequest productRequest = new ObjectMapper().readValue(productJson, ProductRequest.class);
             productRequest.setMedia(productMedia);
             return productActionService.addProduct(productRequest) == 1
-                    ? new ApiResponse<>(HttpStatus.CREATED, "Product added successfully", null)
-                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add product", null);
+                    ? new ApiResponse<>(HttpStatus.CREATED, "Product added successfully")
+                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add product");
         } catch (JsonProcessingException e) {
             log.error("Error parsing JSON: {}", e.getMessage());
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Invalid JSON", null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Invalid JSON");
         } catch (IllegalArgumentException e) {
             log.error("Error adding product: {}", e.getMessage());
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("An unexpected error occurred: {}", e.getMessage());
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
         }
     }
 
@@ -62,7 +62,7 @@ public class ProductServiceImpl implements IProductService {
     private ApiResponse<?> getApiResponse(List<ProductSummaryDto> products) {
         return products != null
                 ? new ApiResponse<>(HttpStatus.OK, "Product fetched", products)
-                : new ApiResponse<>(HttpStatus.NO_CONTENT, "No products fetched", null);
+                : new ApiResponse<>(HttpStatus.NO_CONTENT, "No products fetched");
     }
 
     @Override
@@ -71,9 +71,9 @@ public class ProductServiceImpl implements IProductService {
             ProductDto product = productActionService.getById(id);
             return new ApiResponse<>(HttpStatus.OK, "Product fetched", product);
         } catch (NoSuchElementException e) {
-            return new ApiResponse<>(HttpStatus.NOT_FOUND, "Product not found", null);
+            return new ApiResponse<>(HttpStatus.NOT_FOUND, "Product not found");
         } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
         }
     }
 }

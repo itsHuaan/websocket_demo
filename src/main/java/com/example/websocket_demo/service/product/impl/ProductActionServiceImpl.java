@@ -82,7 +82,7 @@ public class ProductActionServiceImpl implements IProductActionService {
     @Override
     public List<ProductSummaryDto> getAll() {
         return productRepository.findAll(Specification.where(
-                        ProductSpecification.isNotDeleted()
+                        ProductSpecification.isNull(BaseEntity.Fields.deletedAt)
                 )).stream()
                 .map(productMapper::toProductSummaryDto)
                 .toList();

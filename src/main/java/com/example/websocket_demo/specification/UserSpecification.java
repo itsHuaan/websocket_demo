@@ -7,9 +7,5 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-public class UserSpecification {
-    public static Specification<UserEntity> isNotDeleted() {
-        return (Root<UserEntity> root, CriteriaQuery<?> query, CriteriaBuilder builder) ->
-                builder.isNull(root.get(BaseEntity.Fields.deletedAt));
-    }
+public class UserSpecification extends BaseSpecification<UserEntity> {
 }

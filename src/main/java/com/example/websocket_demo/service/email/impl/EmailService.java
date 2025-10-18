@@ -28,9 +28,9 @@ public class EmailService implements IEmailService {
             helper.setSubject(email.getSubject());
             helper.setText(email.getContent());
             mailSender.send(message);
-            return new ApiResponse<>(HttpStatus.OK, "Email sent successfully", null);
+            return new ApiResponse<>(HttpStatus.OK, "Email sent successfully");
         } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to send email", null);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to send email");
         }
     }
 

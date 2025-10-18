@@ -6,7 +6,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-public class ChatSpecification {
+public class ChatSpecification extends BaseSpecification<ChatRoomEntity> {
     public static Specification<ChatRoomEntity> hasNormalizedChat(Long firstId, Long secondId) {
         return (Root<ChatRoomEntity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> criteriaBuilder.and(
                 criteriaBuilder.equal(root.get(ChatRoomEntity.Fields.senderId), firstId),

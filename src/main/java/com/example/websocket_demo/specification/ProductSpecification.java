@@ -9,7 +9,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-public class ProductSpecification {
+public class ProductSpecification extends BaseSpecification<ProductEntity> {
     public static Specification<ProductEntity> isNotDeleted() {
         return (Root<ProductEntity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> criteriaBuilder.isNull(root.get(BaseEntity.Fields.deletedAt));
     }
