@@ -133,10 +133,11 @@ public class TestServiceImpl implements ITestService {
 
     @Override
     public ApiResponse<?> keepServiceAlive() {
-        log.info("Keep service alive at {}", DateFormatter.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy"));
+        String time = DateFormatter.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy");
+        log.info("Service is alive: {}", time);
         return new ApiResponse<>(
                 HttpStatus.OK,
-                "Hello, World!",
+                time,
                 testRepository.getAllIds(),
                 LocalDateTime.of(2001, 9, 19, 0, 0));
     }
