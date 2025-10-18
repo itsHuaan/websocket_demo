@@ -24,9 +24,13 @@ public class ApiResponse<T> {
     LocalDateTime timestamp;
 
     public ApiResponse(HttpStatus code, String message, T data) {
+        this(code, message, data, LocalDateTime.now());
+    }
+
+    public ApiResponse(HttpStatus code, String message, T data, LocalDateTime timestamp) {
         this.code = code.value();
         this.message = message;
         this.data = data;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = timestamp;
     }
 }
