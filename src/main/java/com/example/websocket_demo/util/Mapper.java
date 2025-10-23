@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 @Component
 public class Mapper implements ApplicationListener<ContextRefreshedEvent> {
     private final Map<Key, BiConsumer<Object, Object>> customizers = new ConcurrentHashMap<>();
+    private final Map<Key, BiConsumer<Object, Object>> resolvedCache = new ConcurrentHashMap<>();
     private volatile boolean initialized = false;
 
     @Override
@@ -48,27 +49,54 @@ public class Mapper implements ApplicationListener<ContextRefreshedEvent> {
         return target;
     }
 
-    public <E, D> D toDto(E entity, Class<D> dtoType) {
-        return map(entity, dtoType);
-    }
-
-    public <D, E> E toEntity(D dto, Class<E> entityType) {
-        return map(dto, entityType);
-    }
+    public <E, D> D toDto(E entity, Class<D> dtoType) { return map(entity, dtoType); }
+    public <D, E> E toEntity(D dto, Class<E> entityType) { return map(dto, entityType); }
 
     @SuppressWarnings("unchecked")
     public <S, T> void registerCustomizer(Class<S> s, Class<T> t, BiConsumer<S, T> fn) {
-        if (this.initialized) {
-            throw new IllegalStateException("Cannot register customizers after the application has started.");
-        }
+        if (this.initialized) throw new IllegalStateException("Cannot register customizers after the application has started.");
         customizers.put(new Key(s, t), (BiConsumer<Object, Object>) fn);
+        resolvedCache.clear();
     }
 
     private <S, T> void applyCustomizer(Class<S> s, Class<T> t, Object src, Object tar) {
-        BiConsumer<Object, Object> c = customizers.get(new Key(s, t));
+        BiConsumer<Object, Object> c = resolveCustomizer(s, t);
         if (c != null) c.accept(src, tar);
     }
 
+    private BiConsumer<Object, Object> resolveCustomizer(Class<?> s, Class<?> t) {
+        Key query = new Key(s, t);
+        BiConsumer<Object, Object> cached = resolvedCache.get(query);
+        if (cached != null || resolvedCache.containsKey(query)) return cached;
+
+        BiConsumer<Object, Object> best = null;
+        int bestScore = Integer.MAX_VALUE;
+
+        for (Map.Entry<Key, BiConsumer<Object, Object>> e : customizers.entrySet()) {
+            Class<?> sk = e.getKey().s();
+            Class<?> tk = e.getKey().t();
+            if (sk.isAssignableFrom(s) && tk.isAssignableFrom(t)) {
+                int score = distance(sk, s) + distance(tk, t);
+                if (score < bestScore) {
+                    bestScore = score;
+                    best = e.getValue();
+                }
+            }
+        }
+        resolvedCache.put(query, best);
+        return best;
+    }
+
+    private int distance(Class<?> parent, Class<?> child) {
+        if (parent.equals(child)) return 0;
+        int d = 0;
+        Class<?> c = child;
+        while (c != null && !parent.equals(c)) {
+            d++;
+            c = c.getSuperclass();
+        }
+        return d == 0 ? 1 : d;
+    }
 
     private String[] nullProps(Object source) {
         BeanWrapper bw = new BeanWrapperImpl(source);
@@ -79,6 +107,5 @@ public class Mapper implements ApplicationListener<ContextRefreshedEvent> {
         return empty.toArray(new String[0]);
     }
 
-    private record Key(Class<?> s, Class<?> t) {
-    }
+    private record Key(Class<?> s, Class<?> t) {}
 }
