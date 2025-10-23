@@ -6,6 +6,7 @@ import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.repository.IUserRepository;
 import com.example.websocket_demo.specification.UserSpecification;
+import com.example.websocket_demo.util.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -32,14 +33,14 @@ import java.util.NoSuchElementException;
 public class UserServiceImpl implements IUserService {
 
     IUserRepository userRepository;
-    UserMapper userMapper;
     CloudinaryService mediaUploader;
     PasswordEncoder passwordEncoder;
+    Mapper mapper;
 
     @Override
     public ApiResponse<?> getAllUsers(Pageable pageable) {
         Page<UserDto> users = userRepository.findAll(Specification.where(UserSpecification.isNull(BaseEntity.Fields.deletedAt)), pageable)
-                .map(userMapper::toUserDto);
+                .map(user -> mapper.map(user, UserDto.class));
         return users.isEmpty()
                 ? new ApiResponse<>(HttpStatus.NO_CONTENT, "No users fetched", users)
                 : new ApiResponse<>(HttpStatus.OK, "Users fetched", users);
@@ -60,9 +61,13 @@ public class UserServiceImpl implements IUserService {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Password cannot be null or empty");
         }
         try {
-            userRepository.save(userMapper.toUserEntity(userModel));
+            UserEntity user = mapper.toEntity(userModel, UserEntity.class);
+            user.setProfilePicture(userModel.getProfilePicture() != null
+                    ? mediaUploader.uploadMediaFile(userModel.getProfilePicture())
+                    : null);
+            userRepository.save(user);
             return new ApiResponse<>(HttpStatus.CREATED, "User created successfully");
-        } catch (IOException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage());
         }   catch (Exception e) {
             return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + e.getMessage());
@@ -98,18 +103,16 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public ApiResponse<?> getUserByUsername(String username) {
-        UserDto user = userRepository.findByUsernameAndDeletedAtIsNull(username)
-                .map(userMapper::toUserDto)
-                .orElse(null);
-        return getApiResponse(user);
+        return getApiResponse(userRepository.findByUsernameAndDeletedAtIsNull(username)
+                .map(user -> mapper.toDto(user, UserDto.class))
+                .orElse(null));
     }
 
     @Override
     public ApiResponse<?> getUserById(Long id) {
-        UserDto user = userRepository.findByUserIdAndDeletedAtIsNull(id)
-                .map(userMapper::toUserDto)
-                .orElse(null);
-        return getApiResponse(user);
+        return getApiResponse(userRepository.findByUserIdAndDeletedAtIsNull(id)
+                .map(user -> mapper.toDto(user, UserDto.class))
+                .orElse(null));
     }
 
     @Override

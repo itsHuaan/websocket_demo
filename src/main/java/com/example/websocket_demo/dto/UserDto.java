@@ -19,7 +19,7 @@ public class UserDto {
     String username;
     String profilePicture;
     String status;
-    LocalDateTime createdAt;
-    LocalDateTime modifiedAt;
-    LocalDateTime deletedAt;
+    String createdAt;
+    String modifiedAt;
+    String deletedAt;
 }

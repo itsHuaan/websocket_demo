@@ -5,6 +5,7 @@ import com.example.websocket_demo.configuration.jwt.JwtProvider;
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.dto.SignInResponse;
 import com.example.websocket_demo.dto.UserDto;
+import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AuthValidation;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.model.EmailModel;
@@ -15,6 +16,7 @@ import com.example.websocket_demo.service.auth.IAuthService;
 import com.example.websocket_demo.service.email.IEmailService;
 import com.example.websocket_demo.service.otp.IOtpService;
 import com.example.websocket_demo.service.user.IUserService;
+import com.example.websocket_demo.util.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +41,7 @@ public class AuthServiceImpl implements IAuthService {
     IEmailService emailService;
     SpringTemplateEngine templateEngine;
     IOtpService otpService;
+    Mapper mapper;
 
     @Override
     public ApiResponse<?> signIn(SignInRequest credentials) {
@@ -74,7 +77,8 @@ public class AuthServiceImpl implements IAuthService {
             return new ApiResponse<>(HttpStatus.OK, AuthValidation.USER_EXISTING_BY_USERNAME.getMessage());
         }
         try {
-            UserDto user = userMapper.toUserDto(userRepository.save(userMapper.toUserEntity(credentials)));
+//            UserDto user = userMapper.toUserDto(userRepository.save(userMapper.toUserEntity(credentials)));
+            UserEntity user = userRepository.save(mapper.toEntity(credentials, UserEntity.class));
             EmailModel emailModel = new EmailModel(email, "OTP", getEmailContent(otpService.generateAndStoreOtp(email).getData(), 3));
             emailService.sendEmail(emailModel);
             return new ApiResponse<>(HttpStatus.OK, "An activation code was sent to email " + user.getEmail());

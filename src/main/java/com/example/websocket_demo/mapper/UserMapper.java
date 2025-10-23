@@ -34,9 +34,6 @@ public class UserMapper {
                 .username(userEntity.getUsername())
                 .profilePicture(userEntity.getProfilePicture())
                 .status(String.valueOf(userEntity.getStatus()))
-                .createdAt(userEntity.getCreatedAt())
-                .modifiedAt(userEntity.getModifiedAt())
-                .deletedAt(userEntity.getDeletedAt())
                 .build();
     }
 
