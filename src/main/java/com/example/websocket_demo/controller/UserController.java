@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.UserModel;
 import com.example.websocket_demo.service.user.IUserService;
-import com.example.websocket_demo.util.Const;
+import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.validation.PageableValidation;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +18,7 @@ import lombok.AccessLevel;
 
 @RestController
 @Tag(name = "User Controller")
-@RequestMapping(value = Const.API_PREFIX + "/users")
+@RequestMapping(value = Const.API_PREFIX_V1 + "/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {

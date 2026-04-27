@@ -8,7 +8,7 @@ import com.example.websocket_demo.entity.TestMediaEntity;
 import com.example.websocket_demo.model.MediaUploadTestModel;
 import com.example.websocket_demo.repository.ITestRepository;
 import com.example.websocket_demo.service.unclassified.ITestService;
-import com.example.websocket_demo.util.DateFormatter;
+import com.example.websocket_demo.common.DateUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,11 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Formatter;
 import java.util.List;
 
 @Slf4j
@@ -133,7 +131,7 @@ public class TestServiceImpl implements ITestService {
 
     @Override
     public ApiResponse<?> keepServiceAlive() {
-        String time = DateFormatter.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy");
+        String time = DateUtil.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy");
         log.info("Service is alive: {}", time);
         return new ApiResponse<>(
                 HttpStatus.OK,

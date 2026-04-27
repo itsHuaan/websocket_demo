@@ -1,8 +1,8 @@
-package com.example.websocket_demo.util;
+package com.example.websocket_demo.common;
 
 import java.lang.reflect.Field;
 
-public class NullChecker {
+public class DataUtil {
     public static boolean hasNullField(Object obj) {
         if (obj == null) {
             throw new IllegalArgumentException("The provided object is null.");

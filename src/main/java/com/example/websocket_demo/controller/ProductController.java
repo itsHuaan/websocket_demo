@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.service.product.IProductService;
-import com.example.websocket_demo.util.Const;
+import com.example.websocket_demo.common.Const;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Tag(name = "Product Controller")
-@RequestMapping(value = Const.API_PREFIX + "/products")
+@RequestMapping(value = Const.API_PREFIX_V1 + "/products")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {

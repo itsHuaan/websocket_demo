@@ -1,25 +1,26 @@
 package com.example.websocket_demo.configuration;
 
-import com.example.websocket_demo.dto.TestDto;
 import com.example.websocket_demo.dto.UserDto;
 import com.example.websocket_demo.entity.RoleEntity;
-import com.example.websocket_demo.entity.TestEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.model.SignUpRequest;
 import com.example.websocket_demo.model.UserModel;
-import com.example.websocket_demo.util.DateFormatter;
-import com.example.websocket_demo.util.Mapper;
+import com.example.websocket_demo.common.Const;
+import com.example.websocket_demo.common.DateUtil;
+import com.example.websocket_demo.common.Mapper;
 import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MapperConfiguration {
     Mapper mapper;
+    PasswordEncoder passwordEncoder;
 
     /**
      * Configures and centralizes all custom object mapping rules for the application's {@link Mapper}.
@@ -48,9 +49,9 @@ public class MapperConfiguration {
         // mapper.registerCustomizer(Product.class, ProductDto.class, ...);
         mapper.registerCustomizer(UserEntity.class, UserDto.class, (entity, dto) -> {
             dto.setStatus(entity.getStatus() == 0 ? "Active" : "Inactive");
-            dto.setCreatedAt(DateFormatter.formatDate(entity.getCreatedAt(), "HH:mm:ss MMM dd, yyyy"));
-            dto.setModifiedAt(DateFormatter.formatDate(entity.getCreatedAt(), "HH:mm:ss MMM dd, yyyy"));
-            dto.setDeletedAt(DateFormatter.formatDate(entity.getCreatedAt(), "HH:mm:ss MMM dd, yyyy"));
+            dto.setCreatedAt(DateUtil.formatDate(entity.getCreatedAt(), Const.DateFormat.HHmmss_MMMddyyyy));
+            dto.setModifiedAt(DateUtil.formatDate(entity.getCreatedAt(), Const.DateFormat.HHmmss_MMMddyyyy));
+            dto.setDeletedAt(DateUtil.formatDate(entity.getCreatedAt(), Const.DateFormat.HHmmss_MMMddyyyy));
         });
 
         mapper.registerCustomizer(SignUpRequest.class, UserEntity.class, (request, entity) -> {
@@ -58,6 +59,7 @@ public class MapperConfiguration {
         });
 
         mapper.registerCustomizer(UserModel.class, UserEntity.class, (model, entity) -> {
+            entity.setPassword(passwordEncoder.encode(model.getPassword()));
             entity.setRole(model.getRoleId() == null
                     ? RoleEntity.builder().roleId(2L).build()
                     : RoleEntity.builder().roleId(model.getRoleId()).build());

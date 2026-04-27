@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.model.ChatMessageModel;
 import com.example.websocket_demo.service.chat.IChatActionService;
-import com.example.websocket_demo.util.Const;
+import com.example.websocket_demo.common.Const;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "Chat Controller")
-@RequestMapping(value = Const.API_PREFIX + "/message")
+@RequestMapping(value = Const.API_PREFIX_V1 + "/message")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatController {

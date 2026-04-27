@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.product.impl;
 
+import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
 import com.example.websocket_demo.dto.ProductDto;
 import com.example.websocket_demo.dto.ProductSummaryDto;
@@ -9,7 +10,6 @@ import com.example.websocket_demo.model.ProductRequest;
 import com.example.websocket_demo.repository.*;
 import com.example.websocket_demo.service.product.IProductActionService;
 import com.example.websocket_demo.specification.ProductSpecification;
-import com.example.websocket_demo.util.NullChecker;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class ProductActionServiceImpl implements IProductActionService {
     @Transactional
     @Override
     public int addProduct(ProductRequest productRequest) {
-        if (NullChecker.hasNullField(productRequest)) {
+        if (DataUtil.hasNullField(productRequest)) {
             throw new IllegalArgumentException("Please fill all the required fields");
         }
         if (productRequest.getMedia() == null) {

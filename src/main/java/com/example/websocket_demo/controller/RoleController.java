@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.websocket_demo.util.Const;
+import com.example.websocket_demo.common.Const;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -16,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 
 @RestController
 @Tag(name = "Role Controller")
-@RequestMapping(value = Const.API_PREFIX + "/role")
+@RequestMapping(value = Const.API_PREFIX_V1 + "/role")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleController {

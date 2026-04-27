@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.util.Const;
+import com.example.websocket_demo.common.Const;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,14 +17,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RestController
 @Tag(name = "Test Controller")
-@RequestMapping(value = Const.API_PREFIX + "/test")
+@RequestMapping(value = Const.API_PREFIX_V1 + "/test")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TestController {

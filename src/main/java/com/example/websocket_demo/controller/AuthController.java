@@ -4,7 +4,7 @@ import com.example.websocket_demo.dto.ApiResponse;
 import com.example.websocket_demo.model.SignInRequest;
 import com.example.websocket_demo.model.SignUpRequest;
 import com.example.websocket_demo.service.auth.IAuthService;
-import com.example.websocket_demo.util.Const;
+import com.example.websocket_demo.common.Const;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "Authentication Controller")
-@RequestMapping(value = Const.API_PREFIX + "/auth")
+@RequestMapping(value = Const.API_PREFIX_V1 + "/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {

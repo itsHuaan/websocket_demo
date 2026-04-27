@@ -1,16 +1,12 @@
-package com.example.websocket_demo.util;
+package com.example.websocket_demo.common;
 
-import org.apache.batik.apps.svgbrowser.Application;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import javax.naming.Context;
 import java.beans.PropertyDescriptor;
 import java.util.HashSet;
 import java.util.Map;
