@@ -10,15 +10,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SignUpRequest {
+public class ForgotPasswordRequest {
     @Schema(example = "your_name@gmail.com")
     @NonNull
     String email;
-    @Schema(example = "your_username")
-    @NonNull
-    String username;
-    @Schema(example = "your_password")
-    @NonNull
-    String password;
 }
-

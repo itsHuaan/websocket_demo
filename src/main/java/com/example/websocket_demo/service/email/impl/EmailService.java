@@ -26,7 +26,7 @@ public class EmailService implements IEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(email.getRecipient());
             helper.setSubject(email.getSubject());
-            helper.setText(email.getContent());
+            helper.setText(email.getContent(), true);
             mailSender.send(message);
             log.info("Email sent successfully to {}", email.getRecipient());
         } catch (Exception e) {

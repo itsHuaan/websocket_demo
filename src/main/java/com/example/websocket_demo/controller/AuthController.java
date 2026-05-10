@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.websocket_demo.dto.request.ForgotPasswordRequest;
+import com.example.websocket_demo.dto.request.ResetPasswordRequest;
 import com.example.websocket_demo.dto.request.VerifyOtpRequest;
 
 @RestController
@@ -48,6 +50,22 @@ public class AuthController {
         authService.verifySignUp(request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ApiResponse<>(HttpStatus.OK, "Account activated successfully"));
+    }
+
+    @Operation(summary = "Request password reset OTP")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<?>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Password reset OTP sent to your email"));
+    }
+
+    @Operation(summary = "Reset password with OTP")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<?>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Password has been reset successfully"));
     }
 }
 

@@ -29,6 +29,10 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import com.example.websocket_demo.dto.request.VerifyOtpRequest;
 import com.example.websocket_demo.enumeration.AccountStatus;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.websocket_demo.dto.request.ForgotPasswordRequest;
+import com.example.websocket_demo.dto.request.ResetPasswordRequest;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -40,6 +44,7 @@ public class AuthServiceImpl implements IAuthService {
     IEmailService emailService;
     SpringTemplateEngine templateEngine;
     IOtpService otpService;
+    PasswordEncoder passwordEncoder;
 
     @NonFinal
     @Value("${app.otp.expires-minutes}")
@@ -74,7 +79,7 @@ public class AuthServiceImpl implements IAuthService {
         }
         
         UserEntity user = userRepository.save(userMapper.toUserEntity(credentials));
-        EmailRequest emailRequest = new EmailRequest(email, "OTP", getEmailContent(otpService.generateAndStoreOtp(email).getData(), OTP_EXPIRES_MINUTES));
+        EmailRequest emailRequest = new EmailRequest(email, "Account Confirmation OTP", getEmailContent(otpService.generateAndStoreOtp(email).getData(), OTP_EXPIRES_MINUTES));
         emailService.sendEmail(emailRequest);
     }
 
@@ -89,6 +94,32 @@ public class AuthServiceImpl implements IAuthService {
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setStatus(AccountStatus.ACTIVE.getValue());
+        userRepository.save(user);
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+        String email = request.getEmail();
+        UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with this email"));
+        
+        String otp = otpService.generateAndStoreOtp(email).getData();
+        EmailRequest emailRequest = new EmailRequest(email, "Reset Password OTP", getEmailContent(otp, OTP_EXPIRES_MINUTES));
+        emailService.sendEmail(emailRequest);
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        String email = request.getEmail();
+        String otp = request.getOtp();
+        String storedOtp = otpService.getOtp(email);
+        if (storedOtp == null || !storedOtp.equals(otp)) {
+            throw new IllegalArgumentException("Invalid or expired OTP");
+        }
+        
+        UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 

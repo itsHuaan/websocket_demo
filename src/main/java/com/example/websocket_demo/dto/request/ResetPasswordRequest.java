@@ -10,15 +10,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SignUpRequest {
+public class ResetPasswordRequest {
     @Schema(example = "your_name@gmail.com")
     @NonNull
     String email;
-    @Schema(example = "your_username")
+    @Schema(example = "123456")
     @NonNull
-    String username;
-    @Schema(example = "your_password")
+    String otp;
+    @Schema(example = "your_new_password")
     @NonNull
-    String password;
+    String newPassword;
 }
-
