@@ -1,10 +1,11 @@
 package com.example.websocket_demo.service.chat.impl;
 
-import com.example.websocket_demo.dto.ChatMessageDto;
+import com.example.websocket_demo.dto.request.ChatMessageRequest;
+import com.example.websocket_demo.dto.response.ChatMessageResponse;
+import com.example.websocket_demo.dto.response.ChatNotificationResponse;
 import com.example.websocket_demo.entity.ChatMessageEntity;
 import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.mapper.ChatMapper;
-import com.example.websocket_demo.model.ChatMessageModel;
 import com.example.websocket_demo.repository.IChatMessageRepository;
 import com.example.websocket_demo.repository.IChatRoomRepository;
 import com.example.websocket_demo.service.chat.IChatMessageService;
@@ -15,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,16 +32,17 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     ChatMapper chatMapper;
     IChatRoomService chatRoomService;
     IChatRoomRepository chatRoomRepository;
+    SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public ChatMessageDto getChatMessageById(Long id) {
+    public ChatMessageResponse getChatMessageById(Long id) {
         return chatMessageRepository.findById(id)
                 .map(chatMapper::toChatMessageDto)
                 .orElseThrow(() -> new NoSuchElementException("Message not found"));
     }
 
     @Override
-    public int saveMessage(ChatMessageModel message) {
+    public ChatMessageResponse saveMessage(ChatMessageRequest message) {
         if (Objects.equals(message.getSenderId(), message.getRecipientId())) {
             throw new IllegalArgumentException("You can't send messages to yourself");
         }
@@ -49,12 +52,11 @@ public class ChatMessageServiceImpl implements IChatMessageService {
         message.setChatId(chatRoomId);
         ChatMessageEntity entity = chatMapper.toChatMessageEntity(message);
         chatMessageRepository.save(entity);
-        message.setId(entity.getChatMessageId());
-        return 1;
+        return chatMapper.toChatMessageDto(entity);
     }
 
     @Override
-    public Page<ChatMessageDto> getChatMessages(Long senderId, Long recipientId, Pageable pageable) {
+    public Page<ChatMessageResponse> getChatMessages(Long senderId, Long recipientId, Pageable pageable) {
         return chatRoomService.getChatRoomId(senderId, recipientId, false)
                 .map(chatId -> chatMessageRepository.findAllByChatIdOrderByCreatedAtDesc(chatId, pageable)
                         .map(chatMapper::toChatMessageDto))
@@ -62,16 +64,31 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     }
 
     @Override
-    public int deleteMessage(Long senderId, Long recipientId) {
-        try {
-            var chatRoomId = chatRoomService.getChatRoomId(senderId, recipientId, false).orElseThrow(() -> new IllegalArgumentException("Can't find chat room"));
-            List<ChatRoomEntity> chatRooms = chatRoomRepository.findChatRoomEntitiesByChatId(chatRoomId);
-            chatRoomRepository.deleteAll(chatRooms);
-            List<ChatMessageEntity> chatMessages = chatMessageRepository.findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(chatRoomId);
-            chatMessageRepository.deleteAll(chatMessages);
-            return 1;
-        } catch (IllegalArgumentException e) {
-            return 0;
-        }
+    public void deleteMessage(Long senderId, Long recipientId) {
+        var chatRoomId = chatRoomService.getChatRoomId(senderId, recipientId, false)
+                .orElseThrow(() -> new NoSuchElementException("Chat room not found"));
+        List<ChatRoomEntity> chatRooms = chatRoomRepository.findChatRoomEntitiesByChatId(chatRoomId);
+        chatRoomRepository.deleteAll(chatRooms);
+        List<ChatMessageEntity> chatMessages = chatMessageRepository.findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(chatRoomId);
+        chatMessageRepository.deleteAll(chatMessages);
+    }
+
+    @Override
+    public void processMessage(ChatMessageRequest message) {
+        ChatMessageResponse savedMessage = saveMessage(message);
+        log.info("Incoming message from {} to {} in {}: {}", message.getSenderId(), message.getRecipientId(), message.getChatId(), message.getMessage());
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(savedMessage.getRecipientId()),
+                "/queue/messages",
+                ChatNotificationResponse.builder()
+                        .id(savedMessage.getMessageId())
+                        .senderId(savedMessage.getSenderId())
+                        .recipientId(savedMessage.getRecipientId())
+                        .message(savedMessage.getMessage())
+                        .mediaUrls(savedMessage.getMediaUrls())
+                        .sentAt(savedMessage.getSentAt())
+                        .senderVisibility(savedMessage.getSenderVisibility())
+                        .recipientVisibility(savedMessage.getRecipientVisibility())
+                        .build());
     }
 }

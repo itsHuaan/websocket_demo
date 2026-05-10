@@ -1,98 +1,92 @@
 package com.example.websocket_demo.mapper;
 
-import com.example.websocket_demo.dto.ChatHistoryDto;
-import com.example.websocket_demo.dto.ChatMessageDto;
-import com.example.websocket_demo.dto.ChatRoomDto;
+import com.example.websocket_demo.dto.request.ChatMessageRequest;
+import com.example.websocket_demo.dto.response.ChatHistoryResponse;
+import com.example.websocket_demo.dto.response.ChatMessageResponse;
+import com.example.websocket_demo.dto.response.ChatRoomResponse;
 import com.example.websocket_demo.entity.ChatMediaEntity;
 import com.example.websocket_demo.entity.ChatMessageEntity;
 import com.example.websocket_demo.entity.ChatRoomEntity;
-import com.example.websocket_demo.entity.UserEntity;
-import com.example.websocket_demo.model.ChatMessageModel;
 import com.example.websocket_demo.repository.IChatMessageRepository;
 import com.example.websocket_demo.repository.IUserRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Component;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@Component
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ChatMapper {
-    IUserRepository userRepository;
-    IChatMessageRepository chatMessageRepository;
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public abstract class ChatMapper {
+    @Autowired
+    protected IUserRepository userRepository;
+    @Autowired
+    protected IChatMessageRepository chatMessageRepository;
 
-    public ChatRoomDto toChatRoomDto(ChatRoomEntity chatRoomEntity) {
-        return ChatRoomDto.builder()
-                .chatId(chatRoomEntity.getChatId())
-                .sender(userRepository.findById(chatRoomEntity.getSenderId()).orElseThrow(
-                        () -> new NoSuchElementException("User not found")).getUsername())
-                .recipient(userRepository.findById(chatRoomEntity.getRecipientId()).orElseThrow(
-                        () -> new NoSuchElementException("User not found")).getUsername())
-                .messages(chatMessageRepository.findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(String.format("%s_%s", chatRoomEntity.getSenderId(), chatRoomEntity.getRecipientId())).stream()
-                        .map(this::chatHistoryDto)
-                        .toList())
-                .build();
-    }
+    @Mapping(target = "sender", expression = "java(getUsername(chatRoomEntity.getSenderId()))")
+    @Mapping(target = "recipient", expression = "java(getUsername(chatRoomEntity.getRecipientId()))")
+    @Mapping(target = "messages", expression = "java(getMessages(chatRoomEntity))")
+    public abstract ChatRoomResponse toChatRoomDto(ChatRoomEntity chatRoomEntity);
 
-    public ChatMessageEntity toChatMessageEntity(ChatMessageModel chatMessageModel) {
-        ChatMessageEntity chatMessage = ChatMessageEntity.builder()
-                .chatId(chatMessageModel.getChatId())
-                .senderId(chatMessageModel.getSenderId())
-                .recipientId(chatMessageModel.getRecipientId())
-                .message(chatMessageModel.getMessage())
-                .senderVisibility(chatMessageModel.getSenderVisibility())
-                .recipientVisibility(chatMessageModel.getRecipientVisibility())
-                .build();
-        if (chatMessageModel.getMediaUrls() != null) {
-            List<ChatMediaEntity> chatMedias = chatMessageModel.getMediaUrls().stream()
+    @Mapping(target = "chatMedias", ignore = true)
+    @Mapping(target = "chatMessageId", ignore = true)
+    public abstract ChatMessageEntity toChatMessageEntity(ChatMessageRequest chatMessageRequest);
+
+    @AfterMapping
+    protected void linkChatMedias(ChatMessageRequest chatMessageRequest, @MappingTarget ChatMessageEntity chatMessage) {
+        if (chatMessageRequest.getMediaUrls() != null) {
+            List<ChatMediaEntity> chatMedias = chatMessageRequest.getMediaUrls().stream()
                     .map(url -> ChatMediaEntity.builder()
                             .mediaUrl(url)
                             .chatMessage(chatMessage)
                             .build())
                     .toList();
             chatMessage.setChatMedias(chatMedias);
-        } else {
-            chatMessage.setChatMedias(null);
         }
-        return chatMessage;
     }
 
-    public ChatMessageDto toChatMessageDto(ChatMessageEntity chatMessageEntity) {
-        UserEntity sender = userRepository.findById(chatMessageEntity.getSenderId()).orElseThrow(
-                () -> new NoSuchElementException("Sender not found")
-        );
-        UserEntity recipient = userRepository.findById(chatMessageEntity.getRecipientId()).orElseThrow(
-                () -> new NoSuchElementException("Recipient not found")
-        );
+    @Mapping(target = "messageId", source = "chatMessageId")
+    @Mapping(target = "senderUsername", expression = "java(getUsername(chatMessageEntity.getSenderId()))")
+    @Mapping(target = "recipientUsername", expression = "java(getUsername(chatMessageEntity.getRecipientId()))")
+    @Mapping(target = "mediaUrls", expression = "java(getMediaUrls(chatMessageEntity))")
+    @Mapping(target = "sentAt", source = "createdAt")
+    public abstract ChatMessageResponse toChatMessageDto(ChatMessageEntity chatMessageEntity);
 
-        return ChatMessageDto.builder()
-                .messageId(chatMessageEntity.getChatMessageId())
-                .chatId(chatMessageEntity.getChatId())
-                .senderId(sender.getUserId())
-                .senderUsername(sender.getUsername())
-                .recipientId(recipient.getUserId())
-                .recipientUsername(recipient.getUsername())
-                .message(chatMessageEntity.getMessage())
-                .mediaUrls(chatMessageEntity.getChatMedias().stream()
-                        .map(ChatMediaEntity::getMediaUrl)
-                        .toList())
-                .sentAt(chatMessageEntity.getCreatedAt())
-                .build();
+    @Mapping(target = "sender", expression = "java(getUsername(chatMessageEntity.getSenderId()))")
+    @Mapping(target = "profilePicture", expression = "java(getProfilePicture(chatMessageEntity.getSenderId()))")
+    @Mapping(target = "sentAt", source = "createdAt")
+    public abstract ChatHistoryResponse toChatHistoryDto(ChatMessageEntity chatMessageEntity);
+
+    @Named("getUsername")
+    protected String getUsername(Long userId) {
+        if (userId == null) return null;
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NoSuchElementException("User not found with id: " + userId)).getUsername();
     }
 
-    public ChatHistoryDto chatHistoryDto(ChatMessageEntity chatMessageEntity) {
-        UserEntity sender = userRepository.findById(chatMessageEntity.getSenderId()).orElseThrow(
-                () -> new NoSuchElementException("User not found")
-        );
-        return ChatHistoryDto.builder()
-                .sender(sender.getUsername())
-                .profilePicture(sender.getProfilePicture())
-                .message(chatMessageEntity.getMessage())
-                .sentAt(chatMessageEntity.getCreatedAt())
-                .build();
+    @Named("getProfilePicture")
+    protected String getProfilePicture(Long userId) {
+        if (userId == null) return null;
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NoSuchElementException("User not found with id: " + userId)).getProfilePicture();
+    }
+
+    protected List<ChatHistoryResponse> getMessages(ChatRoomEntity chatRoomEntity) {
+        String chatId = chatRoomEntity.getChatId();
+        return chatMessageRepository.findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(chatId).stream()
+                .map(this::toChatHistoryDto)
+                .toList();
+    }
+
+    protected List<String> getMediaUrls(ChatMessageEntity entity) {
+        if (entity.getChatMedias() == null) return Collections.emptyList();
+        return entity.getChatMedias().stream()
+                .map(ChatMediaEntity::getMediaUrl)
+                .toList();
     }
 }

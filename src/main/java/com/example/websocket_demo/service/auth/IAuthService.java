@@ -1,11 +1,16 @@
 package com.example.websocket_demo.service.auth;
 
-import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.SignInRequest;
-import com.example.websocket_demo.model.SignUpRequest;
+import com.example.websocket_demo.dto.response.SignInResponse;
+import com.example.websocket_demo.dto.request.SignInRequest;
+import com.example.websocket_demo.dto.request.SignUpRequest;
+
+import com.example.websocket_demo.dto.request.VerifyOtpRequest;
 
 public interface IAuthService {
-    ApiResponse<?> signIn(SignInRequest credentials);
+    SignInResponse signIn(SignInRequest credentials);
 
-    ApiResponse<?> signUp(SignUpRequest credentials);
+    void signUp(SignUpRequest credentials);
+
+    void verifySignUp(VerifyOtpRequest request);
 }
+

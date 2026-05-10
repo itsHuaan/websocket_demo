@@ -1,79 +1,165 @@
 package com.example.websocket_demo.service.product.impl;
 
-import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.dto.ProductDto;
-import com.example.websocket_demo.dto.ProductSummaryDto;
-import com.example.websocket_demo.model.ProductRequest;
-import com.example.websocket_demo.service.product.IProductActionService;
+import com.example.websocket_demo.common.DataUtil;
+import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.dto.request.ProductRequest;
+import com.example.websocket_demo.dto.response.ProductResponse;
+import com.example.websocket_demo.dto.response.ProductSummaryResponse;
+import com.example.websocket_demo.entity.*;
+import com.example.websocket_demo.mapper.ProductMapper;
+import com.example.websocket_demo.repository.*;
 import com.example.websocket_demo.service.product.IProductService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.websocket_demo.repository.specification.ProductSpecification;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.io.IOException;
+import java.util.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductServiceImpl implements IProductService {
-    IProductActionService productActionService;
+    IUserRepository userRepository;
+    IProductRepository productRepository;
+    IProductOptionRepository productOptionRepository;
+    IProductSkuRepository productSkuRepository;
+    IProductOptionValueRepository productOptionValueRepository;
+    IProductSkuValueRepository productSkuValueRepository;
+    ProductMapper productMapper;
+    CloudinaryService mediaUploader;
 
+    @Transactional
     @Override
-    public ApiResponse<?> addProduct(String productJson, MultipartFile[] productMedia, MultipartFile[] skuMedia) {
-        try {
-            ProductRequest productRequest = new ObjectMapper().readValue(productJson, ProductRequest.class);
-            productRequest.setMedia(productMedia);
-            return productActionService.addProduct(productRequest) == 1
-                    ? new ApiResponse<>(HttpStatus.CREATED, "Product added successfully")
-                    : new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to add product");
-        } catch (JsonProcessingException e) {
-            log.error("Error parsing JSON: {}", e.getMessage());
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, "Invalid JSON");
-        } catch (IllegalArgumentException e) {
-            log.error("Error adding product: {}", e.getMessage());
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            log.error("An unexpected error occurred: {}", e.getMessage());
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+    public void addProduct(ProductRequest productRequest) {
+        if (DataUtil.hasNullField(productRequest)) {
+            throw new IllegalArgumentException("Please fill all the required fields");
+        }
+        if (productRequest.getMedia() == null) {
+            throw new IllegalArgumentException("Product needs to have at least media items");
+        }
+
+        UserEntity user = userRepository.findById(productRequest.getUserId()).orElseThrow(
+                () -> new NoSuchElementException("User not found")
+        );
+        ProductEntity product = ProductEntity.builder()
+                .productName(productRequest.getProductName())
+                .user(user)
+                .build();
+        
+        List<ProductMediaEntity> productMedias = Arrays.stream(productRequest.getMedia())
+                .map(media -> {
+                    try {
+                        return ProductMediaEntity.builder()
+                                .product(product)
+                                .mediaUrl(mediaUploader.uploadMediaFile(media))
+                                .build();
+                    } catch (IOException e) {
+                        log.error("Failed to parse media: {}", e.getMessage());
+                        throw new RuntimeException("Failed to upload media", e);
+                    }
+                }).toList();
+        product.setMediaUrls(productMedias);
+        productRepository.save(product);
+        
+        if (productRequest.getOptions() == null || productRequest.getOptions().isEmpty()) {
+            handleNoOptionCase(product, productRequest.getSkus());
+        } else {
+            handleOptionCases(product, productRequest.getOptions(), productRequest.getSkus());
         }
     }
 
     @Override
-    public ApiResponse<?> getAll() {
-        List<ProductSummaryDto> products = productActionService.getAll();
-        return getApiResponse(products);
+    public List<ProductSummaryResponse> getAll() {
+        return productRepository.findAll(Specification.where(
+                        ProductSpecification.isNull(BaseEntity.Fields.deletedAt)
+                )).stream()
+                .map(productMapper::toProductSummaryDto)
+                .toList();
     }
 
     @Override
-    public ApiResponse<?> getAllByUser(Long userId) {
-        List<ProductSummaryDto> products = productActionService.getAllByUser(userId);
-        return getApiResponse(products);
-    }
-
-    private ApiResponse<?> getApiResponse(List<ProductSummaryDto> products) {
-        return products != null
-                ? new ApiResponse<>(HttpStatus.OK, "Product fetched", products)
-                : new ApiResponse<>(HttpStatus.NO_CONTENT, "No products fetched");
+    public List<ProductSummaryResponse> getAllByUser(Long userId) {
+        return productRepository.findAll(Specification.where(
+                        ProductSpecification.isNotDeleted()
+                                .and(ProductSpecification.equal("user", userId))
+                )).stream()
+                .map(productMapper::toProductSummaryDto)
+                .toList();
     }
 
     @Override
-    public ApiResponse<?> getById(Long id) {
-        try {
-            ProductDto product = productActionService.getById(id);
-            return new ApiResponse<>(HttpStatus.OK, "Product fetched", product);
-        } catch (NoSuchElementException e) {
-            return new ApiResponse<>(HttpStatus.NOT_FOUND, "Product not found");
-        } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+    public ProductResponse getById(Long id) {
+        return productMapper.toProductDto(productRepository.findByProductIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("Product not found")
+        ));
+    }
+
+    private void handleNoOptionCase(ProductEntity product, List<ProductRequest.SkuRequest> skus) {
+        if (skus == null || skus.isEmpty()) {
+            throw new IllegalArgumentException("Product must have at least one SKU with a price.");
+        }
+
+        for (ProductRequest.SkuRequest skuRequest : skus) {
+            ProductSkuEntity sku = ProductSkuEntity.builder()
+                    .product(product)
+                    .skuValues(new HashSet<>())
+                    .price(skuRequest.getPrice())
+                    .build();
+            productSkuRepository.save(sku);
+            ProductSkuValueEntity skuValue = ProductSkuValueEntity.builder()
+                    .sku(sku)
+                    .option(null)
+                    .optionValue(null)
+                    .build();
+            productSkuValueRepository.save(skuValue);
+        }
+    }
+
+    private void handleOptionCases(ProductEntity product, List<ProductRequest.OptionRequest<?>> options, List<ProductRequest.SkuRequest> skus) {
+        for (ProductRequest.OptionRequest<?> optionRequest : options) {
+            ProductOptionEntity option = ProductOptionEntity.builder()
+                    .optionName(optionRequest.getName())
+                    .product(product)
+                    .build();
+            option = productOptionRepository.save(option);
+
+            for (Object value : optionRequest.getValues()) {
+                ProductOptionValueEntity optionValue = ProductOptionValueEntity.builder()
+                        .valueName(value.toString())
+                        .option(option)
+                        .build();
+                productOptionValueRepository.save(optionValue);
+            }
+        }
+
+        for (ProductRequest.SkuRequest skuRequest : skus) {
+            ProductSkuEntity sku = ProductSkuEntity.builder()
+                    .product(product)
+                    .price(skuRequest.getPrice())
+                    .build();
+            sku = productSkuRepository.save(sku);
+
+            for (ProductRequest.SkuRequest.SkuValueRequest skuValueRequest : skuRequest.getValues()) {
+                ProductOptionEntity option = productOptionRepository.findByProductAndOptionName(product, skuValueRequest.getOption())
+                        .orElseThrow(() -> new NoSuchElementException("Option not found: " + skuValueRequest.getOption()));
+
+                ProductOptionValueEntity optionValue = productOptionValueRepository.findByOptionAndValueName(option, skuValueRequest.getValue())
+                        .orElseThrow(() -> new NoSuchElementException("Option Value not found: " + skuValueRequest.getValue()));
+
+                ProductSkuValueEntity skuValue = ProductSkuValueEntity.builder()
+                        .sku(sku)
+                        .option(option)
+                        .optionValue(optionValue)
+                        .build();
+                productSkuValueRepository.save(skuValue);
+            }
         }
     }
 }

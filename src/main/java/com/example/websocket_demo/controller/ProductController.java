@@ -1,8 +1,13 @@
 package com.example.websocket_demo.controller;
 
-import com.example.websocket_demo.dto.ApiResponse;
+import com.example.websocket_demo.dto.request.ProductRequest;
+import com.example.websocket_demo.dto.response.ApiResponse;
+import com.example.websocket_demo.dto.response.ProductResponse;
+import com.example.websocket_demo.dto.response.ProductSummaryResponse;
 import com.example.websocket_demo.service.product.IProductService;
 import com.example.websocket_demo.common.Const;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @Tag(name = "Product Controller")
 @RequestMapping(value = Const.API_PREFIX_V1 + "/products")
@@ -25,29 +32,37 @@ public class ProductController {
 
     @Operation(summary = "Add a product")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> addProduct(@RequestPart("product") @Valid String productJson,
+    public ResponseEntity<ApiResponse<Void>> addProduct(@RequestPart("product") @Valid String productJson,
                                         @RequestPart(value = "productMedia", required = false) MultipartFile[] productMedia,
-                                        @RequestPart(value = "skuMedia", required = false) MultipartFile[] skuMedia) {
-        ApiResponse<?> response = productService.addProduct(productJson, productMedia, skuMedia);
-        return ResponseEntity.status(response.getCode()).body(response);
+                                        @RequestPart(value = "skuMedia", required = false) MultipartFile[] skuMedia) throws JsonProcessingException {
+        ProductRequest productRequest = new ObjectMapper().readValue(productJson, ProductRequest.class);
+        productRequest.setMedia(productMedia);
+        productService.addProduct(productRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>(HttpStatus.CREATED, "Product added successfully"));
     }
 
     @Operation(summary = "Get all products")
     @GetMapping
-    public ResponseEntity<?> getAllProducts() {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAll());
+    public ResponseEntity<ApiResponse<List<ProductSummaryResponse>>> getAllProducts() {
+        List<ProductSummaryResponse> products = productService.getAll();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Product fetched", products));
     }
 
     @Operation(summary = "Get all products by user")
     @GetMapping("user/{id}")
-    public ResponseEntity<?> getAllProductsByUser(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllByUser(id));
+    public ResponseEntity<ApiResponse<List<ProductSummaryResponse>>> getAllProductsByUser(@PathVariable Long id) {
+        List<ProductSummaryResponse> products = productService.getAllByUser(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Product fetched", products));
     }
 
     @Operation(summary = "Get product by id")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        ApiResponse<?> response = productService.getById(id);
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id) {
+        ProductResponse product = productService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Product fetched", product));
     }
 }

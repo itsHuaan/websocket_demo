@@ -1,20 +1,23 @@
 package com.example.websocket_demo.service.user;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.UserModel;
+import com.example.websocket_demo.dto.response.UserResponse;
+import com.example.websocket_demo.dto.request.UserRequest;
 
 public interface IUserService {
-    ApiResponse<?> getAllUsers(Pageable pageable);
+    Page<UserResponse> getAllUsers(Pageable pageable);
 
-    ApiResponse<?> createUser(UserModel userModel);
+    UserResponse createUser(UserRequest UserRequest);
 
-    ApiResponse<?> updateUser(Long id, UserModel userModel);
+    void updateUser(Long id, UserRequest UserRequest);
 
-    ApiResponse<?> getUserByUsername(String username);
+    UserResponse getUserByUsername(String username);
 
-    ApiResponse<?> getUserById(Long id);
+    UserResponse getUserById(Long id);
 
-    ApiResponse<?> deleteUser(Long id, Integer isHardDelete);
+    void deleteUser(Long id, Integer isHardDelete);
 }
+
+

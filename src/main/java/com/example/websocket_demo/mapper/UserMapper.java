@@ -1,73 +1,75 @@
 package com.example.websocket_demo.mapper;
 
-import java.io.IOException;
-import java.util.NoSuchElementException;
-
-import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
-import com.example.websocket_demo.enumeration.AccountStatus;
-import com.example.websocket_demo.model.SignUpRequest;
-import com.example.websocket_demo.repository.IRoleRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-
-import com.example.websocket_demo.dto.UserDto;
+import com.example.websocket_demo.dto.request.SignUpRequest;
+import com.example.websocket_demo.dto.request.UserRequest;
+import com.example.websocket_demo.dto.response.UserResponse;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
-import com.example.websocket_demo.model.UserModel;
+import com.example.websocket_demo.repository.IRoleRepository;
+import com.example.websocket_demo.service.media.CloudinaryService;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
-@Component
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserMapper {
-    PasswordEncoder passwordEncoder;
-    CloudinaryService mediaUploader;
-    IRoleRepository roleRepository;
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public abstract class UserMapper {
+    @Autowired
+    protected PasswordEncoder passwordEncoder;
+    @Autowired
+    protected CloudinaryService mediaUploader;
+    @Autowired
+    protected IRoleRepository roleRepository;
 
-    public UserDto toUserDto(UserEntity userEntity) {
-        return UserDto.builder()
-                .userId(userEntity.getUserId())
-                .email(userEntity.getEmail())
-                .username(userEntity.getUsername())
-                .profilePicture(userEntity.getProfilePicture())
-                .status(String.valueOf(userEntity.getStatus()))
-                .build();
+    @Mapping(target = "status", expression = "java(mapStatus(userEntity.getStatus()))")
+    @Mapping(target = "createdAt", expression = "java(formatDate(userEntity.getCreatedAt()))")
+    @Mapping(target = "modifiedAt", expression = "java(formatDate(userEntity.getModifiedAt()))")
+    @Mapping(target = "deletedAt", expression = "java(formatDate(userEntity.getDeletedAt()))")
+    public abstract UserResponse toUserDto(UserEntity userEntity);
+
+    @Mapping(target = "password", expression = "java(passwordEncoder.encode(userRequest.getPassword()))")
+    @Mapping(target = "profilePicture", expression = "java(uploadProfilePicture(userRequest.getProfilePicture()))")
+    @Mapping(target = "role", expression = "java(getRole(userRequest.getRoleId()))")
+    @Mapping(target = "status", expression = "java(com.example.websocket_demo.enumeration.AccountStatus.ACTIVE.getValue())")
+    public abstract UserEntity toUserEntity(UserRequest userRequest) throws IOException;
+
+    @Mapping(target = "password", expression = "java(passwordEncoder.encode(signUpRequest.getPassword()))")
+    @Mapping(target = "status", expression = "java(com.example.websocket_demo.enumeration.AccountStatus.INACTIVE.getValue())")
+    @Mapping(target = "role", expression = "java(getDefaultRole())")
+    public abstract UserEntity toUserEntity(SignUpRequest signUpRequest);
+
+    protected String mapStatus(int status) {
+        if (status == com.example.websocket_demo.enumeration.AccountStatus.ACTIVE.getValue()) return "Active";
+        if (status == com.example.websocket_demo.enumeration.AccountStatus.INACTIVE.getValue()) return "Inactive";
+        if (status == com.example.websocket_demo.enumeration.AccountStatus.SUSPENDED.getValue()) return "Suspended";
+        return "Unknown";
     }
 
-    public UserEntity toUserEntity(UserModel userModel) throws IOException {
-        RoleEntity role = new RoleEntity();
-        if (userModel.getRoleId() != null) {
-            role = roleRepository.findById(userModel.getRoleId()).orElseThrow(
+    protected String formatDate(LocalDateTime date) {
+        if (date == null) return null;
+        return com.example.websocket_demo.common.DateUtil.formatDate(date, com.example.websocket_demo.common.Const.DateFormat.HHmmss_MMMddyyyy);
+    }
+
+    protected String uploadProfilePicture(MultipartFile file) throws IOException {
+        return file != null ? mediaUploader.uploadMediaFile(file) : null;
+    }
+
+    protected RoleEntity getRole(Long roleId) {
+        if (roleId != null) {
+            return roleRepository.findById(roleId).orElseThrow(
                     () -> new NoSuchElementException("Role not found")
             );
-        } else {
-            role.setRoleId(2L);
         }
-        return UserEntity.builder()
-                .email(userModel.getEmail())
-                .username(userModel.getUsername())
-                .password(passwordEncoder.encode(userModel.getPassword()))
-                .profilePicture(userModel.getProfilePicture() != null
-                        ? mediaUploader.uploadMediaFile(userModel.getProfilePicture())
-                        : null)
-                .role(role)
-                .status(AccountStatus.ACTIVE.getValue())
-                .build();
+        return getDefaultRole();
     }
 
-    public UserEntity toUserEntity(SignUpRequest signUpRequest) {
-        RoleEntity role = RoleEntity.builder()
-                .roleId(2L)
-                .build();
-        return UserEntity.builder()
-                .email(signUpRequest.getEmail())
-                .username(signUpRequest.getUsername())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .status(AccountStatus.INACTIVE.getValue())
-                .role(role)
-                .build();
+    protected RoleEntity getDefaultRole() {
+        return RoleEntity.builder().roleId(2L).build();
     }
 }

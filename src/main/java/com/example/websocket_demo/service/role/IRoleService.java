@@ -1,11 +1,10 @@
 package com.example.websocket_demo.service.role;
 
-import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.RoleModel;
-
-import javax.management.relation.Role;
+import com.example.websocket_demo.dto.request.RoleRequest;
 
 public interface IRoleService {
-    ApiResponse<?> addRole(RoleModel role);
-    ApiResponse<?> updateRole(Long id, String roleName);
+    void addRole(RoleRequest role);
+    void updateRole(Long id, String roleName);
 }
+
+

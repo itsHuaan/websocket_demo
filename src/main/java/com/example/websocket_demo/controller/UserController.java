@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.UserModel;
+import com.example.websocket_demo.dto.response.ApiResponse;
+import com.example.websocket_demo.dto.request.UserRequest;
 import com.example.websocket_demo.service.user.IUserService;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.validation.PageableValidation;
@@ -26,46 +26,50 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @GetMapping
-    public ResponseEntity<?> getUser(@RequestParam(required = false) Integer page,
+    public ResponseEntity<ApiResponse<?>> getUser(@RequestParam(required = false) Integer page,
                                      @RequestParam(required = false) Integer size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(userManagementService.getAllUsers(PageableValidation.setDefault(page, size)));
+                .body(new ApiResponse<>(HttpStatus.OK, "Users fetched", userManagementService.getAllUsers(PageableValidation.setDefault(page, size))));
     }
 
     @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        ApiResponse<?> response = userManagementService.getUserById(id);
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<?>> getUserById(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "User fetched", userManagementService.getUserById(id)));
     }
 
     @Operation(summary = "Get user by username")
     @GetMapping("/u/{username}")
-    public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
-        ApiResponse<?> response = userManagementService.getUserByUsername(username);
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<?>> getUserByUsername(@PathVariable String username) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "User fetched", userManagementService.getUserByUsername(username)));
     }
 
     @Operation(summary = "Create a new user")
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserModel userModel) {
-        ApiResponse<?> response = userManagementService.createUser(userModel);
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<?>> createUser(@RequestBody UserRequest UserRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>(HttpStatus.CREATED, "User created successfully", userManagementService.createUser(UserRequest)));
     }
 
     @Operation(summary = "Update an user")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id,
-                                        UserModel userModel) {
-        ApiResponse<?> response = userManagementService.updateUser(id, userModel);
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<?>> updateUser(@PathVariable Long id,
+                                        UserRequest UserRequest) {
+        userManagementService.updateUser(id, UserRequest);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "User updated successfully"));
     }
 
     @Operation(summary = "Delete an user")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<?>> deleteUser(@PathVariable Long id,
                                         @RequestParam(required = false) Integer isHardDelete) {
-        ApiResponse<?> response = userManagementService.deleteUser(id, isHardDelete);
-        return ResponseEntity.status(response.getCode()).body(response);
+        userManagementService.deleteUser(id, isHardDelete);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "User deleted"));
     }
 }
+
+

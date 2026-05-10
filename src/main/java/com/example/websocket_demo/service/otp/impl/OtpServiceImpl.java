@@ -1,6 +1,6 @@
 package com.example.websocket_demo.service.otp.impl;
 
-import com.example.websocket_demo.dto.ApiResponse;
+import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.service.otp.IOtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -39,3 +39,4 @@ public class OtpServiceImpl implements IOtpService {
         return redisTemplate.opsForValue().get(key);
     }
 }
+

@@ -1,9 +1,10 @@
 package com.example.websocket_demo.controller;
 
-import com.example.websocket_demo.dto.ApiResponse;
-import com.example.websocket_demo.model.RoleModel;
+import com.example.websocket_demo.dto.response.ApiResponse;
+import com.example.websocket_demo.dto.request.RoleRequest;
 import com.example.websocket_demo.service.role.IRoleService;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,16 +25,20 @@ public class RoleController {
 
     @Operation(summary = "Add role", description = "'ROLE_' prefix in role name is optional")
     @PostMapping
-    public ResponseEntity<?> addRole(RoleModel roleModel) {
-        ApiResponse<?> response = roleService.addRole(roleModel);
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<?>> addRole(RoleRequest RoleRequest) {
+        roleService.addRole(RoleRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>(HttpStatus.CREATED, "Role added"));
     }
 
     @Operation(summary = "Update role", description = "'ROLE_' prefix in role name is optional")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRole(@PathVariable Long id,
-                                        @RequestBody RoleModel role) {
-        ApiResponse<?> response = roleService.updateRole(id, role.getRoleName());
-        return ResponseEntity.status(response.getCode()).body(response);
+    public ResponseEntity<ApiResponse<?>> updateRole(@PathVariable Long id,
+                                        @RequestBody RoleRequest role) {
+        roleService.updateRole(id, role.getRoleName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Role updated"));
     }
 }
+
+

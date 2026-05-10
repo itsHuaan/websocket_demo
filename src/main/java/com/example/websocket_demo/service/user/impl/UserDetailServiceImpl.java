@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.example.websocket_demo.configuration.UserDetailsImpl;
+import com.example.websocket_demo.security.domain.UserDetailsImpl;
 import com.example.websocket_demo.repository.IUserRepository;
 
 import lombok.AccessLevel;

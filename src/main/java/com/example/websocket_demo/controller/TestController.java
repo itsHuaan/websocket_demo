@@ -1,14 +1,14 @@
 package com.example.websocket_demo.controller;
 
-import com.example.websocket_demo.model.MediaUploadTestModel;
-import com.example.websocket_demo.service.unclassified.ITestService;
-import com.example.websocket_demo.service.unclassified.impl.MessageService;
+import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
+import com.example.websocket_demo.service.test.ITestService;
+import com.example.websocket_demo.common.i18n.MessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.websocket_demo.dto.ApiResponse;
+import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.common.Const;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,7 +55,7 @@ public class TestController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadMedia(MediaUploadTestModel model) {
+    public ResponseEntity<?> uploadMedia(MediaUploadTestRequest model) {
         ApiResponse<?> response = testService.uploadMedia(model);
         return ResponseEntity.status(response.getCode()).body(response);
     }
@@ -75,3 +75,4 @@ public class TestController {
         ));
     }
 }
+

@@ -1,0 +1,144 @@
+package com.example.websocket_demo.service.test.impl;
+
+import com.example.websocket_demo.service.test.ITestService;
+import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.dto.response.ApiResponse;
+import com.example.websocket_demo.dto.response.TestResponse;
+import com.example.websocket_demo.entity.TestEntity;
+import com.example.websocket_demo.entity.TestMediaEntity;
+import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
+import com.example.websocket_demo.repository.ITestRepository;
+import com.example.websocket_demo.common.DateUtil;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class TestServiceImpl implements ITestService {
+    CloudinaryService mediaUploader;
+    ITestRepository testRepository;
+
+    private TestResponse toTestDto(TestEntity testEntity) {
+        return TestResponse.builder()
+                .testId(testEntity.getId())
+                .mediaUrls(testEntity.getTestMedia().stream()
+                        .map(TestMediaEntity::getMediaUrl)
+                        .toList())
+                .build();
+    }
+
+    private TestEntity toTestEntity(MediaUploadTestRequest testModel) {
+        TestEntity testEntity = TestEntity.builder()
+                .testMedia(new ArrayList<>())
+                .build();
+        List<TestMediaEntity> testMediaEntities = testModel.getMedias() != null
+                ? Arrays.stream(testModel.getMedias())
+                .map(media -> {
+                    try {
+                        return TestMediaEntity.builder()
+                                .testRecord(testEntity)
+                                .mediaUrl(mediaUploader.uploadMediaFile(media))
+                                .build();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList()
+                : null;
+        testEntity.setTestMedia(testMediaEntities);
+        return testEntity;
+    }
+
+    private TestEntity getTestEntity(Long id) {
+        return testRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Test with id " + id + " not found")
+        );
+    }
+
+    @Override
+    public ApiResponse<?> getMedias() {
+        List<TestResponse> testEntities = testRepository.findAll().stream()
+                .map(this::toTestDto)
+                .toList();
+        return new ApiResponse<>(HttpStatus.OK, "Medias fetched successfully", testEntities);
+    }
+
+    @Override
+    public ApiResponse<?> uploadMedia(MediaUploadTestRequest model) {
+        String message;
+        HttpStatus status;
+
+        try {
+            testRepository.save(toTestEntity(model));
+            message = "Media uploaded";
+            status = HttpStatus.CREATED;
+        } catch (RuntimeException e) {
+            message = e.getMessage();
+            status = HttpStatus.BAD_REQUEST;
+        } catch (Exception e) {
+            message = "An unexpected error occurred: " + e.getMessage();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        return new ApiResponse<>(status, message);
+    }
+
+    @Override
+    public ApiResponse<?> updateMedia(Long id, MediaUploadTestRequest model) {
+        return null;
+    }
+
+    @Override
+    public ApiResponse<?> deleteMedia(Long id) {
+        String message;
+        HttpStatus status;
+
+        try {
+            List<String> mediaUrls = getTestEntity(id).getTestMedia().stream()
+                    .map(TestMediaEntity::getMediaUrl)
+                    .toList();
+            for (String mediaUrl : mediaUrls){
+                if (mediaUploader.deleteMediaFile(mediaUrl))
+                {
+                    log.info("Media deleted successfully: {}", mediaUrl);
+                } else {
+                    log.error("Failed to delete media: {}", mediaUrl);
+                }
+            }
+            testRepository.delete(getTestEntity(id));
+            message = "Media deleted";
+            status = HttpStatus.CREATED;
+        } catch (RuntimeException e) {
+            message = e.getMessage();
+            status = HttpStatus.BAD_REQUEST;
+        } catch (Exception e) {
+            message = "An unexpected error occurred: " + e.getMessage();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ApiResponse<>(status, message);
+    }
+
+    @Override
+    public ApiResponse<?> keepServiceAlive() {
+        String time = DateUtil.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy");
+        log.info("Service is alive: {}", time);
+        return new ApiResponse<>(
+                HttpStatus.OK,
+                time,
+                testRepository.getAllIds(),
+                LocalDateTime.of(2001, 9, 19, 0, 0));
+    }
+
+}
+

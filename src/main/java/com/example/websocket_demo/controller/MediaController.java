@@ -1,7 +1,7 @@
 package com.example.websocket_demo.controller;
 
-import com.example.websocket_demo.configuration.cloudinary.CloudinaryService;
-import com.example.websocket_demo.dto.ApiResponse;
+import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.common.Const;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -65,3 +65,4 @@ public class MediaController {
         }
     }
 }
+

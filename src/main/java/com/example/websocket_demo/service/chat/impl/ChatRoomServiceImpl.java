@@ -1,13 +1,13 @@
 package com.example.websocket_demo.service.chat.impl;
 
-import com.example.websocket_demo.dto.ChatRoomDto;
-import com.example.websocket_demo.dto.ChatUserDto;
+import com.example.websocket_demo.dto.response.ChatRoomResponse;
+import com.example.websocket_demo.dto.response.ChatUserResponse;
 import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.mapper.ChatMapper;
 import com.example.websocket_demo.repository.IChatRoomRepository;
 import com.example.websocket_demo.repository.IUserRepository;
 import com.example.websocket_demo.service.chat.IChatRoomService;
-import com.example.websocket_demo.specification.ChatSpecification;
+import com.example.websocket_demo.repository.specification.ChatSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -50,12 +50,12 @@ public class ChatRoomServiceImpl implements IChatRoomService {
     }
 
     @Override
-    public ChatRoomDto getChatRoom(Long senderId, Long recipientId) {
+    public ChatRoomResponse getChatRoom(Long senderId, Long recipientId) {
         return chatMapper.toChatRoomDto(chatRoomRepository.findChatRoomEntityByChatId(getChatRoomId(senderId, recipientId, false).orElse(null)));
     }
 
     @Override
-    public List<ChatUserDto> getChatUsers(Long senderId) {
+    public List<ChatUserResponse> getChatUsers(Long senderId) {
         return List.of();
     }
 
@@ -81,3 +81,4 @@ public class ChatRoomServiceImpl implements IChatRoomService {
         return chatId;
     }
 }
+
