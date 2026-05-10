@@ -24,7 +24,7 @@ public class OtpServiceImpl implements IOtpService {
     public ApiResponse<String> generateAndStoreOtp(String email) {
         SecureRandom secureRandom = new SecureRandom();
         StringBuilder otp = new StringBuilder(OTP_LENGTH);
-        String key = "otp: " + email;
+        String key = "otp:" + email;
         for (int i = 0; i < OTP_LENGTH; i++) {
             int index = secureRandom.nextInt(SALT_CHARS.length());
             otp.append(SALT_CHARS.charAt(index));
@@ -35,7 +35,7 @@ public class OtpServiceImpl implements IOtpService {
 
     @Override
     public String getOtp(String email) {
-        String key = "otp: " + email;
+        String key = "otp:" + email;
         return redisTemplate.opsForValue().get(key);
     }
 }
