@@ -6,5 +6,9 @@ public interface IOtpService {
     ApiResponse<String> generateAndStoreOtp(String email);
 
     String getOtp(String email);
+
+    boolean isOtpUsed(String email);
+
+    void markOtpAsUsed(String email);
 }
 

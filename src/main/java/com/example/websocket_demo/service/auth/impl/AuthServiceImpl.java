@@ -91,10 +91,14 @@ public class AuthServiceImpl implements IAuthService {
         if (storedOtp == null || !storedOtp.equals(otp)) {
             throw new IllegalArgumentException("Invalid or expired OTP");
         }
+        if (otpService.isOtpUsed(email)) {
+            throw new IllegalArgumentException("OTP has already been used");
+        }
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setStatus(AccountStatus.ACTIVE.getValue());
         userRepository.save(user);
+        otpService.markOtpAsUsed(email);
     }
 
     @Override
@@ -116,11 +120,15 @@ public class AuthServiceImpl implements IAuthService {
         if (storedOtp == null || !storedOtp.equals(otp)) {
             throw new IllegalArgumentException("Invalid or expired OTP");
         }
+        if (otpService.isOtpUsed(email)) {
+            throw new IllegalArgumentException("OTP has already been used");
+        }
         
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+        otpService.markOtpAsUsed(email);
     }
 
     private String getEmailContent(String otp, int expireMinute){

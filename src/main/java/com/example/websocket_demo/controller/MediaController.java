@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +23,23 @@ import java.util.List;
 @RequestMapping(value = Const.API_PREFIX_V1 + "/media")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Log4j2
 public class MediaController {
     CloudinaryService mediaUploader;
+
+    @GetMapping
+    public ResponseEntity<?> getAllMedia() {
+        try {
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Retrieved media", mediaUploader.getAllMedia()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to retrieve media: " + e.getMessage(),
+                            null
+                    ));
+        }
+    }
 
     @PostMapping("/chat")
     public ResponseEntity<?> uploadMedia(@RequestParam("files") MultipartFile[] files) {
@@ -46,6 +63,7 @@ public class MediaController {
             }
             int deletedFilesCount = 0;
             for (String url : urls) {
+                log.info("Deleting file: {}", url);
                 if (mediaUploader.deleteMediaFile(url)) {
                     deletedFilesCount++;
                 }

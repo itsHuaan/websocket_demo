@@ -25,11 +25,19 @@ public class DataUtil {
         return false;
     }
 
-    public static String toJson(Object obj) {
+    public static String parseObjectToJson(Object obj) {
         try {
             return mapper.writeValueAsString(obj);
         } catch (Exception e) {
-            return String.valueOf(obj);
+            return null;
+        }
+    }
+
+    public static <T> T parseJsonToObject(String json, Class<T> clazz) {
+        try {
+            return mapper.readValue(json, clazz);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

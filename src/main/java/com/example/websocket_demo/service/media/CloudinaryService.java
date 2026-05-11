@@ -63,6 +63,16 @@ public class CloudinaryService {
         return "ok".equals(deleteResult.get("result"));
     }
 
+    public List<String> getAllMedia() throws Exception {
+        List<String> urls = new ArrayList<>();
+        Map<?, ?> result = cloudinary.api().resources(ObjectUtils.asMap("max_results", 500));
+        List<Map<?, ?>> resources = (List<Map<?, ?>>) result.get("resources");
+        for (Map<?, ?> resource : resources) {
+            urls.add((String) resource.get("url"));
+        }
+        return urls;
+    }
+
     private String extractPublicId(String mediaUrl) {
         if (mediaUrl == null || mediaUrl.isEmpty()) {
             throw new IllegalArgumentException("URL cannot be null or empty");
