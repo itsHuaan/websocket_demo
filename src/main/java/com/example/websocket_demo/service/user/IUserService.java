@@ -18,6 +18,8 @@ public interface IUserService {
     UserResponse getUserById(Long id);
 
     void deleteUser(Long id, Integer isHardDelete);
+
+    java.util.Set<String> getOnlineUsers();
 }
 
 

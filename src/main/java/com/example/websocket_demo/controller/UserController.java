@@ -70,6 +70,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ApiResponse<>(HttpStatus.OK, "User deleted"));
     }
+
+    @Operation(summary = "Get online users")
+    @GetMapping("/online")
+    public ResponseEntity<ApiResponse<?>> getOnlineUsers() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Online users fetched", userManagementService.getOnlineUsers()));
+    }
 }
 
 

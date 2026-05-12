@@ -35,7 +35,7 @@
 
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
             display: flex;
@@ -109,50 +109,123 @@
 
         .chat-wrapper {
             display: none;
-            flex-direction: column;
+            flex-direction: row;
             flex: 1;
             min-height: 0;
-        }
-
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             overflow: hidden;
-            min-height: 0;
         }
 
-        .user-info {
+        .sidebar {
+            width: 300px;
+            border-right: 1px solid #e1e8ed;
             display: flex;
-            gap: 10px;
+            flex-direction: column;
             background-color: #f8f9fa;
+        }
+
+        .sidebar-header {
             padding: 15px;
             border-bottom: 1px solid #e1e8ed;
-            flex: 0 0 auto;
-            align-items: center;
-        }
-
-        .user-info-field {
+            font-weight: bold;
+            background-color: white;
             display: flex;
-            flex: 1;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .user-info label {
-            margin-right: 8px;
-            font-weight: 600;
-            color: #555;
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
         }
 
-        .user-info input {
+        .user-item {
+            padding: 15px;
+            border-bottom: 1px solid #e1e8ed;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .user-item:hover {
+            background-color: #e9f0ff;
+        }
+
+        .user-item.active {
+            background-color: #d1e0ff;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .user-avatar-container {
+            position: relative;
+            margin-right: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            border: 2px solid white;
+        }
+
+        .online-dot.online {
+            background-color: var(--success-color);
+        }
+
+        .user-details {
             flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .user-status {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .active-chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #e1e8ed;
+            background-color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-user-info {
+            display: flex;
+            align-items: center;
         }
 
         .logout-btn {
@@ -220,6 +293,14 @@
             text-align: right;
         }
 
+        .typing-indicator {
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            color: #666;
+            font-style: italic;
+            display: none;
+        }
+
         .media-container {
             display: flex;
             flex-wrap: wrap;
@@ -232,6 +313,7 @@
             max-width: 150px;
             max-height: 150px;
             object-fit: cover;
+            cursor: pointer;
         }
 
         .media-container video {
@@ -331,10 +413,9 @@
         }
 
         .connection-status {
-            text-align: center;
-            padding: 10px;
             font-size: 0.8rem;
             color: #666;
+            margin-left: 10px;
         }
 
         .status-indicator {
@@ -358,6 +439,7 @@
             max-height: 120px;
             overflow-y: auto;
             padding: 5px;
+            display: none;
         }
 
         .preview-item {
@@ -393,31 +475,14 @@
 
         /* Responsive design */
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .user-info {
+            .chat-wrapper {
                 flex-direction: column;
-                gap: 8px;
             }
-
-            .chat-container {
-                height: calc(100vh - 200px);
-            }
-
-            .message {
-                max-width: 90%;
-            }
-
-            .media-container img,
-            .media-container video {
-                max-width: 120px;
-                max-height: 120px;
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #e1e8ed;
             }
         }
     </style>
@@ -426,8 +491,8 @@
 <div class="container">
     <div class="header">
         <h1>Modern Chat</h1>
-        <div id="userDisplay" style="display: none;">
-            <span id="currentUsername"></span>
+        <div id="userDisplay" style="display: none; align-items: center;">
+            <span id="currentUsername" style="margin-right: 15px; font-weight: bold;"></span>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -448,26 +513,39 @@
 
     <!-- Chat Interface -->
     <div id="chatSection" class="chat-wrapper">
-        <div class="chat-container">
-            <div class="user-info">
-                <div class="user-info-field">
-                    <label for="recipientId">Chat with (User ID):</label>
-                    <input type="number" id="recipientId" placeholder="Enter recipient ID">
+        <!-- Sidebar: Contact List -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>Contacts</span>
+                <div class="connection-status" style="margin:0;">
+                    <span class="status-indicator" id="connectionIndicator"></span>
+                    <span id="connectionText">Disconnected</span>
                 </div>
             </div>
+            <div class="user-list" id="userList">
+                <!-- Users will be populated here -->
+            </div>
+        </div>
 
-            <div class="connection-status">
-                <span class="status-indicator" id="connectionIndicator"></span>
-                <span id="connectionText">Disconnected</span>
+        <!-- Main Chat Area -->
+        <div class="main-chat">
+            <div class="active-chat-header" id="activeChatHeader">
+                Select a user to start chatting
             </div>
 
-            <div id="chat-messages" class="chat-messages"></div>
+            <div id="chat-messages" class="chat-messages">
+                <!-- Messages will be populated here -->
+            </div>
 
-            <div class="chat-input">
+            <div id="typingIndicator" class="typing-indicator">
+                Someone is typing...
+            </div>
+
+            <div class="chat-input" id="chatInputArea" style="display: none;">
                 <div class="preview-container" id="filePreviewContainer"></div>
                 
                 <div class="message-input-container">
-                    <input type="text" id="messageInput" class="message-input" placeholder="Type a message...">
+                    <input type="text" id="messageInput" class="message-input" placeholder="Type a message..." oninput="handleTyping()">
                     <button id="sendButton" class="send-button" onclick="sendMessage()" disabled>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -497,7 +575,10 @@
     let stompClient = null;
     let connected = false;
     let currentUser = null;
+    let activeRecipientId = null;
     let selectedFiles = [];
+    let onlineUsers = new Set();
+    let isTypingTimeout = null;
 
     // DOM elements
     const authSection = document.getElementById('authSection');
@@ -505,7 +586,9 @@
     const userDisplay = document.getElementById('userDisplay');
     const currentUsernameSpan = document.getElementById('currentUsername');
     
-    const recipientIdInput = document.getElementById('recipientId');
+    const userListElement = document.getElementById('userList');
+    const activeChatHeader = document.getElementById('activeChatHeader');
+    const chatInputArea = document.getElementById('chatInputArea');
     const messageInput = document.getElementById('messageInput');
     const mediaFilesInput = document.getElementById('mediaFiles');
     const chatMessages = document.getElementById('chat-messages');
@@ -514,6 +597,7 @@
     const sendButton = document.getElementById('sendButton');
     const fileCount = document.getElementById('fileCount');
     const filePreviewContainer = document.getElementById('filePreviewContainer');
+    const typingIndicator = document.getElementById('typingIndicator');
 
     // Check for existing session
     window.onload = function() {
@@ -535,7 +619,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === "OK") {
+            if (data.code === 200) {
                 currentUser = data.data; // SignInResponse
                 localStorage.setItem('chat_user', JSON.stringify(currentUser));
                 showChat();
@@ -555,15 +639,20 @@
         }
         localStorage.removeItem('chat_user');
         currentUser = null;
+        activeRecipientId = null;
         showAuth();
     }
 
     function showChat() {
         authSection.style.display = 'none';
         chatSection.style.display = 'flex';
-        userDisplay.style.display = 'block';
-        currentUsernameSpan.textContent = `Hello, ${currentUser.username} (ID: ${currentUser.id})`;
-        connect();
+        userDisplay.style.display = 'flex';
+        currentUsernameSpan.textContent = `Hello, ${currentUser.username}`;
+        
+        loadOnlineUsers().then(() => {
+            loadContacts();
+            connect();
+        });
     }
 
     function showAuth() {
@@ -573,10 +662,137 @@
         updateConnectionStatus(false);
     }
 
-    // Update UI based on connection state
+    function loadOnlineUsers() {
+        return fetch('/v1/api/users/online', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + currentUser.token
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                onlineUsers = new Set(data.data.map(id => String(id)));
+            }
+        })
+        .catch(err => console.error("Failed to load online users:", err));
+    }
+
+    function loadContacts() {
+        fetch('/v1/api/users', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + currentUser.token
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                renderContacts(data.data.content || []);
+            }
+        })
+        .catch(err => console.error("Failed to load contacts:", err));
+    }
+
+    function renderContacts(users) {
+        userListElement.innerHTML = '';
+        users.forEach(user => {
+            if (user.userId == currentUser.id) return; // Don't show self
+
+            const isOnline = onlineUsers.has(String(user.userId));
+            
+            const userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            userItem.id = `user-${user.userId}`;
+            userItem.onclick = () => selectContact(user);
+            if (activeRecipientId == user.userId) userItem.classList.add('active');
+
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'user-avatar-container';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'user-avatar';
+            avatar.textContent = user.username.charAt(0).toUpperCase();
+
+            const dot = document.createElement('div');
+            dot.className = `online-dot ${isOnline ? 'online' : ''}`;
+            dot.id = `dot-${user.userId}`;
+
+            avatarContainer.appendChild(avatar);
+            avatarContainer.appendChild(dot);
+
+            const details = document.createElement('div');
+            details.className = 'user-details';
+            
+            const name = document.createElement('div');
+            name.className = 'user-name';
+            name.textContent = user.username;
+            
+            const status = document.createElement('div');
+            status.className = 'user-status';
+            status.id = `status-text-${user.userId}`;
+            status.textContent = isOnline ? 'Online' : 'Offline';
+
+            details.appendChild(name);
+            details.appendChild(status);
+            userItem.appendChild(avatarContainer);
+            userItem.appendChild(details);
+
+            userListElement.appendChild(userItem);
+        });
+    }
+
+    function selectContact(user) {
+        if (activeRecipientId == user.userId) return;
+
+        // Highlight active user
+        document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`user-${user.userId}`).classList.add('active');
+
+        activeRecipientId = user.userId;
+        const isOnline = onlineUsers.has(String(user.userId));
+        
+        activeChatHeader.innerHTML = `
+            <div class="header-user-info">
+                <div class="user-avatar" style="width: 30px; height: 30px; margin-right: 10px;">${user.username.charAt(0).toUpperCase()}</div>
+                <div>
+                    <div>${user.username}</div>
+                    <div style="font-size: 0.7rem; font-weight: normal; color: ${isOnline ? 'var(--success-color)' : '#666'}">${isOnline ? 'Online' : 'Offline'}</div>
+                </div>
+            </div>
+        `;
+        
+        chatInputArea.style.display = 'flex';
+        chatMessages.innerHTML = ''; // Clear current messages
+        typingIndicator.style.display = 'none';
+        updateSendButtonState();
+        
+        loadChatHistory(user.userId);
+    }
+
+    function loadChatHistory(recipientId) {
+        fetch(`/v1/api/message/${recipientId}?size=50`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + currentUser.token
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200 && data.data.content) {
+                const messages = [...data.data.content].reverse();
+                messages.forEach(msg => {
+                    const isSender = msg.senderId == currentUser.id;
+                    showMessage(msg, isSender);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        })
+        .catch(err => console.error("Failed to load history:", err));
+    }
+
     function updateConnectionStatus(isConnected) {
         connected = isConnected;
-        
         if (isConnected) {
             connectionIndicator.classList.add('status-connected');
             connectionText.textContent = 'Connected';
@@ -584,44 +800,53 @@
             connectionIndicator.classList.remove('status-connected');
             connectionText.textContent = 'Disconnected';
         }
-        
         updateSendButtonState();
     }
 
-    // Update send button state
     function updateSendButtonState() {
         const hasContent = messageInput.value.trim() !== '' || selectedFiles.length > 0;
-        const canSend = connected && 
-                        recipientIdInput.value.trim() !== '' &&
-                        hasContent;
-        
+        const canSend = connected && activeRecipientId != null && hasContent;
         sendButton.disabled = !canSend;
     }
 
     // Connect to WebSocket
     function connect() {
         if (!currentUser) return;
-
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
+        if (stompClient !== null) stompClient.disconnect();
 
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-        
         stompClient.debug = null;
 
-        const headers = {
-            'Authorization': 'Bearer ' + currentUser.token
-        };
+        const headers = { 'Authorization': 'Bearer ' + currentUser.token };
 
         stompClient.connect(headers, function (frame) {
             updateConnectionStatus(true);
-
+            
+            // Subscribe to private messages
             stompClient.subscribe(`/user/${currentUser.id}/queue/messages`, function (message) {
                 const messageData = JSON.parse(message.body);
-                showMessage(messageData);
+                if (messageData.senderId == activeRecipientId) {
+                    showMessage(messageData, false);
+                }
             });
+
+            // Subscribe to typing notifications
+            stompClient.subscribe(`/user/${currentUser.id}/queue/typing`, function (message) {
+                const typingData = JSON.parse(message.body);
+                if (typingData.senderId == activeRecipientId) {
+                    typingIndicator.textContent = `${activeRecipientId} is typing...`; // You might want to pass the username in the payload
+                    typingIndicator.style.display = typingData.isTyping ? 'block' : 'none';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            // Subscribe to public status updates
+            stompClient.subscribe('/topic/public.status', function (message) {
+                const statusData = JSON.parse(message.body);
+                updateUserStatus(statusData.userId, statusData.status === 'ONLINE');
+            });
+            
         }, function(error) {
             console.error('Connection error:', error);
             updateConnectionStatus(false);
@@ -629,55 +854,101 @@
         });
     }
 
+    function updateUserStatus(userId, isOnline) {
+        if (isOnline) onlineUsers.add(String(userId));
+        else onlineUsers.delete(String(userId));
+
+        const dot = document.getElementById(`dot-${userId}`);
+        const statusText = document.getElementById(`status-text-${userId}`);
+        
+        if (dot) {
+            if (isOnline) dot.classList.add('online');
+            else dot.classList.remove('online');
+        }
+        
+        if (statusText) {
+            statusText.textContent = isOnline ? 'Online' : 'Offline';
+        }
+
+        // Update header if chatting with this user
+        if (activeRecipientId == userId) {
+            const headerStatus = activeChatHeader.querySelector('div div:last-child');
+            if (headerStatus) {
+                headerStatus.textContent = isOnline ? 'Online' : 'Offline';
+                headerStatus.style.color = isOnline ? 'var(--success-color)' : '#666';
+            }
+        }
+    }
+
+    function handleTyping() {
+        updateSendButtonState();
+        
+        if (!connected || !activeRecipientId) return;
+
+        // Send "is typing"
+        stompClient.send("/app/chat.typing", {}, JSON.stringify({
+            recipientId: activeRecipientId,
+            isTyping: true
+        }));
+
+        // Debounce: stop typing after 2 seconds of no input
+        if (isTypingTimeout) clearTimeout(isTypingTimeout);
+        isTypingTimeout = setTimeout(() => {
+            stompClient.send("/app/chat.typing", {}, JSON.stringify({
+                recipientId: activeRecipientId,
+                isTyping: false
+            }));
+        }, 2000);
+    }
+
     // Send message
     function sendMessage() {
-        if (!connected || !currentUser || recipientIdInput.value.trim() === '') {
-            return;
-        }
+        if (!connected || !currentUser || !activeRecipientId) return;
         
         const hasContent = messageInput.value.trim() !== '' || selectedFiles.length > 0;
         if (!hasContent) return;
 
-        const recipientId = recipientIdInput.value;
-        
         const chatMessage = {
-            recipientId: recipientId,
+            recipientId: activeRecipientId,
             message: messageInput.value,
             senderVisibility: 1,
             recipientVisibility: 1,
             mediaUrls: []
         };
 
-        const headers = {
-            'Authorization': 'Bearer ' + currentUser.token
-        };
+        const headers = { 'Authorization': 'Bearer ' + currentUser.token };
 
         if (selectedFiles.length > 0) {
             const formData = new FormData();
-            for (const file of selectedFiles) {
-                formData.append("files", file);
-            }
+            for (const file of selectedFiles) formData.append("files", file);
 
             uploadMediaFiles(formData).then(mediaUrls => {
                 chatMessage.mediaUrls = mediaUrls;
-
                 stompClient.send("/app/chat", headers, JSON.stringify(chatMessage));
-                showMessage({...chatMessage, senderId: currentUser.id}, true);
-
-                messageInput.value = '';
-                clearFileSelection();
-                updateSendButtonState();
+                showMessage({...chatMessage, senderId: currentUser.id, sentAt: new Date().toISOString()}, true);
+                resetInput();
             }).catch(error => {
                 console.error("Error uploading files:", error);
                 alert("Failed to upload media files.");
             });
         } else {
             stompClient.send("/app/chat", headers, JSON.stringify(chatMessage));
-            showMessage({...chatMessage, senderId: currentUser.id}, true);
-            
-            messageInput.value = '';
-            updateSendButtonState();
+            showMessage({...chatMessage, senderId: currentUser.id, sentAt: new Date().toISOString()}, true);
+            resetInput();
         }
+    }
+    
+    function resetInput() {
+        messageInput.value = '';
+        clearFileSelection();
+        updateSendButtonState();
+        
+        // Explicitly stop typing state
+        if (isTypingTimeout) clearTimeout(isTypingTimeout);
+        stompClient.send("/app/chat.typing", {}, JSON.stringify({
+            recipientId: activeRecipientId,
+            isTyping: false
+        }));
     }
 
     // Upload media files
@@ -685,15 +956,11 @@
         return new Promise((resolve, reject) => {
             fetch('/v1/api/media/chat', {
                 method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + currentUser.token
-                },
+                headers: { 'Authorization': 'Bearer ' + currentUser.token },
                 body: formData
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Failed to upload media files");
-                }
+                if (!response.ok) throw new Error("Failed to upload media files");
                 return response.json();
             })
             .then(data => resolve(data))
@@ -704,33 +971,38 @@
     // Show message in chat
     function showMessage(messageData, isSender = false) {
         const messageElement = document.createElement('div');
-        const isMe = isSender || String(messageData.senderId) === String(currentUser.id);
-        
-        messageElement.className = isMe ? 'message message-sent' : 'message message-received';
+        messageElement.className = isSender ? 'message message-sent' : 'message message-received';
 
         const infoElement = document.createElement('div');
         infoElement.className = 'message-info';
         
-        const now = new Date();
-        const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        let timeString = "";
+        const timestamp = messageData.sentAt || messageData.createdAt;
+        if (timestamp) {
+            const date = new Date(timestamp);
+            timeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        } else {
+            const now = new Date();
+            timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
         
-        infoElement.textContent = isMe
-            ? `You • ${timeString}`
-            : `From User ${messageData.senderId} • ${timeString}`;
+        infoElement.textContent = isSender ? `You • ${timeString}` : `${timeString}`;
             
         const contentElement = document.createElement('div');
         contentElement.className = 'message-content';
-        contentElement.textContent = messageData.message;
+        contentElement.textContent = messageData.message || "";
         
         messageElement.appendChild(infoElement);
-        messageElement.appendChild(contentElement);
+        if (messageData.message && messageData.message.trim() !== '') {
+            messageElement.appendChild(contentElement);
+        }
 
         if (messageData.mediaUrls && messageData.mediaUrls.length > 0) {
             const mediaContainer = document.createElement('div');
             mediaContainer.className = 'media-container';
             
             for (const url of messageData.mediaUrls) {
-                if (url.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
                     const img = document.createElement('img');
                     img.src = url;
                     img.onclick = () => window.open(url, '_blank');
@@ -804,8 +1076,6 @@
     }
 
     // Event listeners
-    recipientIdInput.addEventListener('keyup', updateSendButtonState);
-    messageInput.addEventListener('keyup', updateSendButtonState);
     messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && !sendButton.disabled) {
             sendMessage();

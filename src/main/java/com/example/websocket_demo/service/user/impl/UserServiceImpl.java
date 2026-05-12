@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -35,6 +38,7 @@ public class UserServiceImpl implements IUserService {
     CloudinaryService mediaUploader;
     PasswordEncoder passwordEncoder;
     UserMapper userMapper;
+    StringRedisTemplate redisTemplate;
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -116,6 +120,11 @@ public class UserServiceImpl implements IUserService {
             user.setDeletedAt(LocalDateTime.now());
             userRepository.save(user);
         }
+    }
+
+    @Override
+    public Set<String> getOnlineUsers() {
+        return redisTemplate.opsForSet().members("chat:online_users");
     }
 }
 
