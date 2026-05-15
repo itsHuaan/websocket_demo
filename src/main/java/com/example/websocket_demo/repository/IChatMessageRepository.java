@@ -14,4 +14,6 @@ public interface IChatMessageRepository extends JpaRepository<ChatMessageEntity,
     List<ChatMessageEntity> findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(String chatId);
 
     Page<ChatMessageEntity> findAllByChatIdOrderByCreatedAtDesc(@NotNull String chatId, Pageable pageable);
+
+    List<ChatMessageEntity> findByChatIdAndRecipientIdAndIsReadFalse(String chatId, Long recipientId);
 }

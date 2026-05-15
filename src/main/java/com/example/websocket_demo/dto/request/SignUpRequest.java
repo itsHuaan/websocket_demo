@@ -17,6 +17,10 @@ public class SignUpRequest {
     @Schema(example = "your_username")
     @NonNull
     String username;
+    @Schema(example = "your first name")
+    String firstName;
+    @Schema(example = "your last name")
+    String lastName;
     @Schema(example = "your_password")
     @NonNull
     String password;

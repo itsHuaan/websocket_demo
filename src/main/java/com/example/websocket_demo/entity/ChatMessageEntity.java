@@ -36,9 +36,15 @@ public class ChatMessageEntity extends BaseEntity {
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<ChatMediaEntity> chatMedias;
 
+    @Builder.Default
     @Column(nullable = false, columnDefinition = "INT default 1")
     Integer senderVisibility = 1;
 
+    @Builder.Default
     @Column(nullable = false, columnDefinition = "INT default 1")
     Integer recipientVisibility = 1;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "BOOLEAN default false")
+    Boolean isRead = false;
 }

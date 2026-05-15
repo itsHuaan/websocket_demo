@@ -287,10 +287,19 @@
             font-size: 0.75rem;
             margin-bottom: 3px;
             opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .message-sent .message-info {
-            text-align: right;
+            flex-direction: row-reverse;
+        }
+
+        .read-status {
+            font-size: 0.7rem;
+            color: var(--primary-color);
+            font-weight: bold;
         }
 
         .typing-indicator {
@@ -747,7 +756,8 @@
 
         // Highlight active user
         document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-        document.getElementById(`user-${user.userId}`).classList.add('active');
+        const userEl = document.getElementById(`user-${user.userId}`);
+        if (userEl) userEl.classList.add('active');
 
         activeRecipientId = user.userId;
         const isOnline = onlineUsers.has(String(user.userId));
@@ -768,6 +778,7 @@
         updateSendButtonState();
         
         loadChatHistory(user.userId);
+        sendReadReceipt(user.userId);
     }
 
     function loadChatHistory(recipientId) {
@@ -828,6 +839,7 @@
                 const messageData = JSON.parse(message.body);
                 if (messageData.senderId == activeRecipientId) {
                     showMessage(messageData, false);
+                    sendReadReceipt(activeRecipientId);
                 }
             });
 
@@ -835,9 +847,17 @@
             stompClient.subscribe(`/user/${currentUser.id}/queue/typing`, function (message) {
                 const typingData = JSON.parse(message.body);
                 if (typingData.senderId == activeRecipientId) {
-                    typingIndicator.textContent = `${activeRecipientId} is typing...`; // You might want to pass the username in the payload
+                    typingIndicator.textContent = `${typingData.username} is typing...`;
                     typingIndicator.style.display = typingData.isTyping ? 'block' : 'none';
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            // Subscribe to read receipts
+            stompClient.subscribe(`/user/${currentUser.id}/queue/read-receipt`, function (message) {
+                const readData = JSON.parse(message.body);
+                if (readData.readBy == activeRecipientId) {
+                    updateMessagesToRead();
                 }
             });
 
@@ -882,23 +902,36 @@
 
     function handleTyping() {
         updateSendButtonState();
-        
         if (!connected || !activeRecipientId) return;
 
-        // Send "is typing"
         stompClient.send("/app/chat.typing", {}, JSON.stringify({
             recipientId: activeRecipientId,
+            username: currentUser.username,
             isTyping: true
         }));
 
-        // Debounce: stop typing after 2 seconds of no input
         if (isTypingTimeout) clearTimeout(isTypingTimeout);
         isTypingTimeout = setTimeout(() => {
             stompClient.send("/app/chat.typing", {}, JSON.stringify({
                 recipientId: activeRecipientId,
+                username: currentUser.username,
                 isTyping: false
             }));
         }, 2000);
+    }
+
+    function sendReadReceipt(recipientId) {
+        if (!connected || !recipientId) return;
+        stompClient.send("/app/chat.read", {}, JSON.stringify({
+            recipientId: recipientId
+        }));
+    }
+
+    function updateMessagesToRead() {
+        const unreadSentMessages = document.querySelectorAll('.message-sent .read-status');
+        unreadSentMessages.forEach(el => {
+            el.textContent = 'Read';
+        });
     }
 
     // Send message
@@ -925,7 +958,7 @@
             uploadMediaFiles(formData).then(mediaUrls => {
                 chatMessage.mediaUrls = mediaUrls;
                 stompClient.send("/app/chat", headers, JSON.stringify(chatMessage));
-                showMessage({...chatMessage, senderId: currentUser.id, sentAt: new Date().toISOString()}, true);
+                showMessage({...chatMessage, senderId: currentUser.id, isRead: false}, true);
                 resetInput();
             }).catch(error => {
                 console.error("Error uploading files:", error);
@@ -933,7 +966,7 @@
             });
         } else {
             stompClient.send("/app/chat", headers, JSON.stringify(chatMessage));
-            showMessage({...chatMessage, senderId: currentUser.id, sentAt: new Date().toISOString()}, true);
+            showMessage({...chatMessage, senderId: currentUser.id, isRead: false}, true);
             resetInput();
         }
     }
@@ -943,15 +976,14 @@
         clearFileSelection();
         updateSendButtonState();
         
-        // Explicitly stop typing state
         if (isTypingTimeout) clearTimeout(isTypingTimeout);
         stompClient.send("/app/chat.typing", {}, JSON.stringify({
             recipientId: activeRecipientId,
+            username: currentUser.username,
             isTyping: false
         }));
     }
 
-    // Upload media files
     function uploadMediaFiles(formData) {
         return new Promise((resolve, reject) => {
             fetch('/v1/api/media/chat', {
@@ -987,6 +1019,13 @@
         }
         
         infoElement.textContent = isSender ? `You • ${timeString}` : `${timeString}`;
+
+        if (isSender) {
+            const readStatus = document.createElement('span');
+            readStatus.className = 'read-status';
+            readStatus.textContent = messageData.isRead ? 'Read' : 'Sent';
+            infoElement.appendChild(readStatus);
+        }
             
         const contentElement = document.createElement('div');
         contentElement.className = 'message-content';

@@ -131,10 +131,10 @@ public class AuthServiceImpl implements IAuthService {
         otpService.markOtpAsUsed(email);
     }
 
-    private String getEmailContent(String otp, int expireMinute){
+    private String getEmailContent(String otp, int expiresMinute){
         Context context = new Context();
         context.setVariable("otp", otp);
-        context.setVariable("expireMinute", expireMinute);
+        context.setVariable("expiresMinutes", expiresMinute);
         return templateEngine.process("otp-code", context);
     }
 }

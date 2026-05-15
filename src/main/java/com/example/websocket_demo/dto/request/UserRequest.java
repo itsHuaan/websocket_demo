@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRequest {
     String email;
+    String firstName;
+    String lastName;
     String username;
     String password;
     MultipartFile profilePicture;

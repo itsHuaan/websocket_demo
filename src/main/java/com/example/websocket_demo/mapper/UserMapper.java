@@ -1,5 +1,7 @@
 package com.example.websocket_demo.mapper;
 
+import com.example.websocket_demo.common.Const;
+import com.example.websocket_demo.common.DateUtil;
 import com.example.websocket_demo.dto.request.SignUpRequest;
 import com.example.websocket_demo.dto.request.UserRequest;
 import com.example.websocket_demo.dto.response.UserResponse;
@@ -7,6 +9,7 @@ import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.repository.IRoleRepository;
 import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.enumeration.AccountStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -45,15 +48,15 @@ public abstract class UserMapper {
     public abstract UserEntity toUserEntity(SignUpRequest signUpRequest);
 
     protected String mapStatus(int status) {
-        if (status == com.example.websocket_demo.enumeration.AccountStatus.ACTIVE.getValue()) return "Active";
-        if (status == com.example.websocket_demo.enumeration.AccountStatus.INACTIVE.getValue()) return "Inactive";
-        if (status == com.example.websocket_demo.enumeration.AccountStatus.SUSPENDED.getValue()) return "Suspended";
-        return "Unknown";
+        if (status == AccountStatus.ACTIVE.getValue()) return AccountStatus.ACTIVE.getDescription();
+        if (status == AccountStatus.INACTIVE.getValue()) return AccountStatus.INACTIVE.getDescription();
+        if (status == AccountStatus.SUSPENDED.getValue()) return AccountStatus.SUSPENDED.getDescription();
+        return AccountStatus.UNKNOWN.getDescription();
     }
 
     protected String formatDate(LocalDateTime date) {
         if (date == null) return null;
-        return com.example.websocket_demo.common.DateUtil.formatDate(date, com.example.websocket_demo.common.Const.DateFormat.HHmmss_MMMddyyyy);
+        return DateUtil.formatDate(date, Const.DateFormat.HHmmss_MMMddyyyy);
     }
 
     protected String uploadProfilePicture(MultipartFile file) throws IOException {

@@ -16,6 +16,8 @@ import lombok.experimental.FieldDefaults;
 public class UserResponse {
     Long userId;
     String email;
+    String firstName;
+    String lastName;
     String username;
     String profilePicture;
     String status;

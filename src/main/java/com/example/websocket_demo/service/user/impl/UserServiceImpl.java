@@ -76,6 +76,12 @@ public class UserServiceImpl implements IUserService {
         currentUser.setUsername(UserRequest.getUsername() != null
                 ? UserRequest.getUsername()
                 : currentUser.getUsername());
+        currentUser.setFirstName(UserRequest.getFirstName() != null
+                ? UserRequest.getFirstName()
+                : currentUser.getFirstName());
+        currentUser.setLastName(UserRequest.getLastName() != null
+                ? UserRequest.getLastName()
+                : currentUser.getLastName());
         currentUser.setPassword(UserRequest.getPassword() != null
                 ? passwordEncoder.encode(UserRequest.getPassword())
                 : currentUser.getPassword());

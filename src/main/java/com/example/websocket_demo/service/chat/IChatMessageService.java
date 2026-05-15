@@ -11,6 +11,7 @@ public interface IChatMessageService {
     Page<ChatMessageResponse> getChatMessages(Long senderId, Long recipientId, Pageable pageable);
     void deleteMessage(Long senderId, Long recipientId);
     void processMessage(ChatMessageRequest message);
+    void markMessagesAsRead(Long senderId, Long recipientId);
 }
 
 

@@ -9,8 +9,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum AccountStatus {
-    ACTIVE(1),
-    INACTIVE(2),
-    SUSPENDED(3);
+    ACTIVE(1, "Active"),
+    INACTIVE(2, "Inactive"),
+    SUSPENDED(3, "Suspended"),
+    UNKNOWN(3, "Unknown");
     int value;
+    String description;
 }

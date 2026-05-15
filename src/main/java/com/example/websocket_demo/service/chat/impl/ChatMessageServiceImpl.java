@@ -20,6 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -90,5 +91,23 @@ public class ChatMessageServiceImpl implements IChatMessageService {
                         .senderVisibility(savedMessage.getSenderVisibility())
                         .recipientVisibility(savedMessage.getRecipientVisibility())
                         .build());
+    }
+
+    @Override
+    public void markMessagesAsRead(Long senderId, Long recipientId) {
+        chatRoomService.getChatRoomId(senderId, recipientId, false).ifPresent(chatId -> {
+            List<ChatMessageEntity> unreadMessages = chatMessageRepository.findByChatIdAndRecipientIdAndIsReadFalse(chatId, senderId);
+            if (!unreadMessages.isEmpty()) {
+                unreadMessages.forEach(msg -> msg.setIsRead(true));
+                chatMessageRepository.saveAll(unreadMessages);
+                
+                // Notify the original sender that their messages have been read
+                messagingTemplate.convertAndSendToUser(
+                        String.valueOf(recipientId),
+                        "/queue/read-receipt",
+                        Map.of("chatId", chatId, "readBy", senderId)
+                );
+            }
+        });
     }
 }

@@ -26,5 +26,6 @@ public class ChatMessageResponse {
     LocalDateTime sentAt;
     Integer senderVisibility;
     Integer recipientVisibility;
+    Boolean isRead;
 }
 

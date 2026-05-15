@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.otp.impl;
 
+import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.dto.otp.OtpData;
 import com.example.websocket_demo.dto.response.ApiResponse;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -18,17 +20,15 @@ import java.util.concurrent.TimeUnit;
 @FieldDefaults(makeFinal = true)
 public class OtpServiceImpl implements IOtpService {
     StringRedisTemplate redisTemplate;
-    int OTP_LENGTH = 6;
-    String SALT_CHARS = "0123456789";
 
     @Override
     public ApiResponse<String> generateAndStoreOtp(String email) {
         SecureRandom secureRandom = new SecureRandom();
-        StringBuilder otp = new StringBuilder(OTP_LENGTH);
+        StringBuilder otp = new StringBuilder(Const.OTP_LENGTH);
         String key = "otp:" + email;
-        for (int i = 0; i < OTP_LENGTH; i++) {
-            int index = secureRandom.nextInt(SALT_CHARS.length());
-            otp.append(SALT_CHARS.charAt(index));
+        for (int i = 0; i < Const.OTP_LENGTH; i++) {
+            int index = secureRandom.nextInt(Const.SALT_CHARS.length());
+            otp.append(Const.SALT_CHARS.charAt(index));
         }
 
         OtpData otpData = OtpData.builder()
@@ -36,7 +36,7 @@ public class OtpServiceImpl implements IOtpService {
                 .isUsed(false)
                 .build();
 
-        redisTemplate.opsForValue().set(key, DataUtil.parseObjectToJson(otpData), 3, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, Objects.requireNonNull(DataUtil.parseObjectToJson(otpData)), 3, TimeUnit.MINUTES);
 
         return new ApiResponse<>(HttpStatus.CREATED, "OTP generated successfully", otp.toString());
     }
@@ -67,11 +67,11 @@ public class OtpServiceImpl implements IOtpService {
             OtpData otpData = DataUtil.parseJsonToObject(json, OtpData.class);
             if (otpData != null) {
                 otpData.setUsed(true);
-                Long expire = redisTemplate.getExpire(key, TimeUnit.SECONDS);
-                if (expire != null && expire > 0) {
-                    redisTemplate.opsForValue().set(key, DataUtil.parseObjectToJson(otpData), expire, TimeUnit.SECONDS);
+                long expire = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+                if (expire > 0) {
+                    redisTemplate.opsForValue().set(key, Objects.requireNonNull(DataUtil.parseObjectToJson(otpData)), expire, TimeUnit.SECONDS);
                 } else {
-                    redisTemplate.opsForValue().set(key, DataUtil.parseObjectToJson(otpData), 3, TimeUnit.MINUTES);
+                    redisTemplate.opsForValue().set(key, Objects.requireNonNull(DataUtil.parseObjectToJson(otpData)), 3, TimeUnit.MINUTES);
                 }
             }
         }

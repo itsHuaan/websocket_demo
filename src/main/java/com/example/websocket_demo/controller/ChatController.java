@@ -44,14 +44,24 @@ public class ChatController {
     public void processTyping(@Payload Map<String, Object> payload, Principal principal) {
         if (principal != null) {
             String senderId = principal.getName();
+            String username = String.valueOf(payload.get("username"));
             String recipientId = String.valueOf(payload.get("recipientId"));
             boolean isTyping = (boolean) payload.get("isTyping");
             
             messagingTemplate.convertAndSendToUser(
                 recipientId,
                 "/queue/typing",
-                Map.of("senderId", senderId, "isTyping", isTyping)
+                Map.of("senderId", senderId, "username", username, "isTyping", isTyping)
             );
+        }
+    }
+
+    @MessageMapping("/chat.read")
+    public void processRead(@Payload Map<String, Object> payload, Principal principal) {
+        if (principal != null) {
+            Long senderId = Long.parseLong(principal.getName());
+            Long recipientId = Long.valueOf(String.valueOf(payload.get("recipientId")));
+            chatMessageService.markMessagesAsRead(senderId, recipientId);
         }
     }
 

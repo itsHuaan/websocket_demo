@@ -28,6 +28,10 @@ public class UserEntity extends BaseEntity {
     @NotNull
     String email;
 
+    String firstName;
+
+    String lastName;
+
     @Column(unique = true, nullable = false)
     @NotNull
     @Size(min = 3, max = 50)
