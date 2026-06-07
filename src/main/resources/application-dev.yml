@@ -14,6 +14,11 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
   servlet:
     multipart:
       enabled: true
@@ -28,8 +33,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: itshuaan@gmail.com
-    password: vzwjuxqwdwlfamzi
+    username: ${EMAIL_PASSWORD}
+    password: ${EMAIL_USERNAME}
     properties:
       mail:
         smtp:
@@ -48,3 +53,13 @@ cloudinary:
   name: dpt7g5sxd
   api-key: 974323932978374
   secret-key: ZwTSllWoNsr2f3eGctZ4UkYtMVk
+
+app:
+  otp:
+    expires-minutes: 3
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /swagger-ui

@@ -64,4 +64,3 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /swagger-ui
-
