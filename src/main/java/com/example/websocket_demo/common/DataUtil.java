@@ -40,4 +40,10 @@ public class DataUtil {
             return null;
         }
     }
+
+    public static boolean isNullOrZero(Object obj) {
+        if (obj == null) return true;
+        if (obj instanceof Number) return ((Number) obj).doubleValue() == 0.0;
+        return false;
+    }
 }

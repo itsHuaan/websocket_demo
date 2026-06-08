@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.test.impl;
 
+import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.service.test.ITestService;
 import com.example.websocket_demo.service.media.CloudinaryService;
 import com.example.websocket_demo.dto.response.ApiResponse;
@@ -10,6 +11,7 @@ import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
 import com.example.websocket_demo.repository.ITestRepository;
 import com.example.websocket_demo.common.DateUtil;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -136,7 +138,7 @@ public class TestServiceImpl implements ITestService {
         return new ApiResponse<>(
                 HttpStatus.OK,
                 time,
-                testRepository.getAllIds(),
+                DataUtil.isNullOrZero(testRepository.getAllIds()) ? 0 : testRepository.getAllIds().size(),
                 LocalDateTime.of(2001, 9, 19, 0, 0));
     }
 

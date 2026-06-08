@@ -56,6 +56,18 @@ cloudinary:
   secret-key: ZwTSllWoNsr2f3eGctZ4UkYtMVk
 
 app:
+  security:
+    public-paths:
+      - /v1/api/auth/**
+      - /error
+      - /ws/**
+      - /index.html
+      - /
+      - /static/**
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /v1/api/test/**
   otp:
     expires-minutes: 3
 
