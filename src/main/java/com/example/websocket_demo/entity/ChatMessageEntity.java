@@ -47,4 +47,13 @@ public class ChatMessageEntity extends BaseEntity {
     @Builder.Default
     @Column(nullable = false, columnDefinition = "BOOLEAN default false")
     Boolean isRead = false;
+
+    // Reply metadata: a denormalized snapshot of the message being replied to.
+    // Nullable — only set when this message is a reply.
+    Long replyToMessageId;
+
+    Long replyToSenderId;
+
+    @Column(length = 160)
+    String replyToSnippet;
 }

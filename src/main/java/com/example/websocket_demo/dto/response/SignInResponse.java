@@ -15,12 +15,14 @@ public class SignInResponse {
     String username;
     String type;
     String token;
+    String profilePicture;
 
-    public SignInResponse(Long id, String username, String token) {
+    public SignInResponse(Long id, String username, String token, String profilePicture) {
         this.id = id;
         this.username = username;
         this.type = "Bearer";
         this.token = token;
+        this.profilePicture = profilePicture;
     }
 }
 

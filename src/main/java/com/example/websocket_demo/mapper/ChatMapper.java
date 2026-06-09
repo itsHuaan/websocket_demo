@@ -55,6 +55,7 @@ public abstract class ChatMapper {
     @Mapping(target = "recipientUsername", expression = "java(getUsername(chatMessageEntity.getRecipientId()))")
     @Mapping(target = "mediaUrls", expression = "java(getMediaUrls(chatMessageEntity))")
     @Mapping(target = "sentAt", source = "createdAt")
+    @Mapping(target = "replyToSenderUsername", expression = "java(getUsername(chatMessageEntity.getReplyToSenderId()))")
     public abstract ChatMessageResponse toChatMessageDto(ChatMessageEntity chatMessageEntity);
 
     @Mapping(target = "sender", expression = "java(getUsername(chatMessageEntity.getSenderId()))")

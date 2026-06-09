@@ -52,8 +52,40 @@ public class ChatMessageServiceImpl implements IChatMessageService {
                 true).orElseThrow(() -> new IllegalArgumentException("Can't find chat room"));
         message.setChatId(chatRoomId);
         ChatMessageEntity entity = chatMapper.toChatMessageEntity(message);
+        applyReplySnapshot(entity, message, chatRoomId);
         chatMessageRepository.save(entity);
         return chatMapper.toChatMessageDto(entity);
+    }
+
+    // Build a denormalized snapshot of the message being replied to, so the
+    // reply preview survives reloads and original deletion. Only honors replies
+    // that point at an existing message in the same conversation.
+    private void applyReplySnapshot(ChatMessageEntity entity, ChatMessageRequest message, String chatRoomId) {
+        entity.setReplyToMessageId(null);
+        entity.setReplyToSenderId(null);
+        entity.setReplyToSnippet(null);
+
+        Long replyToId = message.getReplyToMessageId();
+        if (replyToId == null) {
+            return;
+        }
+        chatMessageRepository.findById(replyToId)
+                .filter(original -> Objects.equals(original.getChatId(), chatRoomId))
+                .ifPresent(original -> {
+                    entity.setReplyToMessageId(original.getChatMessageId());
+                    entity.setReplyToSenderId(original.getSenderId());
+                    entity.setReplyToSnippet(buildReplySnippet(original));
+                });
+    }
+
+    private static String buildReplySnippet(ChatMessageEntity original) {
+        String text = original.getMessage();
+        if (text != null && !text.isBlank()) {
+            String trimmed = text.strip();
+            return trimmed.length() > 140 ? trimmed.substring(0, 140) + "…" : trimmed;
+        }
+        boolean hasMedia = original.getChatMedias() != null && !original.getChatMedias().isEmpty();
+        return hasMedia ? "📷 Media" : "";
     }
 
     @Override
@@ -90,6 +122,9 @@ public class ChatMessageServiceImpl implements IChatMessageService {
                         .sentAt(savedMessage.getSentAt())
                         .senderVisibility(savedMessage.getSenderVisibility())
                         .recipientVisibility(savedMessage.getRecipientVisibility())
+                        .replyToMessageId(savedMessage.getReplyToMessageId())
+                        .replyToSenderUsername(savedMessage.getReplyToSenderUsername())
+                        .replyToSnippet(savedMessage.getReplyToSnippet())
                         .build());
     }
 

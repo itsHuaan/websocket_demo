@@ -22,5 +22,6 @@ public class ChatMessageRequest {
     List<String> mediaUrls;
     Integer senderVisibility;
     Integer recipientVisibility;
+    Long replyToMessageId;
 }
 

@@ -21,5 +21,8 @@ public class ChatNotificationResponse {
     private LocalDateTime sentAt;
     Integer senderVisibility;
     Integer recipientVisibility;
+    Long replyToMessageId;
+    String replyToSenderUsername;
+    String replyToSnippet;
 }
 
