@@ -21,14 +21,45 @@
             --text-faint: #a1a1aa;
             --accent: #18181b;
             --accent-soft: #f4f4f5;
+            --on-accent: #ffffff;
             --online: #22c55e;
             --success-color: #22c55e; /* alias referenced inline by chat header JS */
             --danger: #ef4444;
+            --scrollbar: #dcdce0;
+            --scrollbar-hover: #c4c4ca;
             --radius: 16px;
             --radius-sm: 12px;
             --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.04);
             --shadow: 0 1px 3px rgba(24, 24, 27, 0.06), 0 8px 24px -12px rgba(24, 24, 27, 0.10);
             --font: 'Manrope', system-ui, -apple-system, sans-serif;
+        }
+
+        /* ===== Dark theme ===== */
+        [data-theme="dark"] {
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-2: #1c1c1f;
+            --border: #27272a;
+            --border-2: #2e2e33;
+            --text: #fafafa;
+            --text-dim: #a1a1aa;
+            --text-faint: #71717a;
+            --accent: #fafafa;
+            --accent-soft: #27272a;
+            --on-accent: #18181b;
+            --online: #22c55e;
+            --success-color: #22c55e;
+            --danger: #f87171;
+            --scrollbar: #3f3f46;
+            --scrollbar-hover: #52525b;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        html { background: var(--bg); }
+        body, .auth-container, .chat-wrapper, .sidebar, .main-chat,
+        .message-input, .message-content, .user-item, .profile, .profile-menu {
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
         }
 
         * {
@@ -62,56 +93,116 @@
             overflow: hidden;
         }
 
-        /* ===== Top bar ===== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 18px;
+        /* ===== Sidebar footer / profile ===== */
+        .sidebar-footer {
+            position: relative;
+            padding: 10px;
+            border-top: 1px solid var(--border);
             flex: 0 0 auto;
         }
 
-        .brand {
+        .profile {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 11px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.12s ease;
         }
+        .profile:hover { background: rgba(127, 127, 127, 0.08); }
+        .profile.menu-open { background: rgba(127, 127, 127, 0.10); }
 
-        .brand-dot {
-            width: 11px;
-            height: 11px;
-            border-radius: 4px;
+        .profile-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
             background: var(--accent);
-        }
-
-        .header h1 {
+            color: var(--on-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            font-size: 1.15rem;
-            letter-spacing: -0.02em;
-            color: var(--text);
+            font-size: 0.95rem;
+            flex: 0 0 auto;
         }
 
-        #userDisplay { align-items: center; gap: 14px; }
-
+        .profile-info { flex: 1; min-width: 0; }
         #currentUsername {
             font-weight: 600;
             font-size: 0.88rem;
-            color: var(--text-dim);
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .profile-sub { font-size: 0.74rem; color: var(--text-faint); }
+
+        .profile-chevron {
+            color: var(--text-faint);
+            flex: 0 0 auto;
+            transition: transform 0.18s ease;
+        }
+        .profile.menu-open .profile-chevron { transform: rotate(180deg); }
+
+        /* ===== Profile popup menu ===== */
+        .profile-menu {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            bottom: calc(100% - 4px);
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 6px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(6px);
+            transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+            z-index: 30;
+        }
+        .profile-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
 
-        .logout-btn {
-            padding: 8px 16px;
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border-2);
-            border-radius: 10px;
+        .profile-menu-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 11px;
+            background: none;
+            border: none;
+            border-radius: 9px;
             cursor: pointer;
             font-family: var(--font);
+            font-size: 0.86rem;
             font-weight: 600;
-            font-size: 0.82rem;
-            transition: background 0.15s ease, border-color 0.15s ease;
+            color: var(--text);
+            text-align: left;
+            transition: background 0.12s ease;
         }
-        .logout-btn:hover { background: var(--accent-soft); border-color: var(--text-faint); }
+        .profile-menu-item:hover { background: var(--accent-soft); }
+        .profile-menu-item svg { color: var(--text-dim); flex: 0 0 auto; }
+        .profile-menu-item.danger { color: var(--danger); }
+        .profile-menu-item.danger svg { color: var(--danger); }
+
+        .profile-menu-item .theme-state {
+            margin-left: auto;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-faint);
+        }
+
+        .profile-menu-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 5px 4px;
+        }
 
         /* ===== Auth card ===== */
         .auth-container {
@@ -170,7 +261,7 @@
             margin-top: 8px;
             padding: 13px;
             background: var(--accent);
-            color: #fff;
+            color: var(--on-accent);
             border: none;
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -307,9 +398,35 @@
             font-size: 0.9rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 8px;
             min-height: 66px;
         }
+        .active-chat-body {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-back {
+            display: none; /* hidden on desktop, shown in the mobile media query */
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            margin-left: -8px;
+            border: none;
+            background: none;
+            border-radius: 10px;
+            color: var(--text);
+            cursor: pointer;
+            flex: 0 0 auto;
+            transition: background 0.12s ease;
+        }
+        .mobile-back:hover { background: var(--accent-soft); }
+        .mobile-back:active { transform: scale(0.94); }
+
         .header-user-info { display: flex; align-items: center; color: var(--text); }
         .header-user-info > div > div:first-child { font-weight: 700; font-size: 0.95rem; }
 
@@ -343,7 +460,7 @@
         }
         .message-sent .message-content {
             background: var(--accent);
-            color: #fff;
+            color: var(--on-accent);
             border-bottom-right-radius: 5px;
         }
         .message-received .message-content {
@@ -430,7 +547,7 @@
 
         .send-button {
             background: var(--accent);
-            color: #fff;
+            color: var(--on-accent);
             border: none;
             border-radius: 11px;
             width: 44px;
@@ -468,7 +585,7 @@
 
         .file-count {
             background: var(--accent);
-            color: #fff;
+            color: var(--on-accent);
             border-radius: 50%;
             min-width: 18px;
             height: 18px;
@@ -521,12 +638,12 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: #dcdce0;
+            background: var(--scrollbar);
             border-radius: 999px;
             border: 2px solid transparent;
             background-clip: padding-box;
         }
-        ::-webkit-scrollbar-thumb:hover { background: #c4c4ca; background-clip: padding-box; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); background-clip: padding-box; }
 
         /* ===== Animations ===== */
         @keyframes fade {
@@ -538,32 +655,48 @@
             * { animation: none !important; transition: none !important; }
         }
 
-        /* ===== Responsive ===== */
+        /* ===== Responsive: mobile master/detail ===== */
         @media (max-width: 768px) {
-            .container { padding: 12px; }
-            .chat-wrapper { flex-direction: column; }
+            .container { padding: 0; height: 100vh; height: 100dvh; }
+
+            .chat-wrapper {
+                position: relative;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            /* Sidebar (contact list) is the main page, full width */
             .sidebar {
                 width: 100%;
-                height: 180px;
                 border-right: none;
-                border-bottom: 1px solid var(--border);
             }
+
+            /* Chat detail slides in over the list from the right */
+            .main-chat {
+                position: absolute;
+                inset: 0;
+                background: var(--surface);
+                transform: translateX(100%);
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 20;
+            }
+            .chat-wrapper.chat-active .main-chat { transform: translateX(0); }
+
+            /* Show the back arrow only on mobile */
+            .mobile-back { display: flex; }
+
+            .active-chat-header { padding: 14px 16px; }
+            .chat-messages { padding: 16px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .main-chat { transition: none !important; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <div class="brand">
-            <span class="brand-dot"></span>
-            <h1>Modern Chat</h1>
-        </div>
-        <div id="userDisplay" style="display: none; align-items: center;">
-            <span id="currentUsername" style="margin-right: 15px; font-weight: bold;"></span>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-    </div>
-
     <!-- Login Form -->
     <div id="authSection" class="auth-container">
         <h2>Welcome back</h2>
@@ -593,12 +726,53 @@
             <div class="user-list" id="userList">
                 <!-- Users will be populated here -->
             </div>
+
+            <!-- Current user / account menu -->
+            <div class="sidebar-footer">
+                <div class="profile-menu" id="profileMenu">
+                    <button type="button" class="profile-menu-item" onclick="toggleDarkMode()">
+                        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <span id="themeLabel">Dark mode</span>
+                        <span class="theme-state" id="themeState">Off</span>
+                    </button>
+                    <div class="profile-menu-divider"></div>
+                    <button type="button" class="profile-menu-item danger" onclick="logout()">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+
+                <div class="profile" id="userDisplay" style="display: none;" onclick="toggleProfileMenu(event)">
+                    <div class="profile-avatar" id="profileAvatar">?</div>
+                    <div class="profile-info">
+                        <div id="currentUsername"></div>
+                        <div class="profile-sub">Active now</div>
+                    </div>
+                    <svg class="profile-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                </div>
+            </div>
         </div>
 
         <!-- Main Chat Area -->
         <div class="main-chat">
-            <div class="active-chat-header" id="activeChatHeader">
-                Select a user to start chatting
+            <div class="active-chat-header">
+                <button class="mobile-back" onclick="showContactList()" aria-label="Back to contacts">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="active-chat-body" id="activeChatHeader">
+                    Select a user to start chatting
+                </div>
             </div>
 
             <div id="chat-messages" class="chat-messages">
@@ -653,6 +827,10 @@
     const chatSection = document.getElementById('chatSection');
     const userDisplay = document.getElementById('userDisplay');
     const currentUsernameSpan = document.getElementById('currentUsername');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileMenu = document.getElementById('profileMenu');
+    const themeLabel = document.getElementById('themeLabel');
+    const themeState = document.getElementById('themeState');
 
     const userListElement = document.getElementById('userList');
     const activeChatHeader = document.getElementById('activeChatHeader');
@@ -669,12 +847,51 @@
 
     // Check for existing session
     window.onload = function() {
+        applyTheme(localStorage.getItem('chat_theme') || 'light');
+
         const savedUser = localStorage.getItem('chat_user');
         if (savedUser) {
             currentUser = JSON.parse(savedUser);
             showChat();
         }
     };
+
+    // ===== Dark mode =====
+    function applyTheme(theme) {
+        const isDark = theme === 'dark';
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('chat_theme', isDark ? 'dark' : 'light');
+        if (themeLabel) themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
+        if (themeState) themeState.textContent = isDark ? 'On' : 'Off';
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        applyTheme(isDark ? 'light' : 'dark');
+    }
+
+    // ===== Profile popup menu =====
+    function toggleProfileMenu(event) {
+        if (event) event.stopPropagation();
+        const open = profileMenu.classList.toggle('open');
+        userDisplay.classList.toggle('menu-open', open);
+    }
+
+    function closeProfileMenu() {
+        profileMenu.classList.remove('open');
+        userDisplay.classList.remove('menu-open');
+    }
+
+    // Close the menu when clicking anywhere outside it
+    document.addEventListener('click', function(e) {
+        if (profileMenu.classList.contains('open') &&
+            !profileMenu.contains(e.target) && !userDisplay.contains(e.target)) {
+            closeProfileMenu();
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeProfileMenu();
+    });
 
     function login() {
         const username = document.getElementById('username').value;
@@ -702,6 +919,7 @@
     }
 
     function logout() {
+        closeProfileMenu();
         if (stompClient) {
             stompClient.disconnect();
         }
@@ -715,7 +933,8 @@
         authSection.style.display = 'none';
         chatSection.style.display = 'flex';
         userDisplay.style.display = 'flex';
-        currentUsernameSpan.textContent = `Hello, ${currentUser.username}`;
+        currentUsernameSpan.textContent = currentUser.username;
+        profileAvatar.textContent = currentUser.username.charAt(0).toUpperCase();
 
         loadOnlineUsers().then(() => {
             if (!currentUser) return; // session was rejected during the online-users fetch
@@ -727,6 +946,7 @@
     function showAuth() {
         authSection.style.display = 'block';
         chatSection.style.display = 'none';
+        chatSection.classList.remove('chat-active');
         userDisplay.style.display = 'none';
         updateConnectionStatus(false);
     }
@@ -828,6 +1048,8 @@
     }
 
     function selectContact(user) {
+        // On mobile, reveal the chat detail pane (slides over the contact list)
+        chatSection.classList.add('chat-active');
         if (activeRecipientId == user.userId) return;
 
         // Highlight active user
@@ -855,6 +1077,11 @@
 
         loadChatHistory(user.userId);
         sendReadReceipt(user.userId);
+    }
+
+    // Mobile: go back from the chat detail to the contact list
+    function showContactList() {
+        chatSection.classList.remove('chat-active');
     }
 
     function loadChatHistory(recipientId) {
