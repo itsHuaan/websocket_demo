@@ -621,6 +621,45 @@
             min-height: 0;
         }
 
+        /* ===== Empty state: no conversation open ===== */
+        .chat-empty {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+        }
+        .chat-empty-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .chat-empty h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+        .chat-empty p {
+            font-size: 0.88rem;
+            color: var(--text-faint);
+            max-width: 260px;
+            line-height: 1.5;
+        }
+        /* Show the empty state until a chat is open, then swap in the message list */
+        .chat-wrapper.has-active-chat .chat-empty { display: none; }
+        .chat-wrapper:not(.has-active-chat) #chat-messages { display: none; }
+
         .message {
             position: relative;
             margin-bottom: 12px;

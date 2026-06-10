@@ -254,6 +254,7 @@
         authSection.style.display = 'block';
         chatSection.style.display = 'none';
         chatSection.classList.remove('chat-active');
+        chatSection.classList.remove('has-active-chat');
         chatSection.classList.remove('info-open');
         chatInfoBtn.style.display = 'none';
         activeContact = null;
@@ -401,6 +402,7 @@
     function selectContact(user) {
         // On mobile, reveal the chat detail pane (slides over the contact list)
         chatSection.classList.add('chat-active');
+        chatSection.classList.add('has-active-chat'); // swaps the empty state for the message list
         if (activeRecipientId == user.userId) return;
 
         // Highlight active user
