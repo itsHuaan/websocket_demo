@@ -23,5 +23,6 @@ public class ChatMessageRequest {
     Integer senderVisibility;
     Integer recipientVisibility;
     Long replyToMessageId;
+    String clientId; // client-generated correlation id, echoed back so the sender can reconcile its optimistic bubble
 }
 

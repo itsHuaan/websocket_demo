@@ -110,22 +110,28 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     public void processMessage(ChatMessageRequest message) {
         ChatMessageResponse savedMessage = saveMessage(message);
         log.info("Incoming message from {} to {} in {}: {}", message.getSenderId(), message.getRecipientId(), message.getChatId(), message.getMessage());
+
+        ChatNotificationResponse notification = ChatNotificationResponse.builder()
+                .id(savedMessage.getMessageId())
+                .senderId(savedMessage.getSenderId())
+                .recipientId(savedMessage.getRecipientId())
+                .message(savedMessage.getMessage())
+                .mediaUrls(savedMessage.getMediaUrls())
+                .sentAt(savedMessage.getSentAt())
+                .senderVisibility(savedMessage.getSenderVisibility())
+                .recipientVisibility(savedMessage.getRecipientVisibility())
+                .replyToMessageId(savedMessage.getReplyToMessageId())
+                .replyToSenderUsername(savedMessage.getReplyToSenderUsername())
+                .replyToSnippet(savedMessage.getReplyToSnippet())
+                .clientId(message.getClientId())
+                .build();
+
+        // Deliver to the recipient, and echo back to the sender so its optimistic
+        // bubble can be reconciled with the persisted message id (enables reply/forward).
         messagingTemplate.convertAndSendToUser(
-                String.valueOf(savedMessage.getRecipientId()),
-                "/queue/messages",
-                ChatNotificationResponse.builder()
-                        .id(savedMessage.getMessageId())
-                        .senderId(savedMessage.getSenderId())
-                        .recipientId(savedMessage.getRecipientId())
-                        .message(savedMessage.getMessage())
-                        .mediaUrls(savedMessage.getMediaUrls())
-                        .sentAt(savedMessage.getSentAt())
-                        .senderVisibility(savedMessage.getSenderVisibility())
-                        .recipientVisibility(savedMessage.getRecipientVisibility())
-                        .replyToMessageId(savedMessage.getReplyToMessageId())
-                        .replyToSenderUsername(savedMessage.getReplyToSenderUsername())
-                        .replyToSnippet(savedMessage.getReplyToSnippet())
-                        .build());
+                String.valueOf(savedMessage.getRecipientId()), "/queue/messages", notification);
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(savedMessage.getSenderId()), "/queue/messages", notification);
     }
 
     @Override

@@ -24,5 +24,6 @@ public class ChatNotificationResponse {
     Long replyToMessageId;
     String replyToSenderUsername;
     String replyToSnippet;
+    String clientId; // echoed back to the sender to match its optimistic bubble
 }
 
