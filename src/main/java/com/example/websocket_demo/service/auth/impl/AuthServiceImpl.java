@@ -32,6 +32,7 @@ import com.example.websocket_demo.enumeration.AccountStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.websocket_demo.dto.request.ForgotPasswordRequest;
 import com.example.websocket_demo.dto.request.ResetPasswordRequest;
+import com.example.websocket_demo.dto.request.ResendOtpRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -83,6 +84,19 @@ public class AuthServiceImpl implements IAuthService {
         
         UserEntity user = userRepository.save(userMapper.toUserEntity(credentials));
         EmailRequest emailRequest = new EmailRequest(email, "Account Confirmation OTP", getEmailContent(otpService.generateAndStoreOtp(email).getData(), OTP_EXPIRES_MINUTES));
+        emailService.sendEmail(emailRequest);
+    }
+
+    @Override
+    public void resendSignUpOtp(ResendOtpRequest request) {
+        String email = request.getEmail();
+        UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+        if (user.getStatus() == AccountStatus.ACTIVE.getValue()) {
+            throw new IllegalArgumentException("This account is already verified. Please sign in.");
+        }
+        String otp = otpService.generateAndStoreOtp(email).getData();
+        EmailRequest emailRequest = new EmailRequest(email, "Account Confirmation OTP", getEmailContent(otp, OTP_EXPIRES_MINUTES));
         emailService.sendEmail(emailRequest);
     }
 

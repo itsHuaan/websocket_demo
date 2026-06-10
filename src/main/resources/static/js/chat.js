@@ -207,16 +207,155 @@
         .finally(() => setLoginLoading(false));
     }
 
-    // Toggle the password field between hidden and visible
-    function togglePassword() {
-        const input = document.getElementById('password');
-        const btn = document.getElementById('passwordToggle');
+    // Toggle the password field within the given toggle button's wrapper
+    function togglePassword(btn) {
+        const input = btn.parentElement.querySelector('input');
+        if (!input) return;
         const reveal = input.type === 'password';
         input.type = reveal ? 'text' : 'password';
         btn.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
         btn.innerHTML = reveal
             ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>'
             : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    }
+
+    // ===== Sign up / email verification =====
+    let pendingEmail = null;    // email awaiting OTP verification
+    let pendingUsername = null; // prefill on the login screen after verifying
+    let resendTimer = null;
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function showLoginView() { switchAuthView('loginView'); }
+    function showSignupView() { switchAuthView('signupView'); }
+    function showOtpView() { switchAuthView('otpView'); }
+
+    function switchAuthView(viewId) {
+        ['loginView', 'signupView', 'otpView'].forEach(id => {
+            document.getElementById(id).style.display = id === viewId ? 'block' : 'none';
+        });
+        setFieldError('signupError', '');
+        setFieldError('otpError', '');
+    }
+
+    function setFieldError(id, msg) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg || '';
+        el.style.display = msg ? 'block' : 'none';
+    }
+
+    function setBtnLoading(btnId, loading, idleHtml) {
+        const btn = document.getElementById(btnId);
+        btn.disabled = loading;
+        btn.innerHTML = loading
+            ? '<span class="btn-loading"><span class="spinner"></span>Please wait…</span>'
+            : idleHtml;
+    }
+
+    function signup() {
+        const firstName = document.getElementById('suFirstName').value.trim();
+        const lastName = document.getElementById('suLastName').value.trim();
+        const email = document.getElementById('suEmail').value.trim();
+        const username = document.getElementById('suUsername').value.trim();
+        const password = document.getElementById('suPassword').value;
+        const confirm = document.getElementById('suConfirm').value;
+
+        if (!firstName || !lastName) return setFieldError('signupError', 'Please enter your first and last name.');
+        if (!EMAIL_RE.test(email)) return setFieldError('signupError', 'Please enter a valid email address.');
+        if (username.length < 3) return setFieldError('signupError', 'Username must be at least 3 characters.');
+        if (password.length < 6) return setFieldError('signupError', 'Password must be at least 6 characters.');
+        if (password !== confirm) return setFieldError('signupError', 'Passwords do not match.');
+        setFieldError('signupError', '');
+
+        setBtnLoading('signupButton', true);
+        fetch('/v1/api/auth/sign-up', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firstName, lastName, email, username, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 201 || data.code === 200) {
+                pendingEmail = email;
+                pendingUsername = username;
+                document.getElementById('otpEmail').textContent = email;
+                document.getElementById('otpInput').value = '';
+                showOtpView();
+                startResendCooldown();
+            } else {
+                setFieldError('signupError', data.message || 'Sign up failed. Please try again.');
+            }
+        })
+        .catch(() => setFieldError('signupError', 'Something went wrong. Please try again.'))
+        .finally(() => setBtnLoading('signupButton', false, 'Create account'));
+    }
+
+    function verifyOtp() {
+        const otp = document.getElementById('otpInput').value.trim();
+        if (!/^\d{6}$/.test(otp)) return setFieldError('otpError', 'Enter the 6-digit code.');
+        setFieldError('otpError', '');
+
+        setBtnLoading('otpButton', true);
+        fetch('/v1/api/auth/verify-sign-up', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: pendingEmail, otp })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                if (resendTimer) clearInterval(resendTimer);
+                showLoginView();
+                if (pendingUsername) document.getElementById('username').value = pendingUsername;
+                document.getElementById('password').value = '';
+                showDialog({ title: 'Account verified', message: 'Your account is ready. Please sign in.', confirmText: 'Sign in' });
+            } else {
+                setFieldError('otpError', data.message || 'Invalid or expired code.');
+            }
+        })
+        .catch(() => setFieldError('otpError', 'Something went wrong. Please try again.'))
+        .finally(() => setBtnLoading('otpButton', false, 'Verify'));
+    }
+
+    function resendOtp() {
+        if (!pendingEmail) return;
+        const btn = document.getElementById('resendBtn');
+        if (btn.disabled) return;
+        fetch('/v1/api/auth/resend-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: pendingEmail })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                setFieldError('otpError', '');
+                startResendCooldown();
+            } else {
+                setFieldError('otpError', data.message || 'Could not resend the code.');
+            }
+        })
+        .catch(() => setFieldError('otpError', 'Could not resend the code.'));
+    }
+
+    // Briefly disable the resend link with a countdown to avoid spamming emails
+    function startResendCooldown() {
+        const btn = document.getElementById('resendBtn');
+        let seconds = 30;
+        btn.disabled = true;
+        const tick = () => {
+            if (seconds <= 0) {
+                clearInterval(resendTimer);
+                btn.disabled = false;
+                btn.textContent = 'Resend code';
+                return;
+            }
+            btn.textContent = `Resend code (${seconds}s)`;
+            seconds--;
+        };
+        tick();
+        if (resendTimer) clearInterval(resendTimer);
+        resendTimer = setInterval(tick, 1000);
     }
 
     function logout() {
@@ -1083,3 +1222,12 @@
         }
     });
     mediaFilesInput.addEventListener('change', handleFileSelection);
+
+    // Submit auth forms on Enter
+    ['username', 'password'].forEach(id => {
+        document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
+    });
+    ['suFirstName', 'suLastName', 'suEmail', 'suUsername', 'suPassword', 'suConfirm'].forEach(id => {
+        document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') signup(); });
+    });
+    document.getElementById('otpInput').addEventListener('keypress', e => { if (e.key === 'Enter') verifyOtp(); });

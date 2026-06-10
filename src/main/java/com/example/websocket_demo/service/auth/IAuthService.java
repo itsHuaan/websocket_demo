@@ -7,6 +7,7 @@ import com.example.websocket_demo.dto.request.SignUpRequest;
 import com.example.websocket_demo.dto.request.ForgotPasswordRequest;
 import com.example.websocket_demo.dto.request.ResetPasswordRequest;
 import com.example.websocket_demo.dto.request.VerifyOtpRequest;
+import com.example.websocket_demo.dto.request.ResendOtpRequest;
 
 public interface IAuthService {
     SignInResponse signIn(SignInRequest credentials);
@@ -14,6 +15,8 @@ public interface IAuthService {
     void signUp(SignUpRequest credentials);
 
     void verifySignUp(VerifyOtpRequest request);
+
+    void resendSignUpOtp(ResendOtpRequest request);
 
     void forgotPassword(ForgotPasswordRequest request);
 
