@@ -62,6 +62,8 @@ public class AuthServiceImpl implements IAuthService {
         return new SignInResponse(
                 user.getUserId(),
                 user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
                 jwt,
                 user.getProfilePicture());
     }

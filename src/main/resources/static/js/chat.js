@@ -6,6 +6,7 @@
     let onlineUsers = new Set();
     let isTypingTimeout = null;
     let activeContactUsername = null;
+    let activeContact = null; // full user object of the open conversation (for the info panel)
     let replyingTo = null; // { messageId, senderName, snippet }
     let contactsCache = []; // raw contact list, used by the forward picker
     let menuTarget = null;  // message the action popup currently targets
@@ -32,6 +33,10 @@
     const sendButton = document.getElementById('sendButton');
     const fileCount = document.getElementById('fileCount');
     const filePreviewContainer = document.getElementById('filePreviewContainer');
+    const chatInfoBtn = document.getElementById('chatInfoBtn');
+    const infoAvatar = document.getElementById('infoAvatar');
+    const infoName = document.getElementById('infoName');
+    const infoUsername = document.getElementById('infoUsername');
     let typingBubbleEl = null; // the animated "is typing" bubble, appended into the message list
 
     // Show a received-style bubble with animated dots at the bottom of the conversation
@@ -144,9 +149,16 @@
 
     appDialog.addEventListener('click', e => { if (e.target === appDialog) closeDialog(); });
 
+    // Full name (first + last) with a graceful fallback to the username
+    function displayName(user) {
+        if (!user) return 'Unknown';
+        const full = [user.firstName, user.lastName].filter(s => s && s.trim()).join(' ').trim();
+        return full || user.username || 'Unknown';
+    }
+
     // ===== Avatar rendering (profile picture, else first-letter fallback) =====
     function fillAvatar(el, user) {
-        const initial = (user.username || '?').charAt(0).toUpperCase();
+        const initial = (displayName(user) || '?').charAt(0).toUpperCase();
         if (user.profilePicture) {
             el.textContent = '';
             el.style.backgroundImage = `url("${user.profilePicture}")`;
@@ -222,7 +234,7 @@
         authSection.style.display = 'none';
         chatSection.style.display = 'flex';
         userDisplay.style.display = 'flex';
-        currentUsernameSpan.textContent = currentUser.username;
+        currentUsernameSpan.textContent = displayName(currentUser);
         renderProfileAvatar();
 
         loadOnlineUsers().then(() => {
@@ -242,6 +254,9 @@
         authSection.style.display = 'block';
         chatSection.style.display = 'none';
         chatSection.classList.remove('chat-active');
+        chatSection.classList.remove('info-open');
+        chatInfoBtn.style.display = 'none';
+        activeContact = null;
         userDisplay.style.display = 'none';
         updateConnectionStatus(false);
     }
@@ -332,12 +347,13 @@
 
             const name = document.createElement('div');
             name.className = 'user-name';
-            name.textContent = user.username;
+            name.textContent = displayName(user);
 
+            // Latest message preview (filled asynchronously); the dot conveys presence
             const status = document.createElement('div');
             status.className = 'user-status';
             status.id = `status-text-${user.userId}`;
-            status.textContent = isOnline ? 'Online' : 'Offline';
+            status.textContent = '';
 
             details.appendChild(name);
             details.appendChild(status);
@@ -346,6 +362,40 @@
 
             userListElement.appendChild(userItem);
         });
+
+        loadContactPreviews();
+    }
+
+    // Build a one-line preview from a message (prefixes "You: " for own messages)
+    function formatPreview(msg, isOwn) {
+        if (!msg) return 'No messages yet';
+        const prefix = isOwn ? 'You: ' : '';
+        const text = (msg.message || '').trim();
+        if (text) return prefix + text;
+        if (msg.mediaUrls && msg.mediaUrls.length) return prefix + '📷 Media';
+        return 'No messages yet';
+    }
+
+    // Fetch the latest message for each contact and show it under their name
+    function loadContactPreviews() {
+        contactsCache.forEach(user => {
+            if (user.userId == currentUser.id) return;
+            authFetch(`/v1/api/message/${user.userId}?size=1`, { method: 'GET' })
+                .then(res => res.json())
+                .then(data => {
+                    const el = document.getElementById(`status-text-${user.userId}`);
+                    if (!el) return;
+                    const last = data.code === 200 && data.data.content && data.data.content[0];
+                    el.textContent = last ? formatPreview(last, last.senderId == currentUser.id) : 'No messages yet';
+                })
+                .catch(() => {});
+        });
+    }
+
+    // Update a single contact's preview line in response to a live message
+    function updateContactPreview(userId, msgData, isOwn) {
+        const el = document.getElementById(`status-text-${userId}`);
+        if (el) el.textContent = formatPreview(msgData, isOwn);
     }
 
     function selectContact(user) {
@@ -359,11 +409,13 @@
         if (userEl) userEl.classList.add('active');
 
         activeRecipientId = user.userId;
-        activeContactUsername = user.username;
+        activeContact = user;
+        activeContactUsername = displayName(user);
         cancelReply(); // a pending reply belongs to the previous conversation
         const isOnline = onlineUsers.has(String(user.userId));
 
-        const headerInitial = user.username.charAt(0).toUpperCase();
+        const headerName = displayName(user);
+        const headerInitial = headerName.charAt(0).toUpperCase();
         const headerAvatar = user.profilePicture
             ? `<div class="user-avatar has-image" style="width: 30px; height: 30px; margin-right: 10px; background-image: url('${user.profilePicture}');"></div>`
             : `<div class="user-avatar" style="width: 30px; height: 30px; margin-right: 10px;">${headerInitial}</div>`;
@@ -372,11 +424,14 @@
             <div class="header-user-info">
                 ${headerAvatar}
                 <div>
-                    <div>${user.username}</div>
+                    <div>${headerName}</div>
                     <div style="font-size: 0.7rem; font-weight: normal; color: ${isOnline ? 'var(--success-color)' : '#666'}">${isOnline ? 'Online' : 'Offline'}</div>
                 </div>
             </div>
         `;
+
+        chatInfoBtn.style.display = 'flex';
+        if (chatSection.classList.contains('info-open')) populateInfoPanel();
 
         chatInputArea.style.display = 'flex';
         chatMessages.innerHTML = ''; // Clear current messages
@@ -390,6 +445,26 @@
     // Mobile: go back from the chat detail to the contact list
     function showContactList() {
         chatSection.classList.remove('chat-active');
+    }
+
+    // ===== Contact info panel (right sidebar on desktop, full page on mobile) =====
+    function toggleInfoPanel() {
+        if (!activeContact) return;
+        const open = chatSection.classList.toggle('info-open');
+        chatInfoBtn.classList.toggle('active', open);
+        if (open) populateInfoPanel();
+    }
+
+    function closeInfoPanel() {
+        chatSection.classList.remove('info-open');
+        chatInfoBtn.classList.remove('active');
+    }
+
+    function populateInfoPanel() {
+        if (!activeContact) return;
+        fillAvatar(infoAvatar, activeContact);
+        infoName.textContent = displayName(activeContact);
+        infoUsername.textContent = '@' + activeContact.username;
     }
 
     // ===== Reply =====
@@ -512,7 +587,7 @@
 
             const name = document.createElement('div');
             name.className = 'forward-item-name';
-            name.textContent = user.username;
+            name.textContent = displayName(user);
 
             item.appendChild(avatar);
             item.appendChild(name);
@@ -610,9 +685,13 @@
                 if (messageData.senderId == currentUser.id) {
                     // Echo of my own message — reconcile the optimistic bubble with its real id
                     reconcileOwnMessage(messageData);
-                } else if (messageData.senderId == activeRecipientId) {
-                    showMessage(messageData, false);
-                    sendReadReceipt(activeRecipientId);
+                } else {
+                    // Refresh that contact's preview even if their chat isn't open
+                    updateContactPreview(messageData.senderId, messageData, false);
+                    if (messageData.senderId == activeRecipientId) {
+                        showMessage(messageData, false);
+                        sendReadReceipt(activeRecipientId);
+                    }
                 }
             });
 
@@ -651,16 +730,14 @@
         else onlineUsers.delete(String(userId));
 
         const dot = document.getElementById(`dot-${userId}`);
-        const statusText = document.getElementById(`status-text-${userId}`);
 
         if (dot) {
             if (isOnline) dot.classList.add('online');
             else dot.classList.remove('online');
         }
 
-        if (statusText) {
-            statusText.textContent = isOnline ? 'Online' : 'Offline';
-        }
+        // The contact list shows the latest message under each name, not presence —
+        // the dot already conveys online/offline there.
 
         // Update header if chatting with this user
         if (activeRecipientId == userId) {
@@ -917,6 +994,9 @@
     // optimistic bubble in place — attaching the kebab — instead of duplicating it.
     function reconcileOwnMessage(messageData) {
         const realId = messageData.id != null ? messageData.id : messageData.messageId;
+
+        // Reflect my latest message in the recipient's contact-list preview
+        updateContactPreview(messageData.recipientId, messageData, true);
 
         if (messageData.clientId) {
             const existing = chatMessages.querySelector(`[data-client-id="${messageData.clientId}"]`);

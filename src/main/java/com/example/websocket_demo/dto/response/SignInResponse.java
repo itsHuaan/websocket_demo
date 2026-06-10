@@ -13,13 +13,17 @@ import lombok.experimental.FieldDefaults;
 public class SignInResponse {
     Long id;
     String username;
+    String firstName;
+    String lastName;
     String type;
     String token;
     String profilePicture;
 
-    public SignInResponse(Long id, String username, String token, String profilePicture) {
+    public SignInResponse(Long id, String username, String firstName, String lastName, String token, String profilePicture) {
         this.id = id;
         this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.type = "Bearer";
         this.token = token;
         this.profilePicture = profilePicture;

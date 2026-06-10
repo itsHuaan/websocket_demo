@@ -74,7 +74,7 @@
             width: 100%;
             max-width: 1320px;
             margin: 0 auto;
-            padding: 20px clamp(16px, 3vw, 28px) 24px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -435,7 +435,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .user-status { font-size: 0.76rem; color: var(--text-faint); }
+        .user-status {
+            font-size: 0.76rem;
+            color: var(--text-faint);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         /* ===== Main chat ===== */
         .main-chat {
@@ -485,6 +491,117 @@
 
         .header-user-info { display: flex; align-items: center; color: var(--text); }
         .header-user-info > div > div:first-child { font-weight: 700; font-size: 0.95rem; }
+
+        /* Info button in the chat header */
+        .chat-info-btn {
+            width: 38px;
+            height: 38px;
+            margin-right: -6px;
+            border: none;
+            background: none;
+            border-radius: 10px;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            transition: background 0.12s ease, color 0.12s ease;
+        }
+        .chat-info-btn:hover { background: var(--accent-soft); color: var(--text); }
+        .chat-info-btn.active { background: var(--accent-soft); color: var(--text); }
+
+        /* ===== Contact info panel ===== */
+        .info-panel {
+            flex: 0 0 auto;
+            width: 0;
+            overflow: hidden;
+            background: var(--surface-2);
+            transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chat-wrapper.info-open .info-panel {
+            width: 300px;
+            border-left: 1px solid var(--border);
+        }
+        /* Fixed-width inner keeps content from reflowing while the panel animates open */
+        .info-panel-inner {
+            width: 300px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            min-height: 66px;
+        }
+        .info-panel-title {
+            flex: 1;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+        .info-close {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--text-faint);
+            font-size: 1.4rem;
+            line-height: 1;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            transition: background 0.12s ease, color 0.12s ease;
+        }
+        .info-close:hover { background: var(--accent-soft); color: var(--text); }
+
+        .info-panel-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .info-avatar {
+            width: 116px;
+            height: 116px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .info-avatar.has-image { color: transparent; }
+        .info-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            word-break: break-word;
+        }
+        .info-username {
+            font-size: 0.88rem;
+            color: var(--text-faint);
+            margin-top: 3px;
+        }
 
         .chat-messages {
             display: flex;
@@ -1043,6 +1160,24 @@
             }
             .chat-wrapper.chat-active .main-chat { transform: translateX(0); }
 
+            /* Info panel becomes a full page that slides over the chat */
+            .info-panel {
+                position: absolute;
+                inset: 0;
+                width: 100% !important;
+                border-left: none !important;
+                background: var(--surface);
+                transform: translateX(100%);
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 30;
+            }
+            .chat-wrapper.info-open .info-panel { transform: translateX(0); }
+            .info-panel-inner { width: 100%; }
+
+            /* On mobile use the back arrow, not the desktop close button */
+            .info-back { display: flex; }
+            .info-close { display: none; }
+
             /* Show the back arrow only on mobile */
             .mobile-back { display: flex; }
 
@@ -1051,6 +1186,10 @@
 
             .message-received .msg-menu-btn { right: -30px; }
             .message-sent .msg-menu-btn { left: -30px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .info-panel { transition: none !important; }
         }
 
         @media (prefers-reduced-motion: reduce) {
