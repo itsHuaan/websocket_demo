@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Contact info: right sidebar on desktop, full page on mobile -->
+<div class="info-panel" id="infoPanel" th:fragment="infoPanel">
+    <div class="info-panel-inner">
+        <div class="info-panel-header">
+            <button class="mobile-back info-back" onclick="closeInfoPanel()" aria-label="Back">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <span class="info-panel-title">Contact info</span>
+            <button class="info-close" onclick="closeInfoPanel()" aria-label="Close">&times;</button>
+        </div>
+        <div class="info-panel-body">
+            <div class="info-avatar" id="infoAvatar"></div>
+            <div class="info-name" id="infoName"></div>
+            <div class="info-username" id="infoUsername"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
