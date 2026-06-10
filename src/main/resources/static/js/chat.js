@@ -442,9 +442,12 @@
         sendReadReceipt(user.userId);
     }
 
-    // Mobile: go back from the chat detail to the contact list
+    // Go back to the contact list. On mobile this slides the chat away; on a tight
+    // desktop (where the contact list is hidden to make room for the info panel) it
+    // closes the panel, which reveals the contact list again.
     function showContactList() {
         chatSection.classList.remove('chat-active');
+        closeInfoPanel();
     }
 
     // ===== Contact info panel (right sidebar on desktop, full page on mobile) =====
