@@ -255,12 +255,30 @@
             margin: -2px 0 14px;
         }
 
-        .otp-input {
+        /* Segmented OTP input — one box per digit, styled like the app's inputs */
+        .otp-group {
+            display: flex;
+            gap: 8px;
+        }
+        .otp-box {
+            flex: 1;
+            min-width: 0;
+            height: 54px;
             text-align: center;
-            font-size: 1.5rem;
+            font-family: var(--font);
+            font-size: 1.35rem;
             font-weight: 700;
-            letter-spacing: 0.45em;
-            padding-left: calc(14px + 0.45em); /* offset so the letter-spacing stays visually centered */
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius-sm);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .otp-box.filled { border-color: var(--text); }
+        .otp-box:focus {
+            outline: none;
+            border-color: var(--text);
+            box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.06);
         }
 
         .auth-container h2 {

@@ -279,8 +279,9 @@
                 pendingEmail = email;
                 pendingUsername = username;
                 document.getElementById('otpEmail').textContent = email;
-                document.getElementById('otpInput').value = '';
+                clearOtpBoxes();
                 showOtpView();
+                requestAnimationFrame(() => otpBoxes[0].focus());
                 startResendCooldown();
             } else {
                 setFieldError('signupError', data.message || 'Sign up failed. Please try again.');
@@ -291,7 +292,7 @@
     }
 
     function verifyOtp() {
-        const otp = document.getElementById('otpInput').value.trim();
+        const otp = getOtpValue();
         if (!/^\d{6}$/.test(otp)) return setFieldError('otpError', 'Enter the 6-digit code.');
         setFieldError('otpError', '');
 
@@ -357,6 +358,51 @@
         if (resendTimer) clearInterval(resendTimer);
         resendTimer = setInterval(tick, 1000);
     }
+
+    // ===== Segmented OTP input =====
+    const otpBoxes = Array.from(document.querySelectorAll('#otpGroup .otp-box'));
+
+    function getOtpValue() {
+        return otpBoxes.map(b => b.value).join('');
+    }
+    function clearOtpBoxes() {
+        otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+    }
+
+    otpBoxes.forEach((box, i) => {
+        box.addEventListener('input', () => {
+            box.value = box.value.replace(/\D/g, '').slice(0, 1);
+            box.classList.toggle('filled', box.value !== '');
+            setFieldError('otpError', '');
+            if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+        });
+        box.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                verifyOtp();
+            } else if (e.key === 'Backspace' && !box.value && i > 0) {
+                e.preventDefault();
+                otpBoxes[i - 1].focus();
+                otpBoxes[i - 1].value = '';
+                otpBoxes[i - 1].classList.remove('filled');
+            } else if (e.key === 'ArrowLeft' && i > 0) {
+                e.preventDefault();
+                otpBoxes[i - 1].focus();
+            } else if (e.key === 'ArrowRight' && i < otpBoxes.length - 1) {
+                e.preventDefault();
+                otpBoxes[i + 1].focus();
+            }
+        });
+        box.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, otpBoxes.length);
+            if (!digits) return;
+            digits.split('').forEach((d, j) => {
+                otpBoxes[j].value = d;
+                otpBoxes[j].classList.add('filled');
+            });
+            otpBoxes[Math.min(digits.length, otpBoxes.length - 1)].focus();
+        });
+    });
 
     function logout() {
         closeProfileMenu();
@@ -1230,4 +1276,3 @@
     ['suFirstName', 'suLastName', 'suEmail', 'suUsername', 'suPassword', 'suConfirm'].forEach(id => {
         document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') signup(); });
     });
-    document.getElementById('otpInput').addEventListener('keypress', e => { if (e.key === 'Enter') verifyOtp(); });

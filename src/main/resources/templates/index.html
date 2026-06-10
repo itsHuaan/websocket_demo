@@ -100,9 +100,15 @@
             <h2>Verify your email</h2>
             <p class="auth-sub">Enter the 6-digit code we sent to <strong id="otpEmail"></strong>.</p>
             <div class="form-group">
-                <label for="otpInput">Verification code</label>
-                <input type="text" id="otpInput" class="otp-input" inputmode="numeric" maxlength="6" placeholder="000000"
-                       autocomplete="one-time-code" oninput="this.value=this.value.replace(/\D/g,'')">
+                <label>Verification code</label>
+                <div class="otp-group" id="otpGroup">
+                    <input type="text" class="otp-box" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+                    <input type="text" class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+                    <input type="text" class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+                    <input type="text" class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+                    <input type="text" class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+                    <input type="text" class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+                </div>
             </div>
             <div class="form-error" id="otpError" style="display: none;"></div>
             <button class="auth-button" id="otpButton" onclick="verifyOtp()">Verify</button>
