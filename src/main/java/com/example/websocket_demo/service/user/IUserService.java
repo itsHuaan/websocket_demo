@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.example.websocket_demo.dto.response.UserResponse;
 import com.example.websocket_demo.dto.request.UserRequest;
+import com.example.websocket_demo.dto.request.AdminUserRequest;
 
 public interface IUserService {
     Page<UserResponse> getAllUsers(Pageable pageable);
@@ -14,6 +15,8 @@ public interface IUserService {
     void updateUser(Long id, UserRequest UserRequest);
 
     UserResponse updateProfile(Long id, UserRequest request);
+
+    UserResponse adminUpdateUser(Long id, AdminUserRequest request);
 
     UserResponse getUserByUsername(String username);
 

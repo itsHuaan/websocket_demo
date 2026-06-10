@@ -2,6 +2,7 @@ package com.example.websocket_demo.service.role.impl;
 
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.dto.request.RoleRequest;
+import com.example.websocket_demo.dto.response.RoleResponse;
 import com.example.websocket_demo.repository.IRoleRepository;
 import com.example.websocket_demo.service.role.IRoleService;
 import lombok.AccessLevel;
@@ -10,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -18,6 +20,13 @@ import java.util.NoSuchElementException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleServiceImpl implements IRoleService {
     IRoleRepository roleRepository;
+
+    @Override
+    public List<RoleResponse> getAllRoles() {
+        return roleRepository.findAll().stream()
+                .map(r -> RoleResponse.builder().roleId(r.getRoleId()).roleName(r.getRoleName()).build())
+                .toList();
+    }
 
     @Override
     public void addRole(RoleRequest role) {

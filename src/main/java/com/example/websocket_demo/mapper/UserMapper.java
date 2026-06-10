@@ -31,6 +31,7 @@ public abstract class UserMapper {
     protected IRoleRepository roleRepository;
 
     @Mapping(target = "status", expression = "java(mapStatus(userEntity.getStatus()))")
+    @Mapping(target = "role", expression = "java(userEntity.getRole() != null ? userEntity.getRole().getRoleName() : null)")
     @Mapping(target = "createdAt", expression = "java(formatDate(userEntity.getCreatedAt()))")
     @Mapping(target = "modifiedAt", expression = "java(formatDate(userEntity.getModifiedAt()))")
     @Mapping(target = "deletedAt", expression = "java(formatDate(userEntity.getDeletedAt()))")

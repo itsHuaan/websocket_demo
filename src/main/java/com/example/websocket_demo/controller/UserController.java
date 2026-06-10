@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.request.UserRequest;
+import com.example.websocket_demo.dto.request.AdminUserRequest;
 import com.example.websocket_demo.service.user.IUserService;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.validation.PageableValidation;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @Tag(name = "User Controller")
@@ -48,6 +50,7 @@ public class UserController {
 
     @Operation(summary = "Create a new user")
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<?>> createUser(@RequestBody UserRequest UserRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(HttpStatus.CREATED, "User created successfully", userManagementService.createUser(UserRequest)));
@@ -65,17 +68,18 @@ public class UserController {
                 .body(new ApiResponse<>(HttpStatus.OK, "Profile updated", userManagementService.updateProfile(userId, userRequest)));
     }
 
-    @Operation(summary = "Update an user")
+    @Operation(summary = "Update an user (admin)")
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<?>> updateUser(@PathVariable Long id,
-                                        UserRequest UserRequest) {
-        userManagementService.updateUser(id, UserRequest);
+                                        @RequestBody AdminUserRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "User updated successfully"));
+                .body(new ApiResponse<>(HttpStatus.OK, "User updated successfully", userManagementService.adminUpdateUser(id, request)));
     }
 
     @Operation(summary = "Delete an user")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<?>> deleteUser(@PathVariable Long id,
                                         @RequestParam(required = false) Integer isHardDelete) {
         userManagementService.deleteUser(id, isHardDelete);

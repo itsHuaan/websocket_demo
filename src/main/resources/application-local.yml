@@ -63,6 +63,7 @@ app:
       - /ws/**
       - /index.html
       - /
+      - /cms
       - /static/**
       - /css/**
       - /js/**

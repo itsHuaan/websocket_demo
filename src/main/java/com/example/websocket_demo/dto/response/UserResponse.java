@@ -20,6 +20,7 @@ public class UserResponse {
     String lastName;
     String username;
     String profilePicture;
+    String role;
     String status;
     String createdAt;
     String modifiedAt;

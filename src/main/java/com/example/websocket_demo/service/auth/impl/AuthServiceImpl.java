@@ -66,7 +66,8 @@ public class AuthServiceImpl implements IAuthService {
                 user.getFirstName(),
                 user.getLastName(),
                 jwt,
-                user.getProfilePicture());
+                user.getProfilePicture(),
+                user.getRole() != null ? user.getRole().getRoleName() : null);
     }
 
     @Override

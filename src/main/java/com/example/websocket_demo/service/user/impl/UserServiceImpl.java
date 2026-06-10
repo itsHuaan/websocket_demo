@@ -2,10 +2,13 @@ package com.example.websocket_demo.service.user.impl;
 
 import com.example.websocket_demo.service.media.CloudinaryService;
 import com.example.websocket_demo.entity.BaseEntity;
+import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
+import com.example.websocket_demo.repository.IRoleRepository;
 import com.example.websocket_demo.repository.IUserRepository;
 import com.example.websocket_demo.repository.specification.UserSpecification;
 import com.example.websocket_demo.mapper.UserMapper;
+import com.example.websocket_demo.dto.request.AdminUserRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,6 +42,7 @@ public class UserServiceImpl implements IUserService {
     PasswordEncoder passwordEncoder;
     UserMapper userMapper;
     StringRedisTemplate redisTemplate;
+    IRoleRepository roleRepository;
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -121,6 +125,47 @@ public class UserServiceImpl implements IUserService {
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to update profile picture", e);
+        }
+        return userMapper.toUserDto(userRepository.save(user));
+    }
+
+    // Admin edit: name, username, email, role, status, optional password reset.
+    @Override
+    public UserResponse adminUpdateUser(Long id, AdminUserRequest request) {
+        UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("User not found")
+        );
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        if (request.getUsername() != null && !request.getUsername().isBlank()
+                && !request.getUsername().equals(user.getUsername())) {
+            if (userRepository.findByUsernameAndDeletedAtIsNull(request.getUsername()).isPresent()) {
+                throw new IllegalArgumentException("Username already exists");
+            }
+            user.setUsername(request.getUsername());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()
+                && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmailAndDeletedAtIsNull(request.getEmail())) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+            user.setEmail(request.getEmail());
+        }
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (request.getRoleId() != null) {
+            RoleEntity role = roleRepository.findById(request.getRoleId()).orElseThrow(
+                    () -> new NoSuchElementException("Role not found")
+            );
+            user.setRole(role);
+        }
+        if (request.getStatus() != null) {
+            user.setStatus(request.getStatus());
         }
         return userMapper.toUserDto(userRepository.save(user));
     }

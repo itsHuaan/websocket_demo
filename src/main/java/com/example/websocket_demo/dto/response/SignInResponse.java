@@ -18,8 +18,9 @@ public class SignInResponse {
     String type;
     String token;
     String profilePicture;
+    String role;
 
-    public SignInResponse(Long id, String username, String firstName, String lastName, String token, String profilePicture) {
+    public SignInResponse(Long id, String username, String firstName, String lastName, String token, String profilePicture, String role) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
@@ -27,6 +28,7 @@ public class SignInResponse {
         this.type = "Bearer";
         this.token = token;
         this.profilePicture = profilePicture;
+        this.role = role;
     }
 }
 
