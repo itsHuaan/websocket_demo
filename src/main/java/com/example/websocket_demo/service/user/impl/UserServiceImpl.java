@@ -98,6 +98,33 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
+    // Self-service profile update: only the safe-to-change fields (name + picture).
+    // Username/email/password are intentionally excluded — the JWT is keyed on username,
+    // so changing it would invalidate the caller's own session.
+    @Override
+    public UserResponse updateProfile(Long id, UserRequest request) {
+        UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new NoSuchElementException("User not found")
+        );
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        try {
+            if (request.getProfilePicture() != null && !request.getProfilePicture().isEmpty()) {
+                String url = user.getProfilePicture() != null
+                        ? mediaUploader.replaceMediaFile(user.getProfilePicture(), request.getProfilePicture())
+                        : mediaUploader.uploadMediaFile(request.getProfilePicture());
+                user.setProfilePicture(url);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to update profile picture", e);
+        }
+        return userMapper.toUserDto(userRepository.save(user));
+    }
+
     @Override
     public UserResponse getUserByUsername(String username) {
         return userRepository.findByUsernameAndDeletedAtIsNull(username)

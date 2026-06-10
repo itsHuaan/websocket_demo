@@ -113,6 +113,99 @@
         if (e.key === 'Escape') closeProfileMenu();
     });
 
+    // ===== Settings: edit profile =====
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsAvatar = document.getElementById('settingsAvatar');
+    const settingsFirstName = document.getElementById('settingsFirstName');
+    const settingsLastName = document.getElementById('settingsLastName');
+    const settingsUsernameInput = document.getElementById('settingsUsername');
+    const settingsPhotoInput = document.getElementById('settingsPhotoInput');
+    const settingsSaveBtn = document.getElementById('settingsSaveBtn');
+    let settingsPhotoFile = null; // newly chosen image, if any
+    let settingsPhotoUrl = null;  // object URL for its preview (revoked on close)
+
+    function openSettings() {
+        closeProfileMenu();
+        if (!currentUser) return;
+        settingsPhotoFile = null;
+        if (settingsPhotoUrl) { URL.revokeObjectURL(settingsPhotoUrl); settingsPhotoUrl = null; }
+        settingsPhotoInput.value = '';
+        settingsFirstName.value = currentUser.firstName || '';
+        settingsLastName.value = currentUser.lastName || '';
+        settingsUsernameInput.value = currentUser.username || '';
+        setFieldError('settingsError', '');
+        renderSettingsAvatar();
+        settingsModal.classList.add('open');
+    }
+
+    function closeSettings() {
+        settingsModal.classList.remove('open');
+        if (settingsPhotoUrl) { URL.revokeObjectURL(settingsPhotoUrl); settingsPhotoUrl = null; }
+        settingsPhotoFile = null;
+    }
+
+    function renderSettingsAvatar() {
+        const img = settingsPhotoFile ? settingsPhotoUrl : (currentUser && currentUser.profilePicture);
+        if (img) {
+            settingsAvatar.textContent = '';
+            settingsAvatar.style.backgroundImage = `url("${img}")`;
+            settingsAvatar.classList.add('has-image');
+        } else {
+            settingsAvatar.style.backgroundImage = '';
+            settingsAvatar.classList.remove('has-image');
+            settingsAvatar.textContent = (displayName(currentUser) || '?').charAt(0).toUpperCase();
+        }
+    }
+
+    document.getElementById('settingsPhotoBtn').addEventListener('click', () => settingsPhotoInput.click());
+    settingsPhotoInput.addEventListener('change', () => {
+        const file = settingsPhotoInput.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { setFieldError('settingsError', 'Please choose an image file.'); return; }
+        if (settingsPhotoUrl) URL.revokeObjectURL(settingsPhotoUrl);
+        settingsPhotoFile = file;
+        settingsPhotoUrl = URL.createObjectURL(file);
+        setFieldError('settingsError', '');
+        renderSettingsAvatar();
+    });
+
+    settingsModal.addEventListener('click', e => { if (e.target === settingsModal) closeSettings(); });
+
+    function saveSettings() {
+        const firstName = settingsFirstName.value.trim();
+        const lastName = settingsLastName.value.trim();
+        if (!firstName || !lastName) return setFieldError('settingsError', 'Please enter your first and last name.');
+        setFieldError('settingsError', '');
+
+        const form = new FormData();
+        form.append('firstName', firstName);
+        form.append('lastName', lastName);
+        if (settingsPhotoFile) form.append('profilePicture', settingsPhotoFile);
+
+        settingsSaveBtn.disabled = true;
+        const idle = settingsSaveBtn.innerHTML;
+        settingsSaveBtn.innerHTML = '<span class="btn-loading"><span class="spinner"></span>Saving…</span>';
+
+        authFetch('/v1/api/users/me', { method: 'PUT', body: form })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200 && data.data) {
+                currentUser.firstName = data.data.firstName;
+                currentUser.lastName = data.data.lastName;
+                currentUser.profilePicture = data.data.profilePicture;
+                localStorage.setItem('chat_user', JSON.stringify(currentUser));
+                currentUsernameSpan.textContent = displayName(currentUser);
+                renderProfileAvatar();
+                closeSettings();
+                showDialog({ title: 'Profile updated', message: 'Your profile has been saved.', confirmText: 'Done' });
+            } else {
+                setFieldError('settingsError', data.message || 'Could not update your profile.');
+            }
+        })
+        .catch(() => setFieldError('settingsError', 'Something went wrong. Please try again.'))
+        .finally(() => { settingsSaveBtn.disabled = false; settingsSaveBtn.innerHTML = idle; });
+    }
+
     // ===== Styled dialog (replaces native alert) =====
     const appDialog = document.getElementById('appDialog');
     const appDialogIcon = document.getElementById('appDialogIcon');
@@ -733,7 +826,7 @@
     window.addEventListener('resize', closeMsgMenu);
     chatMessages.addEventListener('scroll', closeMsgMenu);
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') { closeMsgMenu(); closeForwardModal(); closeDialog(); }
+        if (e.key === 'Escape') { closeMsgMenu(); closeForwardModal(); closeDialog(); closeSettings(); }
     });
     forwardModal.addEventListener('click', function(e) {
         if (e.target === forwardModal) closeForwardModal(); // click on backdrop

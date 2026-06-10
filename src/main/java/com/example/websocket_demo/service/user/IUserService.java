@@ -13,6 +13,8 @@ public interface IUserService {
 
     void updateUser(Long id, UserRequest UserRequest);
 
+    UserResponse updateProfile(Long id, UserRequest request);
+
     UserResponse getUserByUsername(String username);
 
     UserResponse getUserById(Long id);
