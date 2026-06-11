@@ -10,6 +10,14 @@
             <span id="connectionText">Disconnected</span>
         </div>
     </div>
+    <div class="sidebar-search">
+        <svg class="sidebar-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="contactSearch" class="sidebar-search-input" placeholder="Search contacts" oninput="filterContacts()" autocomplete="off">
+    </div>
+    <div class="contact-empty" id="contactEmpty" style="display: none;">No contacts match your search.</div>
     <div class="user-list" id="userList">
         <!-- Users will be populated here -->
     </div>

@@ -608,6 +608,7 @@
             const userItem = document.createElement('div');
             userItem.className = 'user-item';
             userItem.id = `user-${user.userId}`;
+            userItem.dataset.search = `${displayName(user)} ${user.username || ''}`.toLowerCase();
             userItem.onclick = () => selectContact(user);
             if (activeRecipientId == user.userId) userItem.classList.add('active');
 
@@ -647,6 +648,21 @@
         });
 
         loadContactPreviews();
+        filterContacts(); // re-apply any active search term after a re-render
+    }
+
+    // Filter the contact list by the search box (matches display name + username)
+    function filterContacts() {
+        const input = document.getElementById('contactSearch');
+        const term = (input ? input.value : '').trim().toLowerCase();
+        let visible = 0;
+        userListElement.querySelectorAll('.user-item').forEach(item => {
+            const match = !term || (item.dataset.search || '').includes(term);
+            item.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        const empty = document.getElementById('contactEmpty');
+        if (empty) empty.style.display = (term && visible === 0) ? 'block' : 'none';
     }
 
     // Build a one-line preview from a message (prefixes "You: " for own messages)
