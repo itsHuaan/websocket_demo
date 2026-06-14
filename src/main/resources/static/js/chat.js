@@ -499,6 +499,15 @@
 
     function logout() {
         closeProfileMenu();
+        // Best-effort: revoke the refresh token on the server so it can't be reused
+        const refreshToken = currentUser && currentUser.refreshToken;
+        if (refreshToken) {
+            fetch('/v1/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            }).catch(() => { /* ignore — logging out locally regardless */ });
+        }
         if (stompClient) {
             stompClient.disconnect();
         }
@@ -562,16 +571,50 @@
         });
     }
 
-    // fetch wrapper that injects the bearer token and intercepts expired/invalid tokens
-    function authFetch(url, options = {}) {
+    // Holds an in-flight refresh so concurrent 401s share one refresh call
+    let refreshPromise = null;
+
+    // Exchange the stored refresh token for a fresh access/refresh pair.
+    // Resolves true on success (currentUser + storage updated), false otherwise.
+    function refreshAccessToken() {
+        if (refreshPromise) return refreshPromise;
+        if (!currentUser || !currentUser.refreshToken) return Promise.resolve(false);
+        refreshPromise = fetch('/v1/api/auth/refresh-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: currentUser.refreshToken })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200 && data.data && data.data.token) {
+                currentUser = data.data; // new SignInResponse (rotated refresh token included)
+                localStorage.setItem('chat_user', JSON.stringify(currentUser));
+                return true;
+            }
+            return false;
+        })
+        .catch(() => false)
+        .finally(() => { refreshPromise = null; });
+        return refreshPromise;
+    }
+
+    // fetch wrapper that injects the bearer token, silently refreshes an expired
+    // token (once) and retries, and only bounces to login if the refresh fails
+    function authFetch(url, options = {}, retried = false) {
+        if (!currentUser) return Promise.reject(new Error('Not authenticated'));
         const opts = { ...options };
         opts.headers = { ...(options.headers || {}), 'Authorization': 'Bearer ' + currentUser.token };
         return fetch(url, opts).then(response => {
-            if (response.status === 401) {
+            if (response.status !== 401) return response;
+            if (retried) { // already tried a fresh token — give up
                 handleSessionExpired();
                 throw new Error('Session expired');
             }
-            return response;
+            return refreshAccessToken().then(ok => {
+                if (ok) return authFetch(url, options, true);
+                handleSessionExpired();
+                throw new Error('Session expired');
+            });
         });
     }
 

@@ -21,6 +21,7 @@ import com.example.websocket_demo.dto.request.ForgotPasswordRequest;
 import com.example.websocket_demo.dto.request.ResetPasswordRequest;
 import com.example.websocket_demo.dto.request.VerifyOtpRequest;
 import com.example.websocket_demo.dto.request.ResendOtpRequest;
+import com.example.websocket_demo.dto.request.RefreshTokenRequest;
 
 @RestController
 @Tag(name = "Authentication Controller")
@@ -35,6 +36,21 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> signIn(@RequestBody SignInRequest credentials) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ApiResponse<>(HttpStatus.OK, "You're now logged in", authService.signIn(credentials)));
+    }
+
+    @Operation(summary = "Exchange a refresh token for a new access token")
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<?>> refreshToken(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Token refreshed", authService.refreshToken(request.getRefreshToken())));
+    }
+
+    @Operation(summary = "Log out and revoke the refresh token")
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<?>> logout(@RequestBody RefreshTokenRequest request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Logged out"));
     }
 
     @Operation(summary = "Sign users up")

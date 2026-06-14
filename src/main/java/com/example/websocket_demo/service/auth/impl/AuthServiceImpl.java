@@ -3,13 +3,19 @@ package com.example.websocket_demo.service.auth.impl;
 import com.example.websocket_demo.security.domain.UserDetailsImpl;
 import com.example.websocket_demo.security.jwt.JwtProvider;
 import com.example.websocket_demo.dto.response.SignInResponse;
+import com.example.websocket_demo.entity.RefreshTokenEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AuthValidation;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.dto.request.EmailRequest;
 import com.example.websocket_demo.dto.request.SignInRequest;
 import com.example.websocket_demo.dto.request.SignUpRequest;
+import com.example.websocket_demo.repository.IRefreshTokenRepository;
 import com.example.websocket_demo.repository.IUserRepository;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import com.example.websocket_demo.service.auth.IAuthService;
 import com.example.websocket_demo.service.email.IEmailService;
 import com.example.websocket_demo.service.otp.IOtpService;
@@ -41,6 +47,7 @@ public class AuthServiceImpl implements IAuthService {
     JwtProvider jwtProvider;
     AuthenticationManager authenticationManager;
     IUserRepository userRepository;
+    IRefreshTokenRepository refreshTokenRepository;
     UserMapper userMapper;
     IEmailService emailService;
     SpringTemplateEngine templateEngine;
@@ -51,6 +58,10 @@ public class AuthServiceImpl implements IAuthService {
     @Value("${app.otp.expires-minutes}")
     int OTP_EXPIRES_MINUTES;
 
+    @NonFinal
+    @Value("${jwt.refresh-expiration}")
+    long REFRESH_EXPIRATION;
+
     @Override
     public SignInResponse signIn(SignInRequest credentials) {
         Authentication authentication = authenticationManager.authenticate(
@@ -60,14 +71,61 @@ public class AuthServiceImpl implements IAuthService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         UserEntity user = userDetails.getUser();
         String jwt = jwtProvider.generateTokenByUsername(user.getUsername());
+        String refreshToken = createRefreshToken(user.getUserId());
         return new SignInResponse(
                 user.getUserId(),
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
                 jwt,
+                refreshToken,
                 user.getProfilePicture(),
                 user.getRole() != null ? user.getRole().getRoleName() : null);
+    }
+
+    @Override
+    public SignInResponse refreshToken(String refreshToken) {
+        RefreshTokenEntity stored = refreshTokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+        if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(stored);
+            throw new IllegalArgumentException("Refresh token has expired. Please sign in again.");
+        }
+        UserEntity user = userRepository.findById(stored.getUserId())
+                .filter(u -> u.getDeletedAt() == null)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Rotate: the used refresh token is single-use; issue a fresh access/refresh pair
+        refreshTokenRepository.delete(stored);
+        String newRefreshToken = createRefreshToken(user.getUserId());
+        String jwt = jwtProvider.generateTokenByUsername(user.getUsername());
+
+        return new SignInResponse(
+                user.getUserId(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                jwt,
+                newRefreshToken,
+                user.getProfilePicture(),
+                user.getRole() != null ? user.getRole().getRoleName() : null);
+    }
+
+    @Override
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+        refreshTokenRepository.findByToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+    }
+
+    private String createRefreshToken(Long userId) {
+        RefreshTokenEntity entity = RefreshTokenEntity.builder()
+                .token(UUID.randomUUID().toString())
+                .userId(userId)
+                .expiresAt(LocalDateTime.now().plus(REFRESH_EXPIRATION, ChronoUnit.MILLIS))
+                .build();
+        return refreshTokenRepository.save(entity).getToken();
     }
 
     @Override

@@ -99,16 +99,47 @@ function closeDialog() { appDialog.classList.remove('open'); }
 appDialog.addEventListener('click', e => { if (e.target === appDialog) closeDialog(); });
 
 // ===== Auth =====
-function authFetch(url, opts = {}) {
+let refreshPromise = null;
+
+// Exchange the stored refresh token for a fresh access/refresh pair.
+function refreshAccessToken() {
+    if (refreshPromise) return refreshPromise;
+    if (!currentUser || !currentUser.refreshToken) return Promise.resolve(false);
+    refreshPromise = fetch('/v1/api/auth/refresh-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: currentUser.refreshToken })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.code === 200 && data.data && data.data.token) {
+            currentUser = data.data;
+            localStorage.setItem('chat_user', JSON.stringify(currentUser));
+            return true;
+        }
+        return false;
+    })
+    .catch(() => false)
+    .finally(() => { refreshPromise = null; });
+    return refreshPromise;
+}
+
+function expireSession() {
+    localStorage.removeItem('chat_user');
+    window.location.href = '/';
+}
+
+function authFetch(url, opts = {}, retried = false) {
     const o = { ...opts };
     o.headers = { ...(opts.headers || {}), 'Authorization': 'Bearer ' + currentUser.token };
     return fetch(url, o).then(r => {
-        if (r.status === 401) {
-            localStorage.removeItem('chat_user');
-            window.location.href = '/';
+        if (r.status !== 401) return r;
+        if (retried) { expireSession(); throw new Error('Unauthorized'); }
+        return refreshAccessToken().then(ok => {
+            if (ok) return authFetch(url, opts, true);
+            expireSession();
             throw new Error('Unauthorized');
-        }
-        return r;
+        });
     });
 }
 

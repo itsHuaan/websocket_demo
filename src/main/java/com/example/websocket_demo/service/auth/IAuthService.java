@@ -12,6 +12,10 @@ import com.example.websocket_demo.dto.request.ResendOtpRequest;
 public interface IAuthService {
     SignInResponse signIn(SignInRequest credentials);
 
+    SignInResponse refreshToken(String refreshToken);
+
+    void logout(String refreshToken);
+
     void signUp(SignUpRequest credentials);
 
     void verifySignUp(VerifyOtpRequest request);
