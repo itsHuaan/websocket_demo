@@ -20,4 +20,5 @@ public class AdminUserRequest {
     String password; // optional reset — applied only when non-blank
     Long roleId;
     Integer status;
+    String statusReason; // reason shown to the user when locking (status != ACTIVE)
 }

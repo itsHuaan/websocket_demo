@@ -4,6 +4,7 @@ import com.example.websocket_demo.service.media.CloudinaryService;
 import com.example.websocket_demo.entity.BaseEntity;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
+import com.example.websocket_demo.enumeration.AccountStatus;
 import com.example.websocket_demo.repository.IRoleRepository;
 import com.example.websocket_demo.repository.IUserRepository;
 import com.example.websocket_demo.repository.specification.UserSpecification;
@@ -30,6 +31,9 @@ import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -43,6 +47,7 @@ public class UserServiceImpl implements IUserService {
     UserMapper userMapper;
     StringRedisTemplate redisTemplate;
     IRoleRepository roleRepository;
+    SimpMessagingTemplate messagingTemplate;
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -164,10 +169,27 @@ public class UserServiceImpl implements IUserService {
             );
             user.setRole(role);
         }
+        boolean lockedNow = false;
         if (request.getStatus() != null) {
             user.setStatus(request.getStatus());
+            if (request.getStatus() != AccountStatus.ACTIVE.getValue()) {
+                user.setStatusReason(request.getStatusReason());
+                lockedNow = true;
+            } else {
+                user.setStatusReason(null); // reactivated — drop the old reason
+            }
         }
-        return userMapper.toUserDto(userRepository.save(user));
+        UserEntity saved = userRepository.save(user);
+
+        // Tell the user in real time that their account was locked, so they're
+        // logged out immediately instead of only on their next request/reload.
+        if (lockedNow) {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("status", saved.getStatus());
+            payload.put("reason", saved.getStatusReason());
+            messagingTemplate.convertAndSendToUser(String.valueOf(saved.getUserId()), "/queue/account", payload);
+        }
+        return userMapper.toUserDto(saved);
     }
 
     @Override

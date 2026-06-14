@@ -256,10 +256,18 @@ function openUserModal(user) {
     populateRoleSelect(user ? user.role : 'ROLE_USER');
     document.getElementById('uStatusGroup').style.display = user ? 'block' : 'none';
     if (user) document.getElementById('uStatus').value = String(statusValue(user.status));
+    document.getElementById('uStatusReason').value = '';
+    toggleStatusReason();
     setError('userModalError', '');
     document.getElementById('userModal').classList.add('open');
 }
 function closeUserModal() { document.getElementById('userModal').classList.remove('open'); }
+
+// Reason field only matters when editing AND moving the account to a non-active status
+function toggleStatusReason() {
+    const locked = editingUserId && document.getElementById('uStatus').value !== '1';
+    document.getElementById('uStatusReasonGroup').style.display = locked ? 'block' : 'none';
+}
 function editUser(id) { const u = allUsers.find(x => x.userId === id); if (u) openUserModal(u); }
 
 function saveUser() {
@@ -279,8 +287,10 @@ function saveUser() {
 
     let req;
     if (editingUserId) {
-        const body = { firstName, lastName, email, username, roleId, status: Number(document.getElementById('uStatus').value) };
+        const statusVal = Number(document.getElementById('uStatus').value);
+        const body = { firstName, lastName, email, username, roleId, status: statusVal };
         if (password) body.password = password;
+        if (statusVal !== 1) body.statusReason = document.getElementById('uStatusReason').value.trim();
         req = authFetch('/v1/api/users/' + editingUserId, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
         });

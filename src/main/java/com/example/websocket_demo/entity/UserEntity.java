@@ -47,6 +47,11 @@ public class UserEntity extends BaseEntity {
     @NotNull
     int status;
 
+    // Admin-supplied reason shown to the user when their account is locked
+    // (deactivated/suspended). Cleared on reactivation. Not exposed in UserResponse.
+    @Column(length = 500)
+    String statusReason;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     RoleEntity role;

@@ -562,8 +562,8 @@
         updateConnectionStatus(false);
     }
 
-    // Clear the session and bounce to login when the token is rejected (401)
-    function handleSessionExpired() {
+    // Clear the session and bounce to login, showing a dialog
+    function forceLogout({ title = 'Session expired', message = 'Your session has expired. Please sign in again.' } = {}) {
         if (!currentUser) return; // already handled
         if (stompClient) {
             try { stompClient.disconnect(); } catch (e) { /* ignore */ }
@@ -572,16 +572,32 @@
         currentUser = null;
         activeRecipientId = null;
         showAuth();
-        showDialog({
-            title: 'Session expired',
-            message: 'Your session has expired. Please sign in again.',
-            confirmText: 'Sign in',
-            icon: 'warn'
+        showDialog({ title, message, confirmText: 'Sign in', icon: 'warn' });
+    }
+
+    // Token was rejected (401) and couldn't be refreshed. customMessage carries the
+    // server's reason when present (e.g. the account was locked while offline).
+    function handleSessionExpired(customMessage) {
+        if (customMessage) forceLogout({ title: 'Account update', message: customMessage });
+        else forceLogout();
+    }
+
+    // Real-time push: an admin changed this account's status. A non-active status
+    // logs the user out immediately with the admin's reason.
+    function handleAccountStatus(data) {
+        if (!data || data.status === 1) return; // reactivated — nothing to do
+        const reason = (data.reason || '').trim();
+        forceLogout({
+            title: 'Account locked',
+            message: reason
+                ? 'An administrator has locked your account: ' + reason
+                : 'An administrator has locked your account.'
         });
     }
 
     // Holds an in-flight refresh so concurrent 401s share one refresh call
     let refreshPromise = null;
+    let lastAuthError = null; // server's reason when a refresh is rejected
 
     // Exchange the stored refresh token for a fresh access/refresh pair.
     // Resolves true on success (currentUser + storage updated), false otherwise.
@@ -598,8 +614,10 @@
             if (data.code === 200 && data.data && data.data.token) {
                 currentUser = data.data; // new SignInResponse (rotated refresh token included)
                 localStorage.setItem('chat_user', JSON.stringify(currentUser));
+                lastAuthError = null;
                 return true;
             }
+            lastAuthError = data.message || null; // e.g. "Your account has been locked: …"
             return false;
         })
         .catch(() => false)
@@ -621,7 +639,7 @@
             }
             return refreshAccessToken().then(ok => {
                 if (ok) return authFetch(url, options, true);
-                handleSessionExpired();
+                handleSessionExpired(lastAuthError);
                 throw new Error('Session expired');
             });
         });
@@ -1148,6 +1166,11 @@
                 const data = JSON.parse(message.body);
                 const el = chatMessages.querySelector(`[data-message-id="${data.messageId}"]`);
                 if (el) applyTombstone(el);
+            });
+
+            // Subscribe to account status changes (admin locked/suspended this account)
+            stompClient.subscribe(`/user/${currentUser.id}/queue/account`, function (message) {
+                handleAccountStatus(JSON.parse(message.body));
             });
 
             // Subscribe to public status updates

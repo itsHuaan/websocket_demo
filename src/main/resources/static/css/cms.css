@@ -279,6 +279,25 @@ body {
 }
 .cms-select:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgba(24,24,27,0.06); }
 
+/* Textarea inside modals — matches .cms-select but allows vertical resize */
+.cms-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 56px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.cms-textarea::placeholder { color: var(--text-faint); }
+.cms-textarea:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgba(24,24,27,0.06); }
+
 /* Danger confirm button (delete dialog) */
 .dialog-btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
 .dialog-btn.danger:hover { background: var(--danger); opacity: 0.9; }
