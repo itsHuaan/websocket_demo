@@ -95,6 +95,12 @@ public class AuthServiceImpl implements IAuthService {
                 .filter(u -> u.getDeletedAt() == null)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // A deactivated/suspended account must not be able to mint a fresh token.
+        // The refresh token is left intact so a later reactivation still works.
+        if (user.getStatus() != AccountStatus.ACTIVE.getValue()) {
+            throw new IllegalArgumentException("Your account is not active. Please contact an administrator.");
+        }
+
         // Rotate: the used refresh token is single-use; issue a fresh access/refresh pair
         refreshTokenRepository.delete(stored);
         String newRefreshToken = createRefreshToken(user.getUserId());

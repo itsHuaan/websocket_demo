@@ -41,7 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtToken != null && this.validateToken(jwtToken) && !tokenBlackListRepository.existsByToken(jwtToken)) {
                 String username = jwtProvider.getKeyByValueFromJWT("username", jwtToken);
                 UserDetails userDetails = userDetailServiceImpl.loadUserByUsername(username);
-                if (userDetails != null) {
+                // Re-check account status on every request: a token minted while the
+                // account was ACTIVE must stop working once it's deactivated/suspended.
+                if (userDetails != null && userDetails.isEnabled()
+                        && userDetails.isAccountNonLocked() && userDetails.isAccountNonExpired()) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

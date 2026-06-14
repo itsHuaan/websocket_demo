@@ -35,11 +35,16 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                     String username = jwtProvider.getKeyByValueFromJWT("username", token);
                     UserDetails userDetails = userDetailService.loadUserByUsername(username);
 
-                    if (userDetails != null) {
+                    // Only authenticate active accounts — a deactivated/suspended user
+                    // must not be able to open a socket even with a still-valid token.
+                    if (userDetails != null && userDetails.isEnabled()
+                            && userDetails.isAccountNonLocked() && userDetails.isAccountNonExpired()) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
                         accessor.setUser(authentication);
                         log.info("WebSocket user authenticated: {}", username);
+                    } else {
+                        log.warn("WebSocket connection rejected — account not active: {}", username);
                     }
                 } catch (Exception e) {
                     log.error("WebSocket authentication failed: {}", e.getMessage());
