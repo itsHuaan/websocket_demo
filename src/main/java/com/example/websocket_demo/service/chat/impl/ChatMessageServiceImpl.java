@@ -91,9 +91,60 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     @Override
     public Page<ChatMessageResponse> getChatMessages(Long senderId, Long recipientId, Pageable pageable) {
         return chatRoomService.getChatRoomId(senderId, recipientId, false)
-                .map(chatId -> chatMessageRepository.findAllByChatIdOrderByCreatedAtDesc(chatId, pageable)
-                        .map(chatMapper::toChatMessageDto))
+                .map(chatId -> chatMessageRepository.findVisibleMessages(chatId, senderId, pageable)
+                        .map(this::toSanitizedResponse))
                 .orElseThrow(() -> new NoSuchElementException("Chat room not found"));
+    }
+
+    // Map to a response, scrubbing any content from messages removed for everyone
+    // so only the tombstone (deleted=true) reaches the client.
+    private ChatMessageResponse toSanitizedResponse(ChatMessageEntity entity) {
+        ChatMessageResponse dto = chatMapper.toChatMessageDto(entity);
+        if (Boolean.TRUE.equals(entity.getDeleted())) {
+            dto.setMessage(null);
+            dto.setMediaUrls(null);
+            dto.setReplyToMessageId(null);
+            dto.setReplyToSenderUsername(null);
+            dto.setReplyToSnippet(null);
+        }
+        return dto;
+    }
+
+    @Override
+    public void removeMessageForMe(Long userId, Long messageId) {
+        ChatMessageEntity msg = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+        if (Objects.equals(msg.getSenderId(), userId)) {
+            msg.setSenderVisibility(0);
+        } else if (Objects.equals(msg.getRecipientId(), userId)) {
+            msg.setRecipientVisibility(0);
+        } else {
+            throw new IllegalArgumentException("You can't remove this message");
+        }
+        chatMessageRepository.save(msg);
+    }
+
+    @Override
+    public void removeMessageForEveryone(Long userId, Long messageId) {
+        ChatMessageEntity msg = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+        if (!Objects.equals(msg.getSenderId(), userId)) {
+            throw new IllegalArgumentException("You can only remove your own messages for everyone");
+        }
+        msg.setDeleted(true);
+        msg.setMessage(null);
+        if (msg.getChatMedias() != null) {
+            msg.getChatMedias().clear(); // orphanRemoval deletes the media rows
+        }
+        msg.setReplyToMessageId(null);
+        msg.setReplyToSenderId(null);
+        msg.setReplyToSnippet(null);
+        chatMessageRepository.save(msg);
+
+        // Tombstone the message in both participants' open chats in real time
+        Map<String, Object> payload = Map.of("messageId", messageId, "chatId", msg.getChatId());
+        messagingTemplate.convertAndSendToUser(String.valueOf(msg.getRecipientId()), "/queue/message-deleted", payload);
+        messagingTemplate.convertAndSendToUser(String.valueOf(msg.getSenderId()), "/queue/message-deleted", payload);
     }
 
     @Override

@@ -27,6 +27,7 @@ public class ChatMessageResponse {
     Integer senderVisibility;
     Integer recipientVisibility;
     Boolean isRead;
+    Boolean deleted;
     Long replyToMessageId;
     String replyToSenderUsername;
     String replyToSnippet;

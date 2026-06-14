@@ -942,6 +942,21 @@
         }
         .msg-menu-item:hover { background: var(--accent-soft); }
         .msg-menu-item svg { color: var(--text-dim); flex: 0 0 auto; }
+        .msg-menu-item.danger { color: var(--danger); }
+        .msg-menu-item.danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+        .msg-menu-item.danger svg { color: var(--danger); }
+
+        /* Tombstone for a message removed for everyone */
+        .message-content.deleted {
+            font-style: italic;
+            opacity: 0.7;
+            background: var(--accent-soft) !important;
+            color: var(--text-dim) !important;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .message-content.deleted svg { flex: 0 0 auto; }
 
         /* ===== Forward modal ===== */
         .modal-overlay {
@@ -1148,6 +1163,8 @@
             border-color: var(--accent);
         }
         .dialog-btn.primary:hover { opacity: 0.88; background: var(--accent); }
+        .dialog-btn.primary.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+        .dialog-btn.primary.danger:hover { opacity: 0.9; background: var(--danger); }
 
         /* ===== Reply: quoted bar inside a bubble ===== */
         .reply-quote {

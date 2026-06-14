@@ -48,6 +48,12 @@ public class ChatMessageEntity extends BaseEntity {
     @Column(nullable = false, columnDefinition = "BOOLEAN default false")
     Boolean isRead = false;
 
+    // True once the message is removed for everyone — content is cleared and a
+    // "This message was deleted" tombstone is shown to both participants.
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "BOOLEAN default false")
+    Boolean deleted = false;
+
     // Reply metadata: a denormalized snapshot of the message being replied to.
     // Nullable — only set when this message is a reply.
     Long replyToMessageId;

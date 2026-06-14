@@ -10,6 +10,8 @@ public interface IChatMessageService {
     ChatMessageResponse saveMessage(ChatMessageRequest message);
     Page<ChatMessageResponse> getChatMessages(Long senderId, Long recipientId, Pageable pageable);
     void deleteMessage(Long senderId, Long recipientId);
+    void removeMessageForMe(Long userId, Long messageId);
+    void removeMessageForEveryone(Long userId, Long messageId);
     void processMessage(ChatMessageRequest message);
     void markMessagesAsRead(Long senderId, Long recipientId);
 }

@@ -85,6 +85,24 @@ public class ChatController {
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "No chat history found", Page.empty(pageable)));
         }
     }
+
+    @DeleteMapping("/{messageId}/me")
+    public ResponseEntity<ApiResponse<?>> removeMessageForMe(@PathVariable Long messageId, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        }
+        chatMessageService.removeMessageForMe(Long.parseLong(principal.getName()), messageId);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Message removed for you"));
+    }
+
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<?>> removeMessageForEveryone(@PathVariable Long messageId, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        }
+        chatMessageService.removeMessageForEveryone(Long.parseLong(principal.getName()), messageId);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Message removed for everyone"));
+    }
 }
 
 

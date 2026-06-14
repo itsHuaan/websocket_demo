@@ -218,16 +218,25 @@
         warn: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
     };
 
-    // Styled replacement for alert(): showDialog({ title, message, confirmText, icon: 'info'|'warn', onConfirm })
-    function showDialog({ title = 'Notice', message = '', confirmText = 'OK', icon = 'info', onConfirm = null } = {}) {
+    // Styled replacement for alert()/confirm(): showDialog({ title, message, confirmText,
+    // cancelText, icon: 'info'|'warn', danger, onConfirm }). A cancelText turns it into a confirm.
+    function showDialog({ title = 'Notice', message = '', confirmText = 'OK', cancelText = null, icon = 'info', danger = false, onConfirm = null } = {}) {
         appDialogIcon.className = 'dialog-icon' + (icon === 'warn' ? ' warn' : '');
         appDialogIcon.innerHTML = DIALOG_ICONS[icon] || DIALOG_ICONS.info;
         appDialogTitle.textContent = title;
         appDialogMessage.textContent = message;
         appDialogActions.innerHTML = '';
 
+        if (cancelText) {
+            const cancel = document.createElement('button');
+            cancel.className = 'dialog-btn';
+            cancel.textContent = cancelText;
+            cancel.onclick = () => closeDialog();
+            appDialogActions.appendChild(cancel);
+        }
+
         const ok = document.createElement('button');
-        ok.className = 'dialog-btn primary';
+        ok.className = 'dialog-btn primary' + (danger ? ' danger' : '');
         ok.textContent = confirmText;
         ok.onclick = () => { closeDialog(); if (onConfirm) onConfirm(); };
         appDialogActions.appendChild(ok);
@@ -844,6 +853,14 @@
         event.stopPropagation();
         menuTarget = target;
 
+        // Reply/Forward make no sense on a deleted tombstone; "Remove for everyone"
+        // is only offered on your own (non-deleted) messages. Set before measuring.
+        const canReplyForward = !target.deleted;
+        document.getElementById('msgMenuReply').style.display = canReplyForward ? 'flex' : 'none';
+        document.getElementById('msgMenuForward').style.display = canReplyForward ? 'flex' : 'none';
+        document.getElementById('msgMenuRemoveEveryone').style.display = (target.isSender && !target.deleted) ? 'flex' : 'none';
+        document.getElementById('msgMenuRemoveMe').style.display = 'flex';
+
         if (menuActiveEl) menuActiveEl.classList.remove('menu-active');
         menuActiveEl = btnEl.closest('.message');
         if (menuActiveEl) menuActiveEl.classList.add('menu-active');
@@ -881,6 +898,74 @@
         if (menuTarget) openForwardModal(menuTarget);
         closeMsgMenu();
     };
+    document.getElementById('msgMenuRemoveMe').onclick = function() {
+        if (menuTarget) removeMessageForMe(menuTarget.messageId);
+        closeMsgMenu();
+    };
+    document.getElementById('msgMenuRemoveEveryone').onclick = function() {
+        const id = menuTarget && menuTarget.messageId;
+        closeMsgMenu();
+        if (id == null) return;
+        showDialog({
+            title: 'Remove for everyone?',
+            message: 'This message will be removed for everyone in this chat. This can’t be undone.',
+            confirmText: 'Remove',
+            cancelText: 'Cancel',
+            danger: true,
+            icon: 'warn',
+            onConfirm: () => removeMessageForEveryone(id)
+        });
+    };
+
+    // ===== Remove message =====
+    // Builds the "This message was deleted" tombstone bubble
+    function buildTombstone() {
+        const content = document.createElement('div');
+        content.className = 'message-content deleted';
+        content.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg><span>This message was deleted</span>';
+        return content;
+    }
+
+    // Convert an on-screen message into a tombstone in place (idempotent)
+    function applyTombstone(el) {
+        if (!el) return;
+        const stack = el.querySelector('.message-stack');
+        if (!stack) return;
+        stack.querySelectorAll('.message-content, .media-container, .msg-menu-btn').forEach(n => n.remove());
+        stack.insertBefore(buildTombstone(), stack.firstChild);
+        attachKebab(stack, { messageId: el.dataset.messageId, deleted: true }, el.classList.contains('message-sent'));
+    }
+
+    // Remove for me only: hide on my side; the row stays for the other person
+    function removeMessageForMe(messageId) {
+        if (messageId == null) return;
+        authFetch(`/v1/api/message/${messageId}/me`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const el = chatMessages.querySelector(`[data-message-id="${messageId}"]`);
+                    if (el) el.remove();
+                } else {
+                    showDialog({ title: 'Could not remove', message: data.message || 'Please try again.', icon: 'warn' });
+                }
+            })
+            .catch(() => {});
+    }
+
+    // Remove for everyone: tombstone for both participants (sender only)
+    function removeMessageForEveryone(messageId) {
+        if (messageId == null) return;
+        authFetch(`/v1/api/message/${messageId}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    applyTombstone(chatMessages.querySelector(`[data-message-id="${messageId}"]`));
+                } else {
+                    showDialog({ title: 'Could not remove', message: data.message || 'Please try again.', icon: 'warn' });
+                }
+            })
+            .catch(() => {});
+    }
 
     // Dismiss the popup on outside click, scroll, resize or Escape
     document.addEventListener('click', function(e) {
@@ -1056,6 +1141,13 @@
                 if (readData.readBy == activeRecipientId) {
                     updateMessagesToRead();
                 }
+            });
+
+            // Subscribe to "removed for everyone" deletions
+            stompClient.subscribe(`/user/${currentUser.id}/queue/message-deleted`, function (message) {
+                const data = JSON.parse(message.body);
+                const el = chatMessages.querySelector(`[data-message-id="${data.messageId}"]`);
+                if (el) applyTombstone(el);
             });
 
             // Subscribe to public status updates
@@ -1242,8 +1334,11 @@
         const stack = document.createElement('div');
         stack.className = 'message-stack';
 
-        const hasText = messageData.message && messageData.message.trim() !== '';
-        const hasReply = messageData.replyToMessageId != null &&
+        const isDeleted = messageData.deleted === true || messageData.deleted === 1;
+        if (isDeleted) stack.appendChild(buildTombstone());
+
+        const hasText = !isDeleted && messageData.message && messageData.message.trim() !== '';
+        const hasReply = !isDeleted && messageData.replyToMessageId != null &&
             (messageData.replyToSnippet != null || messageData.replyToSenderUsername != null);
 
         if (hasText || hasReply) {
@@ -1277,7 +1372,7 @@
             stack.appendChild(contentElement);
         }
 
-        if (messageData.mediaUrls && messageData.mediaUrls.length > 0) {
+        if (!isDeleted && messageData.mediaUrls && messageData.mediaUrls.length > 0) {
             const mediaContainer = document.createElement('div');
             mediaContainer.className = 'media-container';
 
@@ -1330,7 +1425,9 @@
             messageId: msgId,
             senderName: senderName,
             text: messageData.message,
-            mediaUrls: messageData.mediaUrls
+            mediaUrls: messageData.mediaUrls,
+            isSender: isSender,
+            deleted: messageData.deleted === true || messageData.deleted === 1
         };
         menuBtn.onclick = (e) => openMsgMenu(e, target, menuBtn);
         stack.appendChild(menuBtn);
