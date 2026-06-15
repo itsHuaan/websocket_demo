@@ -60,10 +60,26 @@ function avatarHtml(u, cls) {
 }
 
 // ===== Theme =====
-function applyTheme(theme) {
+// persist=false applies a theme without remembering it (used for the OS default,
+// so an untouched session keeps following the machine theme).
+function applyTheme(theme, persist = true) {
     const dark = theme === 'dark';
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    localStorage.setItem('chat_theme', dark ? 'dark' : 'light');
+    if (persist) localStorage.setItem('chat_theme', dark ? 'dark' : 'light');
+}
+function prefersDarkOS() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+// Stored choice wins; otherwise follow the OS theme (and keep following it live
+// until the user makes their own choice).
+function initTheme() {
+    const stored = localStorage.getItem('chat_theme');
+    applyTheme(stored || (prefersDarkOS() ? 'dark' : 'light'), false);
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('chat_theme')) applyTheme(e.matches ? 'dark' : 'light', false);
+        });
+    }
 }
 function toggleTheme() {
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
@@ -462,7 +478,7 @@ document.addEventListener('keydown', e => {
 
 // ===== Boot =====
 (function init() {
-    applyTheme(localStorage.getItem('chat_theme') || 'light');
+    initTheme();
 
     if (!currentUser || !currentUser.token) {
         showGate('Sign in required', 'Please sign in to Modern Chat first, then open the CMS.');

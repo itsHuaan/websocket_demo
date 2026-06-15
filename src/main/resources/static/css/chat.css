@@ -1165,6 +1165,25 @@
         .dialog-btn.primary:hover { opacity: 0.88; background: var(--accent); }
         .dialog-btn.primary.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
         .dialog-btn.primary.danger:hover { opacity: 0.9; background: var(--danger); }
+        /* Disabled buttons read as muted and ignore hover/active feedback.
+           The :disabled:hover selectors outrank the plain :hover rules above. */
+        .dialog-btn:disabled,
+        .dialog-btn:disabled:hover {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            background: var(--surface);
+            color: var(--text);
+        }
+        .dialog-btn.primary:disabled,
+        .dialog-btn.primary:disabled:hover {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            background: var(--accent);
+            color: var(--on-accent);
+            border-color: var(--accent);
+        }
 
         /* ===== Reply: quoted bar inside a bubble ===== */
         .reply-quote {

@@ -67,7 +67,7 @@
 
     // Check for existing session
     window.onload = function() {
-        applyTheme(localStorage.getItem('chat_theme') || 'light');
+        initTheme();
 
         const savedUser = localStorage.getItem('chat_user');
         if (savedUser) {
@@ -77,12 +77,26 @@
     };
 
     // ===== Dark mode =====
-    function applyTheme(theme) {
+    // persist=false applies a theme without remembering it (used for the OS default,
+    // so an untouched session keeps following the machine theme).
+    function applyTheme(theme, persist = true) {
         const isDark = theme === 'dark';
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        localStorage.setItem('chat_theme', isDark ? 'dark' : 'light');
+        if (persist) localStorage.setItem('chat_theme', isDark ? 'dark' : 'light');
         if (themeLabel) themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
         if (themeState) themeState.textContent = isDark ? 'On' : 'Off';
+    }
+    // Stored choice wins; otherwise follow the OS theme (and keep following it live
+    // until the user makes their own choice).
+    function initTheme() {
+        const stored = localStorage.getItem('chat_theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(stored || (prefersDark ? 'dark' : 'light'), false);
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('chat_theme')) applyTheme(e.matches ? 'dark' : 'light', false);
+            });
+        }
     }
 
     function toggleDarkMode() {
