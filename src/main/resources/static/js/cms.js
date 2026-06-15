@@ -11,6 +11,8 @@ let userPage = 0;
 let roles = [];
 let editingUserId = null;
 let editingRoleId = null;
+let userModalInitial = null;
+let roleModalInitial = null;
 
 // ===== Small helpers =====
 function esc(s) {
@@ -259,6 +261,8 @@ function openUserModal(user) {
     document.getElementById('uStatusReason').value = '';
     toggleStatusReason();
     setError('userModalError', '');
+    userModalInitial = userFormState();
+    updateUserSaveState();
     document.getElementById('userModal').classList.add('open');
 }
 function closeUserModal() { document.getElementById('userModal').classList.remove('open'); }
@@ -267,6 +271,26 @@ function closeUserModal() { document.getElementById('userModal').classList.remov
 function toggleStatusReason() {
     const locked = editingUserId && document.getElementById('uStatus').value !== '1';
     document.getElementById('uStatusReasonGroup').style.display = locked ? 'block' : 'none';
+}
+
+// Serialize the editable form fields so we can tell whether anything changed.
+function userFormState() {
+    return JSON.stringify({
+        firstName: val('uFirstName'),
+        lastName: val('uLastName'),
+        email: val('uEmail'),
+        username: val('uUsername'),
+        password: document.getElementById('uPassword').value,
+        roleId: document.getElementById('uRole').value,
+        status: document.getElementById('uStatus').value,
+        statusReason: document.getElementById('uStatusReason').value.trim()
+    });
+}
+// When editing, keep Save disabled until the admin actually changes something.
+// Creating a new user has no baseline, so Save stays enabled.
+function updateUserSaveState() {
+    const btn = document.getElementById('userModalSave');
+    btn.disabled = editingUserId ? (userFormState() === userModalInitial) : false;
 }
 function editUser(id) { const u = allUsers.find(x => x.userId === id); if (u) openUserModal(u); }
 
@@ -304,6 +328,25 @@ function saveUser() {
     req.then(r => r.json())
         .then(data => {
             if (data.code === 200 || data.code === 201) {
+                // If the admin just stripped their own admin role, they can no longer
+                // use the CMS — sync the stored role and send them back to chat.
+                const newRole = (roles.find(r => r.roleId === roleId) || {}).roleName;
+                if (editingUserId && currentUser && editingUserId === currentUser.id
+                        && newRole && newRole !== 'ROLE_ADMIN') {
+                    currentUser.role = newRole;
+                    localStorage.setItem('chat_user', JSON.stringify(currentUser));
+                    closeUserModal();
+                    // Lock the page down immediately so dismissing the dialog can't
+                    // leave them in a CMS they no longer have rights to use.
+                    showGate('Admin access removed', 'You changed your own role and no longer have CMS access.');
+                    showDialog({
+                        title: 'Admin access removed',
+                        message: 'You changed your own role, so you no longer have CMS access. Returning to chat.',
+                        confirmText: 'Go to chat', icon: 'warn',
+                        onConfirm: () => { window.location.href = '/'; }
+                    });
+                    return;
+                }
                 closeUserModal();
                 loadUsers();
             } else {
@@ -358,10 +401,17 @@ function openRoleModal(role) {
     document.getElementById('roleModalTitle').textContent = role ? 'Rename role' : 'Add role';
     document.getElementById('roleName').value = role ? role.roleName.replace(/^ROLE_/, '') : '';
     setError('roleModalError', '');
+    roleModalInitial = val('roleName');
+    updateRoleSaveState();
     document.getElementById('roleModal').classList.add('open');
 }
 function closeRoleModal() { document.getElementById('roleModal').classList.remove('open'); }
 function editRole(id) { const r = roles.find(x => x.roleId === id); if (r) openRoleModal(r); }
+// Renaming a role keeps Save disabled until the name actually differs.
+function updateRoleSaveState() {
+    const btn = document.getElementById('roleModalSave');
+    btn.disabled = editingRoleId ? (val('roleName') === roleModalInitial) : false;
+}
 
 function saveRole() {
     const name = val('roleName');
@@ -391,10 +441,21 @@ function saveRole() {
 }
 
 // ===== Modal dismissal =====
+// Only dismiss on a genuine backdrop click — one that both starts and ends on the
+// overlay. Otherwise selecting text inside a field and releasing the mouse over the
+// backdrop would close the modal unexpectedly.
 ['userModal', 'roleModal'].forEach(id => {
     const m = document.getElementById(id);
-    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    let pressedOnOverlay = false;
+    m.addEventListener('mousedown', e => { pressedOnOverlay = (e.target === m); });
+    m.addEventListener('click', e => {
+        if (e.target === m && pressedOnOverlay) m.classList.remove('open');
+    });
 });
+// Keep each Save button in sync with whether the form has unsaved changes.
+document.getElementById('userModal').addEventListener('input', updateUserSaveState);
+document.getElementById('userModal').addEventListener('change', updateUserSaveState);
+document.getElementById('roleModal').addEventListener('input', updateRoleSaveState);
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeUserModal(); closeRoleModal(); closeDialog(); }
 });
