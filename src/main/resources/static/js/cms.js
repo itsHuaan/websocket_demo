@@ -1,7 +1,9 @@
 // ===== Modern Chat — Admin CMS =====
-// Reuses the chat app's session (localStorage 'chat_user') and design tokens (chat.css).
+// Standalone admin site: its own login, its own session (localStorage 'cms_session'),
+// and its own styling (cms.css). Independent of the chat app.
 
-const currentUser = JSON.parse(localStorage.getItem('chat_user') || 'null');
+const CMS_SESSION_KEY = 'cms_session';
+let currentUser = JSON.parse(localStorage.getItem(CMS_SESSION_KEY) || 'null');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USER_PAGE_SIZE = 10;
@@ -132,7 +134,7 @@ function refreshAccessToken() {
     .then(data => {
         if (data.code === 200 && data.data && data.data.token) {
             currentUser = data.data;
-            localStorage.setItem('chat_user', JSON.stringify(currentUser));
+            localStorage.setItem(CMS_SESSION_KEY, JSON.stringify(currentUser));
             return true;
         }
         return false;
@@ -142,9 +144,11 @@ function refreshAccessToken() {
     return refreshPromise;
 }
 
+// Session no longer valid — drop it and return to the admin login screen.
 function expireSession() {
-    localStorage.removeItem('chat_user');
-    window.location.href = '/';
+    localStorage.removeItem(CMS_SESSION_KEY);
+    currentUser = null;
+    showLogin('Your session has expired. Please sign in again.');
 }
 
 function authFetch(url, opts = {}, retried = false) {
@@ -161,11 +165,71 @@ function authFetch(url, opts = {}, retried = false) {
     });
 }
 
-function showGate(title, message) {
-    document.getElementById('cmsGateTitle').textContent = title;
-    document.getElementById('cmsGateMessage').textContent = message;
-    document.getElementById('cmsGate').style.display = 'flex';
+function showLogin(message) {
     document.getElementById('cmsApp').style.display = 'none';
+    document.getElementById('cmsLogin').style.display = 'flex';
+    setError('cmsLoginError', message || '');
+    const u = document.getElementById('cmsUsername');
+    if (u) u.focus();
+}
+
+function showApp() {
+    document.getElementById('cmsLogin').style.display = 'none';
+    document.getElementById('cmsApp').style.display = 'block';
+    renderAdminIdentity();
+    loadRoles().then(loadUsers);
+}
+
+function togglePassword(btn) {
+    const input = btn.parentElement.querySelector('input');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// Authenticate against the shared sign-in API, but only admins may enter the CMS.
+function adminLogin() {
+    const username = val('cmsUsername');
+    const password = document.getElementById('cmsPassword').value;
+    if (!username || !password) return setError('cmsLoginError', 'Please enter your username and password.');
+    setError('cmsLoginError', '');
+
+    const btn = document.getElementById('cmsLoginBtn');
+    btnLoading(btn, true);
+    fetch('/v1/api/auth/sign-in', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if ((data.code === 200 || data.code === 201) && data.data && data.data.token) {
+                if (data.data.role !== 'ROLE_ADMIN') {
+                    setError('cmsLoginError', 'This account does not have administrator access.');
+                    return;
+                }
+                currentUser = data.data;
+                localStorage.setItem(CMS_SESSION_KEY, JSON.stringify(currentUser));
+                document.getElementById('cmsPassword').value = '';
+                showApp();
+            } else {
+                setError('cmsLoginError', data.message || 'Invalid username or password.');
+            }
+        })
+        .catch(() => setError('cmsLoginError', 'Something went wrong. Please try again.'))
+        .finally(() => btnLoading(btn, false, 'Sign in'));
+}
+
+// Revoke the refresh token, drop the session, and return to login.
+function logout() {
+    const token = currentUser && currentUser.refreshToken;
+    const done = () => {
+        localStorage.removeItem(CMS_SESSION_KEY);
+        currentUser = null;
+        showLogin();
+    };
+    if (!token) return done();
+    fetch('/v1/api/auth/logout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: token })
+    }).catch(() => {}).finally(done);
 }
 
 function renderAdminIdentity() {
@@ -345,21 +409,25 @@ function saveUser() {
         .then(data => {
             if (data.code === 200 || data.code === 201) {
                 // If the admin just stripped their own admin role, they can no longer
-                // use the CMS — sync the stored role and send them back to chat.
+                // use the CMS — end the session and return to the login screen.
                 const newRole = (roles.find(r => r.roleId === roleId) || {}).roleName;
                 if (editingUserId && currentUser && editingUserId === currentUser.id
                         && newRole && newRole !== 'ROLE_ADMIN') {
-                    currentUser.role = newRole;
-                    localStorage.setItem('chat_user', JSON.stringify(currentUser));
                     closeUserModal();
+                    const rt = currentUser.refreshToken;
+                    localStorage.removeItem(CMS_SESSION_KEY);
+                    currentUser = null;
+                    if (rt) fetch('/v1/api/auth/logout', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refreshToken: rt })
+                    }).catch(() => {});
                     // Lock the page down immediately so dismissing the dialog can't
                     // leave them in a CMS they no longer have rights to use.
-                    showGate('Admin access removed', 'You changed your own role and no longer have CMS access.');
+                    showLogin();
                     showDialog({
                         title: 'Admin access removed',
-                        message: 'You changed your own role, so you no longer have CMS access. Returning to chat.',
-                        confirmText: 'Go to chat', icon: 'warn',
-                        onConfirm: () => { window.location.href = '/'; }
+                        message: 'You changed your own role, so you no longer have administrator access. You have been signed out.',
+                        confirmText: 'OK', icon: 'warn'
                     });
                     return;
                 }
@@ -480,16 +548,11 @@ document.addEventListener('keydown', e => {
 (function init() {
     initTheme();
 
-    if (!currentUser || !currentUser.token) {
-        showGate('Sign in required', 'Please sign in to Modern Chat first, then open the CMS.');
-        return;
+    if (currentUser && currentUser.token && currentUser.role === 'ROLE_ADMIN') {
+        showApp();
+    } else {
+        currentUser = null;
+        localStorage.removeItem(CMS_SESSION_KEY);
+        showLogin();
     }
-    if (currentUser.role !== 'ROLE_ADMIN') {
-        showGate('Admins only', 'Your account doesn\'t have administrator access.');
-        return;
-    }
-
-    document.getElementById('cmsApp').style.display = 'block';
-    renderAdminIdentity();
-    loadRoles().then(loadUsers);
 })();

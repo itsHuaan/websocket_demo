@@ -547,10 +547,6 @@
         currentUsernameSpan.textContent = displayName(currentUser);
         renderProfileAvatar();
 
-        // Show the CMS link only for admins
-        const cmsMenuItem = document.getElementById('cmsMenuItem');
-        if (cmsMenuItem) cmsMenuItem.style.display = (currentUser.role === 'ROLE_ADMIN') ? 'flex' : 'none';
-
         loadOnlineUsers().then(() => {
             if (!currentUser) return; // session was rejected during the online-users fetch
             loadContacts();
