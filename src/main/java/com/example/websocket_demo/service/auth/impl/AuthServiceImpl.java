@@ -6,8 +6,16 @@ import com.example.websocket_demo.dto.response.SignInResponse;
 import com.example.websocket_demo.entity.RefreshTokenEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AuthValidation;
+import com.example.websocket_demo.common.Const;
+import com.example.websocket_demo.common.DataUtil;
+import com.example.websocket_demo.dto.response.PhoneCodeResponse;
+import com.example.websocket_demo.enumeration.PhoneCountryCode;
+import com.example.websocket_demo.enumeration.VietnamPhoneFormat;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.dto.request.EmailRequest;
+
+import java.util.Arrays;
+import java.util.List;
 import com.example.websocket_demo.dto.request.SignInRequest;
 import com.example.websocket_demo.dto.request.SignUpRequest;
 import com.example.websocket_demo.repository.IRefreshTokenRepository;
@@ -149,7 +157,24 @@ public class AuthServiceImpl implements IAuthService {
         } else if (isExistingByUsername) {
             throw new IllegalArgumentException(AuthValidation.USER_EXISTING_BY_USERNAME.getMessage());
         }
-        
+
+        // Phone number is optional. When supplied, validate, normalise to the canonical
+        // form, and ensure it is not already taken; when blank, store null so multiple
+        // accounts without a phone don't collide on the unique constraint.
+        String phone = credentials.getPhoneNumber();
+        if (phone != null && !phone.isBlank()) {
+            if (!phone.matches(Const.VN_PHONE_REGEX)) {
+                throw new IllegalArgumentException("Invalid Vietnamese phone number");
+            }
+            String canonicalPhone = DataUtil.formatVnPhone(phone, VietnamPhoneFormat.ZERO);
+            if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(canonicalPhone)) {
+                throw new IllegalArgumentException("An account with this phone number already exists");
+            }
+            credentials.setPhoneNumber(canonicalPhone);
+        } else {
+            credentials.setPhoneNumber(null);
+        }
+
         UserEntity user = userRepository.save(userMapper.toUserEntity(credentials));
         EmailRequest emailRequest = new EmailRequest(email, "Account Confirmation OTP", getEmailContent(otpService.generateAndStoreOtp(email).getData(), OTP_EXPIRES_MINUTES));
         emailService.sendEmail(emailRequest);

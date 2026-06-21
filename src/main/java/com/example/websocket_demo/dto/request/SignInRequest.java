@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SignInRequest {
-    @Schema(example = "your_username")
+    @Schema(description = "Username or email (future: phone, etc.)", example = "your_username")
     @NonNull
     String username;
     @Schema(example = "your_password")

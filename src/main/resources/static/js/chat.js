@@ -313,7 +313,7 @@
                 localStorage.setItem('chat_user', JSON.stringify(currentUser));
                 showChat();
             } else {
-                showDialog({ title: 'Sign in failed', message: data.message || 'Invalid username or password.', icon: 'warn' });
+                showDialog({ title: 'Sign in failed', message: data.message || 'Invalid credentials. Please try again.', icon: 'warn' });
             }
         })
         .catch(error => {
@@ -340,6 +340,7 @@
     let pendingUsername = null; // prefill on the login screen after verifying
     let resendTimer = null;
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const VN_PHONE_RE = /^(?:\+?84|0)?[35789]\d{8}$/;
 
     function showLoginView() { switchAuthView('loginView'); }
     function showSignupView() { switchAuthView('signupView'); }
@@ -368,26 +369,132 @@
             : idleHtml;
     }
 
+    // Resolve a human country name from an ISO code (e.g. "VN" -> "Vietnam") using the
+    // browser's built-in Intl data, falling back to the ISO code itself.
+    const regionNames = (() => {
+        try { return new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) { return null; }
+    })();
+    function countryName(iso) {
+        try { return (regionNames && regionNames.of(iso)) || iso; } catch (e) { return iso; }
+    }
+
+    // Turn a raw dial value from the API (e.g. "84", "+1-246", "+358-18", " ") into a
+    // clean international prefix ("+84", "+1", "+358"); returns '' when there's no code.
+    function normalizeDial(raw) {
+        const m = String(raw || '').trim().match(/\+?\d+/);
+        return m ? '+' + m[0].replace('+', '') : '';
+    }
+
+    // Build the sign-up country-code picker (custom dropdown with image flags) from the
+    // helper API's ISO -> dial-code map. The static VN trigger stays as a fallback if the
+    // request fails. The selected dial code lives on #suPhoneCode's data-dial attribute.
+    function loadPhoneCodes() {
+        const wrap = document.getElementById('suPhoneCode');
+        if (!wrap) return;
+        const trigger = document.getElementById('suPhoneCodeTrigger');
+        const menu = document.getElementById('suPhoneCodeMenu');
+        const list = document.getElementById('suPhoneCodeList');
+        const search = document.getElementById('suPhoneCodeSearch');
+        const flagEl = document.getElementById('suPhoneCodeFlag');
+        const dialEl = document.getElementById('suPhoneCodeDial');
+
+        const closeMenu = () => { menu.classList.remove('open'); trigger.setAttribute('aria-expanded', 'false'); };
+        const openMenu = () => {
+            menu.classList.add('open');
+            trigger.setAttribute('aria-expanded', 'true');
+            search.value = '';
+            filter('');
+            requestAnimationFrame(() => search.focus());
+        };
+
+        function selectCode(dial, iso) {
+            wrap.dataset.dial = dial;
+            flagEl.className = 'fi fi-' + iso.toLowerCase();
+            dialEl.textContent = dial;
+            list.querySelectorAll('.phone-code-option').forEach(o => o.classList.toggle('active', o.dataset.dial === dial && o.dataset.iso === iso.toLowerCase()));
+        }
+
+        function filter(q) {
+            const needle = q.trim().toLowerCase();
+            list.querySelectorAll('.phone-code-option').forEach(li => {
+                const hay = li.dataset.name + ' ' + li.dataset.dial + ' ' + li.dataset.iso;
+                li.style.display = hay.includes(needle) ? '' : 'none';
+            });
+        }
+
+        trigger.addEventListener('click', e => {
+            e.stopPropagation();
+            if (!list.children.length) return;
+            menu.classList.contains('open') ? closeMenu() : openMenu();
+        });
+        search.addEventListener('input', () => filter(search.value));
+        document.addEventListener('click', e => { if (!wrap.contains(e.target)) closeMenu(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+
+        fetch('/v1/api/helper/phone-codes')
+            .then(res => res.json())
+            .then(data => {
+                const map = (data && data.data) || {};
+                const entries = Object.keys(map)
+                    .map(iso => ({ iso: iso.toLowerCase(), dial: normalizeDial(map[iso]), name: countryName(iso) }))
+                    .filter(e => e.dial)
+                    .sort((a, b) => a.name.localeCompare(b.name));
+                if (!entries.length) return;
+
+                list.innerHTML = entries.map(e =>
+                    `<li class="phone-code-option" role="option" data-dial="${e.dial}" data-iso="${e.iso}" data-name="${e.name.toLowerCase()}">`
+                    + `<span class="fi fi-${e.iso}"></span>`
+                    + `<span class="phone-code-country">${e.name}</span>`
+                    + `<span class="phone-code-dial">${e.dial}</span></li>`).join('');
+
+                list.querySelectorAll('.phone-code-option').forEach(opt => {
+                    opt.addEventListener('click', () => { selectCode(opt.dataset.dial, opt.dataset.iso); closeMenu(); });
+                });
+
+                // Default to Vietnam if present, otherwise the first country alphabetically.
+                const def = entries.find(e => e.iso === 'vn') || entries[0];
+                selectCode(def.dial, def.iso);
+            })
+            .catch(() => { /* keep the fallback VN trigger; phone is optional anyway */ });
+    }
+
     function signup() {
         const firstName = document.getElementById('suFirstName').value.trim();
         const lastName = document.getElementById('suLastName').value.trim();
         const email = document.getElementById('suEmail').value.trim();
         const username = document.getElementById('suUsername').value.trim();
+        const phoneLocal = document.getElementById('suPhone').value.trim();
+        const phoneCode = document.getElementById('suPhoneCode').dataset.dial || '+84';
         const password = document.getElementById('suPassword').value;
         const confirm = document.getElementById('suConfirm').value;
 
         if (!firstName || !lastName) return setFieldError('signupError', 'Please enter your first and last name.');
         if (!EMAIL_RE.test(email)) return setFieldError('signupError', 'Please enter a valid email address.');
         if (username.length < 3) return setFieldError('signupError', 'Username must be at least 3 characters.');
+
+        // Combine the selected dial code with the national number (digits only, leading
+        // zero dropped). Only Vietnam is offered today, so we validate against its format.
+        let phoneNumber = '';
+        if (phoneLocal) {
+            const national = phoneLocal.replace(/\D/g, '').replace(/^0+/, '');
+            phoneNumber = phoneCode + national;
+            if (phoneCode === '+84' && !VN_PHONE_RE.test(phoneNumber)) {
+                return setFieldError('signupError', 'Please enter a valid phone number.');
+            }
+        }
+
         if (password.length < 6) return setFieldError('signupError', 'Password must be at least 6 characters.');
         if (password !== confirm) return setFieldError('signupError', 'Passwords do not match.');
         setFieldError('signupError', '');
+
+        const payload = { firstName, lastName, email, username, password };
+        if (phoneNumber) payload.phoneNumber = phoneNumber;
 
         setBtnLoading('signupButton', true);
         fetch('/v1/api/auth/sign-up', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firstName, lastName, email, username, password })
+            body: JSON.stringify(payload)
         })
         .then(res => res.json())
         .then(data => {
@@ -1559,6 +1666,7 @@
     ['username', 'password'].forEach(id => {
         document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
     });
-    ['suFirstName', 'suLastName', 'suEmail', 'suUsername', 'suPassword', 'suConfirm'].forEach(id => {
+    ['suFirstName', 'suLastName', 'suEmail', 'suUsername', 'suPhone', 'suPassword', 'suConfirm'].forEach(id => {
         document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') signup(); });
     });
+    loadPhoneCodes();

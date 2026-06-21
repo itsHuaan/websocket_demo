@@ -23,7 +23,7 @@ public class MessageService {
         } catch (NoSuchMessageException e) {
             return "Invalid Message";
         } catch (MissingResourceException e) {
-            return " Invalid Resource Bundle";
+            return "Invalid Resource Bundle";
         } catch (IllegalArgumentException e) {
             return "Invalid Argument";
         } catch (NullPointerException e) {

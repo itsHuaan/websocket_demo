@@ -17,6 +17,7 @@ spring:
   data:
     redis:
       url: ${REDIS_URL}
+      phone-codes-ttl-seconds: 86400
 
   servlet:
     multipart:
@@ -70,7 +71,7 @@ app:
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html
-      - /v1/api/test/**
+      - /v1/api/helper/**
   otp:
     expires-minutes: 3
 

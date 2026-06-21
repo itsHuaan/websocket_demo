@@ -1,8 +1,16 @@
 package com.example.websocket_demo.common;
 
+import com.example.websocket_demo.enumeration.VietnamPhoneFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.objectweb.asm.TypeReference;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.example.websocket_demo.enumeration.VietnamPhoneFormat.*;
 
 public class DataUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -41,9 +49,35 @@ public class DataUtil {
         }
     }
 
+    public static <K1, V1, K2, V2> Map<K2, V2> convertMap(Map<K1, V1> originalMap, Function<K1, K2> keyMapper, Function<V1, V2> valueMapper) {
+        if (originalMap == null) {
+            return new HashMap<>();
+        }
+        return originalMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> keyMapper.apply(e.getKey()),
+                        e -> valueMapper.apply(e.getValue())
+                ));
+    }
+
     public static boolean isNullOrZero(Object obj) {
         if (obj == null) return true;
         if (obj instanceof Number) return ((Number) obj).doubleValue() == 0.0;
         return false;
+    }
+
+    public static String formatVnPhone(String phone, VietnamPhoneFormat targetFormat) {
+        if (phone == null || !phone.matches(Const.VN_PHONE_REGEX)) {
+            throw new IllegalArgumentException("Invalid Vietnamese phone number");
+        }
+
+        String coreNumber = phone.replaceAll("^(?:\\+?84|0)", ISDN.getValue());
+
+        return switch (targetFormat) {
+            case ZERO -> ZERO.getValue() + coreNumber;
+            case MSISDN -> MSISDN.getValue() + coreNumber;
+            case PLUS_MSISDN -> PLUS_MSISDN.getValue() + coreNumber;
+            case ISDN -> coreNumber;
+        };
     }
 }

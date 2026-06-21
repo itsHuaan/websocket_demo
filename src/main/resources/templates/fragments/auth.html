@@ -8,8 +8,8 @@
         <h2>Welcome back</h2>
         <p class="auth-sub">Sign in to continue the conversation.</p>
         <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="Enter username" autocomplete="username">
+            <label for="username">Username, email or phone</label>
+            <input type="text" id="username" placeholder="Enter username, email or phone" autocomplete="username">
         </div>
         <div class="form-group">
             <label for="password">Password</label>
@@ -50,6 +50,25 @@
         <div class="form-group">
             <label for="suUsername">Username</label>
             <input type="text" id="suUsername" placeholder="Choose a username" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label for="suPhone">Phone <span class="form-optional">(optional)</span></label>
+            <div class="phone-input-group">
+                <div class="phone-code" id="suPhoneCode" data-dial="+84">
+                    <button type="button" class="phone-code-trigger" id="suPhoneCodeTrigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Country code">
+                        <span class="fi fi-vn" id="suPhoneCodeFlag"></span>
+                        <span class="phone-code-dial" id="suPhoneCodeDial">+84</span>
+                        <svg class="phone-code-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="phone-code-menu" id="suPhoneCodeMenu" role="listbox">
+                        <input type="text" class="phone-code-search" id="suPhoneCodeSearch" placeholder="Search country or code…" autocomplete="off">
+                        <ul class="phone-code-list" id="suPhoneCodeList"></ul>
+                    </div>
+                </div>
+                <input type="tel" id="suPhone" placeholder="912 345 678" autocomplete="tel">
+            </div>
         </div>
         <div class="form-group">
             <label for="suPassword">Password</label>

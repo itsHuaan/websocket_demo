@@ -37,6 +37,11 @@ public class UserEntity extends BaseEntity {
     @Size(min = 3, max = 50)
     String username;
 
+    // Optional. Stored in a single canonical form (VietnamPhoneFormat.ZERO, e.g. 0912345678)
+    // so the same number typed as 0…, 84…, or +84… resolves to one account at sign-in.
+    @Column(unique = true)
+    String phoneNumber;
+
     @Column(nullable = false)
     @NotNull
     String password;

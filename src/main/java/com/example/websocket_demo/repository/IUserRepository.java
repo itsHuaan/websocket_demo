@@ -11,6 +11,8 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
     Optional<UserEntity> findByUsernameAndDeletedAtIsNull(String username);
     Optional<UserEntity> findByUserIdAndDeletedAtIsNull(Long userId);
     Optional<UserEntity> findByEmailAndDeletedAtIsNull(String email);
+    Optional<UserEntity> findByPhoneNumberAndDeletedAtIsNull(String phoneNumber);
     boolean existsByEmailAndDeletedAtIsNull(String email);
     boolean existsByUsernameAndDeletedAtIsNull(String username);
+    boolean existsByPhoneNumberAndDeletedAtIsNull(String phoneNumber);
 }
