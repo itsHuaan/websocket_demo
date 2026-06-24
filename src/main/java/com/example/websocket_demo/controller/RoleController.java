@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.request.RoleRequest;
-import com.example.websocket_demo.service.role.IRoleService;
+import com.example.websocket_demo.service.role.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @PreAuthorize("hasRole('ADMIN')")
 public class RoleController {
-    IRoleService roleService;
+    RoleService roleService;
 
     @Operation(summary = "Get all roles")
     @GetMapping

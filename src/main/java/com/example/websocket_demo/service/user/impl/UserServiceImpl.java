@@ -1,6 +1,6 @@
 package com.example.websocket_demo.service.user.impl;
 
-import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.entity.BaseEntity;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
@@ -13,14 +13,12 @@ import com.example.websocket_demo.dto.request.AdminUserRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.response.UserResponse;
 import com.example.websocket_demo.dto.request.UserRequest;
-import com.example.websocket_demo.service.user.IUserService;
+import com.example.websocket_demo.service.user.UserService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +37,10 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserServiceImpl implements IUserService {
+public class UserServiceImpl implements UserService {
 
     IUserRepository userRepository;
-    CloudinaryService mediaUploader;
+    CloudinaryServiceImpl mediaUploader;
     PasswordEncoder passwordEncoder;
     UserMapper userMapper;
     StringRedisTemplate redisTemplate;

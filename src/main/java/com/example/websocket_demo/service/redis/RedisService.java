@@ -10,7 +10,7 @@ import java.util.Set;
  * the rest of the app uses Redis. HTTP concerns (status codes, response wrapping) stay
  * in the controller.
  */
-public interface IRedisService {
+public interface RedisService {
 
     // ----- Keys / generic -----
     Set<String> keys(String pattern);

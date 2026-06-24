@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.objectweb.asm.TypeReference;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,6 +65,30 @@ public class DataUtil {
     public static boolean isNullOrZero(Object obj) {
         if (obj == null) return true;
         if (obj instanceof Number) return ((Number) obj).doubleValue() == 0.0;
+        return false;
+    }
+
+    public static boolean isNullOrEmpty(Object obj) {
+        switch (obj) {
+            case null -> {
+                return true;
+            }
+            case String s -> {
+                return s.trim().isEmpty();
+            }
+            case Collection<?> c -> {
+                return c.isEmpty();
+            }
+            case Map<?, ?> m -> {
+                return m.isEmpty();
+            }
+            case Optional<?> o -> {
+                return o.isEmpty();
+            }
+            default -> {
+            }
+        }
+        if (obj.getClass().isArray()) return java.lang.reflect.Array.getLength(obj) == 0;
         return false;
     }
 

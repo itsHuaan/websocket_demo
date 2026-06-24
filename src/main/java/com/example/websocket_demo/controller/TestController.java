@@ -1,7 +1,7 @@
 package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
-import com.example.websocket_demo.service.test.ITestService;
+import com.example.websocket_demo.service.test.TestService;
 import com.example.websocket_demo.common.i18n.MessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TestController {
 
-    ITestService testService;
+    TestService testService;
     MessageService messageService;
 
     @Operation(summary = "This is my first test controller")

@@ -1,8 +1,8 @@
 package com.example.websocket_demo.service.test.impl;
 
 import com.example.websocket_demo.common.DataUtil;
-import com.example.websocket_demo.service.test.ITestService;
-import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.service.test.TestService;
+import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.response.TestResponse;
 import com.example.websocket_demo.entity.TestEntity;
@@ -11,7 +11,6 @@ import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
 import com.example.websocket_demo.repository.ITestRepository;
 import com.example.websocket_demo.common.DateUtil;
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +27,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class TestServiceImpl implements ITestService {
-    CloudinaryService mediaUploader;
+public class TestServiceImpl implements TestService {
+    CloudinaryServiceImpl mediaUploader;
     ITestRepository testRepository;
 
     private TestResponse toTestDto(TestEntity testEntity) {

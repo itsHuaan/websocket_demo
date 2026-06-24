@@ -5,7 +5,7 @@ import com.example.websocket_demo.dto.response.RoleResponse;
 
 import java.util.List;
 
-public interface IRoleService {
+public interface RoleService {
     List<RoleResponse> getAllRoles();
     void addRole(RoleRequest role);
     void updateRole(Long id, String roleName);

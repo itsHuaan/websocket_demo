@@ -6,7 +6,7 @@ import com.example.websocket_demo.dto.response.ProductSummaryResponse;
 
 import java.util.List;
 
-public interface IProductService {
+public interface ProductService {
     void addProduct(ProductRequest productRequest);
     List<ProductSummaryResponse> getAll();
     List<ProductSummaryResponse> getAllByUser(Long userId);

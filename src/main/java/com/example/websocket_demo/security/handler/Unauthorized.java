@@ -18,13 +18,7 @@ import java.util.Map;
 public class Unauthorized implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException authException) throws IOException, ServletException {
-        // String checkRequest = request.getRequestURI().split("/")[1]; //For exception
-        // admin thymleaf
-        // if(checkRequest.equals("admin")){
-        // response.sendRedirect("/login");
-        // return;
-        // }
+            AuthenticationException authException) throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         final Map<String, Object> body = new HashMap<>();

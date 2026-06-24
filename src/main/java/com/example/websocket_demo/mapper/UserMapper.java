@@ -8,7 +8,7 @@ import com.example.websocket_demo.dto.response.UserResponse;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.repository.IRoleRepository;
-import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.enumeration.AccountStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,7 +26,7 @@ public abstract class UserMapper {
     @Autowired
     protected PasswordEncoder passwordEncoder;
     @Autowired
-    protected CloudinaryService mediaUploader;
+    protected CloudinaryServiceImpl mediaUploader;
     @Autowired
     protected IRoleRepository roleRepository;
 

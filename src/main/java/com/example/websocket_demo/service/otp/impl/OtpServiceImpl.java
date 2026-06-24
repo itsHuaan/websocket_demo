@@ -4,7 +4,7 @@ import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.dto.otp.OtpData;
 import com.example.websocket_demo.dto.response.ApiResponse;
-import com.example.websocket_demo.service.otp.IOtpService;
+import com.example.websocket_demo.service.otp.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true)
-public class OtpServiceImpl implements IOtpService {
+public class OtpServiceImpl implements OtpService {
     StringRedisTemplate redisTemplate;
 
     @Override

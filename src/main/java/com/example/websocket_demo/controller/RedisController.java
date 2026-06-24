@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.dto.response.ApiResponse;
-import com.example.websocket_demo.service.redis.IRedisService;
+import com.example.websocket_demo.service.redis.RedisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 /**
  * A small REST surface over Redis so the store can be inspected and edited without
- * the redis-cli. All operations are delegated to {@link IRedisService}; this class only
+ * the redis-cli. All operations are delegated to {@link RedisService}; this class only
  * maps HTTP requests and wraps results in {@link ApiResponse}.
  *
  * <p>Sits under {@code /v1/api/redis} which is not whitelisted, so all endpoints
@@ -34,7 +34,7 @@ import java.util.Set;
 @PreAuthorize("hasRole('ADMIN')")
 public class RedisController {
 
-    IRedisService redisService;
+    RedisService redisService;
 
     private <T> ResponseEntity<ApiResponse<T>> ok(String message, T data) {
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, message, data));

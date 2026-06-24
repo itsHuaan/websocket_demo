@@ -1,6 +1,6 @@
 package com.example.websocket_demo.controller;
 
-import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.common.Const;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +24,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
 public class MediaController {
-    CloudinaryService mediaUploader;
+    CloudinaryServiceImpl mediaUploader;
 
     @GetMapping
     public ResponseEntity<?> getAllMedia() {

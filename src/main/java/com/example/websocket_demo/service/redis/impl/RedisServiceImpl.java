@@ -1,7 +1,7 @@
 package com.example.websocket_demo.service.redis.impl;
 
 import com.example.websocket_demo.common.DataUtil;
-import com.example.websocket_demo.service.redis.IRedisService;
+import com.example.websocket_demo.service.redis.RedisService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class RedisServiceImpl implements IRedisService {
+public class RedisServiceImpl implements RedisService {
     StringRedisTemplate redisTemplate;
 
     // ----- Keys / generic -----

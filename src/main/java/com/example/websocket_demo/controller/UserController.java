@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.request.UserRequest;
 import com.example.websocket_demo.dto.request.AdminUserRequest;
-import com.example.websocket_demo.service.user.IUserService;
+import com.example.websocket_demo.service.user.UserService;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.validation.PageableValidation;
 
@@ -24,7 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
-    IUserService userManagementService;
+    UserService userManagementService;
 
     @Operation(summary = "Get all users")
     @GetMapping

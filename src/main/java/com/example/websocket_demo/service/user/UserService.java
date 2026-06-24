@@ -7,7 +7,7 @@ import com.example.websocket_demo.dto.response.UserResponse;
 import com.example.websocket_demo.dto.request.UserRequest;
 import com.example.websocket_demo.dto.request.AdminUserRequest;
 
-public interface IUserService {
+public interface UserService {
     Page<UserResponse> getAllUsers(Pageable pageable);
 
     UserResponse createUser(UserRequest UserRequest);

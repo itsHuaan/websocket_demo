@@ -8,14 +8,10 @@ import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AuthValidation;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.common.DataUtil;
-import com.example.websocket_demo.dto.response.PhoneCodeResponse;
-import com.example.websocket_demo.enumeration.PhoneCountryCode;
 import com.example.websocket_demo.enumeration.VietnamPhoneFormat;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.dto.request.EmailRequest;
 
-import java.util.Arrays;
-import java.util.List;
 import com.example.websocket_demo.dto.request.SignInRequest;
 import com.example.websocket_demo.dto.request.SignUpRequest;
 import com.example.websocket_demo.repository.IRefreshTokenRepository;
@@ -26,7 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import com.example.websocket_demo.service.auth.IAuthService;
 import com.example.websocket_demo.service.email.IEmailService;
-import com.example.websocket_demo.service.otp.IOtpService;
+import com.example.websocket_demo.service.otp.OtpService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -59,7 +55,7 @@ public class AuthServiceImpl implements IAuthService {
     UserMapper userMapper;
     IEmailService emailService;
     SpringTemplateEngine templateEngine;
-    IOtpService otpService;
+    OtpService otpService;
     PasswordEncoder passwordEncoder;
 
     @NonFinal

@@ -3,7 +3,7 @@ package com.example.websocket_demo.service.test;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
 
-public interface ITestService {
+public interface TestService {
     ApiResponse<?> getMedias();
 
     ApiResponse<?> uploadMedia(MediaUploadTestRequest model);

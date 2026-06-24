@@ -4,7 +4,7 @@ import com.example.websocket_demo.dto.request.ProductRequest;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.response.ProductResponse;
 import com.example.websocket_demo.dto.response.ProductSummaryResponse;
-import com.example.websocket_demo.service.product.IProductService;
+import com.example.websocket_demo.service.product.ProductService;
 import com.example.websocket_demo.common.Const;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {
-    IProductService productService;
+    ProductService productService;
 
     @Operation(summary = "Add a product")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

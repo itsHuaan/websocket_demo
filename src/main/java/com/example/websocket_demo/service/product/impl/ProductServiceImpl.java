@@ -1,14 +1,14 @@
 package com.example.websocket_demo.service.product.impl;
 
 import com.example.websocket_demo.common.DataUtil;
-import com.example.websocket_demo.service.media.CloudinaryService;
+import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.dto.request.ProductRequest;
 import com.example.websocket_demo.dto.response.ProductResponse;
 import com.example.websocket_demo.dto.response.ProductSummaryResponse;
 import com.example.websocket_demo.entity.*;
 import com.example.websocket_demo.mapper.ProductMapper;
 import com.example.websocket_demo.repository.*;
-import com.example.websocket_demo.service.product.IProductService;
+import com.example.websocket_demo.service.product.ProductService;
 import com.example.websocket_demo.repository.specification.ProductSpecification;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -25,7 +25,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ProductServiceImpl implements IProductService {
+public class ProductServiceImpl implements ProductService {
     IUserRepository userRepository;
     IProductRepository productRepository;
     IProductOptionRepository productOptionRepository;
@@ -33,7 +33,7 @@ public class ProductServiceImpl implements IProductService {
     IProductOptionValueRepository productOptionValueRepository;
     IProductSkuValueRepository productSkuValueRepository;
     ProductMapper productMapper;
-    CloudinaryService mediaUploader;
+    CloudinaryServiceImpl mediaUploader;
 
     @Transactional
     @Override

@@ -3,7 +3,7 @@ package com.example.websocket_demo.service.helper.impl;
 import com.example.websocket_demo.client.BaseClient;
 import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.service.helper.IHelperService;
-import com.example.websocket_demo.service.redis.IRedisService;
+import com.example.websocket_demo.service.redis.RedisService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,17 +11,13 @@ import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class HelperServiceImpl implements IHelperService {
-    IRedisService redisService;
+    RedisService redisService;
     BaseClient baseClient;
 
     @NonFinal
