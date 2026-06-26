@@ -3,6 +3,7 @@ package com.example.websocket_demo.service.user.impl;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.websocket_demo.common.MessageService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,12 +16,17 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserDetailServiceImpl implements UserDetailsService {
+    MessageService messageService;
 
-    /** Ordered by {@code @Order}: username first, then email, then future methods. */
+    /**
+     * Ordered by {@code @Order}: username first, then email, then future methods.
+     */
     List<UserIdentifierResolver> resolvers;
 
     /**
@@ -37,7 +43,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 .map(Optional::get)
                 .findFirst()
                 .map(UserDetailsImpl::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with identifier: " + identifier));
+                .orElseThrow(() -> new UsernameNotFoundException(messageService.getMessage(USER_IDENTIFIER_NOT_FOUND.getCode(), identifier)));
     }
 
 }

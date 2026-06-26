@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Entity
 @Table(name = "tbl_gis_wards")
-public class GisWard {
+public class GisWardEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -31,7 +31,7 @@ public class GisWard {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ward_code", referencedColumnName = "code", nullable = false)
-    private Ward ward;
+    private WardEntity ward;
 
     @Column(name = "gis_server_id", length = 50)
     private String gisServerId;

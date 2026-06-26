@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Polygon;
 @AllArgsConstructor
 @Entity
 @Table(name = "tbl_gis_provinces")
-public class GisProvince {
+public class GisProvinceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -30,7 +30,7 @@ public class GisProvince {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "province_code", referencedColumnName = "code", nullable = false)
-    private Province province;
+    private ProvinceEntity province;
 
     @Column(name = "gis_server_id", length = 50)
     private String gisServerId;

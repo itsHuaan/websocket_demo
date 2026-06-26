@@ -1,7 +1,7 @@
 package com.example.websocket_demo.security.identifier;
 
 import com.example.websocket_demo.entity.UserEntity;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UsernameIdentifierResolver implements UserIdentifierResolver {
 
-    IUserRepository userRepository;
+    UserRepository userRepository;
 
     @Override
     public boolean supports(String identifier) {

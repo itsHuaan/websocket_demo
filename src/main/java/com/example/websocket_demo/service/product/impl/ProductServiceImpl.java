@@ -26,12 +26,12 @@ import java.util.*;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductServiceImpl implements ProductService {
-    IUserRepository userRepository;
-    IProductRepository productRepository;
-    IProductOptionRepository productOptionRepository;
-    IProductSkuRepository productSkuRepository;
-    IProductOptionValueRepository productOptionValueRepository;
-    IProductSkuValueRepository productSkuValueRepository;
+    UserRepository userRepository;
+    ProductRepository productRepository;
+    ProductOptionRepository productOptionRepository;
+    ProductSkuRepository productSkuRepository;
+    ProductOptionValueRepository productOptionValueRepository;
+    ProductSkuValueRepository productSkuValueRepository;
     ProductMapper productMapper;
     CloudinaryServiceImpl mediaUploader;
 

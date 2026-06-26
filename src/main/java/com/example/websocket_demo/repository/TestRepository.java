@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ITestRepository extends JpaRepository<TestEntity, Long>, JpaSpecificationExecutor<TestEntity> {
+public interface TestRepository extends JpaRepository<TestEntity, Long>, JpaSpecificationExecutor<TestEntity> {
     @Query("SELECT t.id FROM TestEntity t")
     List<Long> getAllIds();
 }

@@ -1,30 +1,35 @@
 package com.example.websocket_demo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tbl_administrative_regions")
-public class AdministrativeRegion {
+@Table(name = "tbl_administrative_units")
+public class AdministrativeUnitEntity {
     @Id
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "full_name")
+    private String fullName;
 
-    @Column(name = "name_en", nullable = false)
-    private String nameEn;
+    @Column(name = "full_name_en")
+    private String fullNameEn;
+
+    @Column(name = "short_name")
+    private String shortName;
+
+    @Column(name = "short_name_en")
+    private String shortNameEn;
 
     @Column(name = "code_name")
     private String codeName;

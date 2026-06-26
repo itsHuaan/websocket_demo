@@ -3,7 +3,7 @@ package com.example.websocket_demo.service.role.impl;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.dto.request.RoleRequest;
 import com.example.websocket_demo.dto.response.RoleResponse;
-import com.example.websocket_demo.repository.IRoleRepository;
+import com.example.websocket_demo.repository.RoleRepository;
 import com.example.websocket_demo.service.role.RoleService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleServiceImpl implements RoleService {
-    IRoleRepository roleRepository;
+    RoleRepository roleRepository;
 
     @Override
     public List<RoleResponse> getAllRoles() {

@@ -1,6 +1,5 @@
 package com.example.websocket_demo.repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.example.websocket_demo.entity.TestImportEntity;
 import org.springframework.data.repository.query.Param;
 
-public interface ITestImportRepository
+public interface TestImportRepository
         extends JpaRepository<TestImportEntity, Long>, JpaSpecificationExecutor<TestImportEntity> {
     @Query("SELECT i.isdn FROM TestImportEntity i WHERE i.isdn IN :isdns")
     List<String> findExistingIsdns(@Param("isdns") List<String> isdns);

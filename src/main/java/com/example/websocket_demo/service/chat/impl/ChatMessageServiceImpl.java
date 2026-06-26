@@ -6,8 +6,8 @@ import com.example.websocket_demo.dto.response.ChatNotificationResponse;
 import com.example.websocket_demo.entity.ChatMessageEntity;
 import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.mapper.ChatMapper;
-import com.example.websocket_demo.repository.IChatMessageRepository;
-import com.example.websocket_demo.repository.IChatRoomRepository;
+import com.example.websocket_demo.repository.ChatMessageRepository;
+import com.example.websocket_demo.repository.ChatRoomRepository;
 import com.example.websocket_demo.service.chat.IChatMessageService;
 import com.example.websocket_demo.service.chat.IChatRoomService;
 import lombok.AccessLevel;
@@ -29,10 +29,10 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatMessageServiceImpl implements IChatMessageService {
-    IChatMessageRepository chatMessageRepository;
+    ChatMessageRepository chatMessageRepository;
     ChatMapper chatMapper;
     IChatRoomService chatRoomService;
-    IChatRoomRepository chatRoomRepository;
+    ChatRoomRepository chatRoomRepository;
     SimpMessagingTemplate messagingTemplate;
 
     @Override

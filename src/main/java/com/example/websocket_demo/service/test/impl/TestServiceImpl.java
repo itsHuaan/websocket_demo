@@ -8,7 +8,7 @@ import com.example.websocket_demo.dto.response.TestResponse;
 import com.example.websocket_demo.entity.TestEntity;
 import com.example.websocket_demo.entity.TestMediaEntity;
 import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
-import com.example.websocket_demo.repository.ITestRepository;
+import com.example.websocket_demo.repository.TestRepository;
 import com.example.websocket_demo.common.DateUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TestServiceImpl implements TestService {
     CloudinaryServiceImpl mediaUploader;
-    ITestRepository testRepository;
+    TestRepository testRepository;
 
     private TestResponse toTestDto(TestEntity testEntity) {
         return TestResponse.builder()

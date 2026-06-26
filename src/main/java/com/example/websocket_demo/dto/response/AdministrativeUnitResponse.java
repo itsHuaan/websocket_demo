@@ -1,23 +1,21 @@
 package com.example.websocket_demo.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Column;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ChatRoomResponse {
-    String chatId;
-    String sender;
-    String recipient;
-    List<ChatHistoryResponse> messages;
+public class AdministrativeUnitResponse {
+    private String fullName;
+    private String fullNameEn;
+    private String shortName;
+    private String shortNameEn;
+    private String codeName;
+    private String codeNameEn;
 }
-
-

@@ -1,12 +1,6 @@
 package com.example.websocket_demo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "tbl_provinces")
-public class Province {
+public class ProvinceEntity {
     @Id
     @Column(name = "code", length = 20)
     private String code;
@@ -40,5 +34,9 @@ public class Province {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "administrative_unit_id")
-    private AdministrativeUnit administrativeUnit;
+    private AdministrativeUnitEntity administrativeUnit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "administrative_region_id")
+    private AdministrativeRegionEntity administrativeRegion;
 }

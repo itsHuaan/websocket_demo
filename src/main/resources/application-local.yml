@@ -73,6 +73,8 @@ app:
       - /swagger-ui/**
       - /swagger-ui.html
       - /v1/api/helper/**
+      - /v1/api/test/**
+      - /v1/api/locations/**
   otp:
     expires-minutes: 3
 

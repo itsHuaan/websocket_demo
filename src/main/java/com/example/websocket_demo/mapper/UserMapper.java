@@ -7,7 +7,7 @@ import com.example.websocket_demo.dto.request.UserRequest;
 import com.example.websocket_demo.dto.response.UserResponse;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
-import com.example.websocket_demo.repository.IRoleRepository;
+import com.example.websocket_demo.repository.RoleRepository;
 import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.enumeration.AccountStatus;
 import org.mapstruct.Mapper;
@@ -28,7 +28,7 @@ public abstract class UserMapper {
     @Autowired
     protected CloudinaryServiceImpl mediaUploader;
     @Autowired
-    protected IRoleRepository roleRepository;
+    protected RoleRepository roleRepository;
 
     @Mapping(target = "status", expression = "java(mapStatus(userEntity.getStatus()))")
     @Mapping(target = "role", expression = "java(userEntity.getRole() != null ? userEntity.getRole().getRoleName() : null)")

@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.request.MediaUploadTestRequest;
 import com.example.websocket_demo.service.test.TestService;
-import com.example.websocket_demo.common.i18n.MessageService;
+import com.example.websocket_demo.common.MessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 
 @RestController
 @Tag(name = "Test Controller")
@@ -66,11 +68,11 @@ public class TestController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping("{lang}/test")
-    public ResponseEntity<?> test(@PathVariable String lang) {
+    @GetMapping("/test-language")
+    public ResponseEntity<?> test() {
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
                 HttpStatus.OK,
-                messageService.getMessage("test.greeting", lang),
+                messageService.getMessage(CANNOT_FIND_ADMINISTRATIVE_REGION.getCode(), "hello 123"),
                 null
         ));
     }

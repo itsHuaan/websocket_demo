@@ -17,7 +17,7 @@ import java.time.ZoneId;
 @Getter
 @Setter
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ApiResponse<T> {
     int code;
     String message;

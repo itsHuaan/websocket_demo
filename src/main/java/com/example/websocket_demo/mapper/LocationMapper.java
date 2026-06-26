@@ -1,43 +1,66 @@
 package com.example.websocket_demo.mapper;
 
-import com.example.websocket_demo.dto.response.GisDto;
-import com.example.websocket_demo.dto.response.ProvinceDto;
-import com.example.websocket_demo.dto.response.WardDto;
-import com.example.websocket_demo.entity.GisProvince;
-import com.example.websocket_demo.entity.GisWard;
-import com.example.websocket_demo.entity.Province;
-import com.example.websocket_demo.entity.Ward;
+import com.example.websocket_demo.common.DataUtil;
+import com.example.websocket_demo.dto.response.*;
+import com.example.websocket_demo.entity.*;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LocationMapper {
-    public ProvinceDto mapToProvinceDto(Province province) {
-        return ProvinceDto.builder()
+    public AdministrativeUnitResponse mapToAdministrativeUnitDto(AdministrativeUnitEntity administrativeUnit) {
+        return AdministrativeUnitResponse.builder()
+                .fullName(administrativeUnit.getFullName())
+                .fullNameEn(administrativeUnit.getFullNameEn())
+                .shortName(administrativeUnit.getShortName())
+                .shortNameEn(administrativeUnit.getShortNameEn())
+                .codeName(administrativeUnit.getCodeName())
+                .codeNameEn(administrativeUnit.getCodeNameEn())
+                .build();
+    }
+
+    public AdministrativeRegionResponse mapToAdministrativeRegionDto(AdministrativeRegionEntity administrativeRegion) {
+        return AdministrativeRegionResponse.builder()
+                .name(administrativeRegion.getName())
+                .nameEn(administrativeRegion.getNameEn())
+                .codeName(administrativeRegion.getCodeName())
+                .codeNameEn(administrativeRegion.getCodeNameEn())
+                .build();
+    }
+
+    public ProvinceResponse mapToProvinceDto(ProvinceEntity province) {
+        return ProvinceResponse.builder()
                 .code(province.getCode())
                 .name(province.getName())
                 .nameEn(province.getNameEn())
                 .fullName(province.getFullName())
                 .fullNameEn(province.getFullNameEn())
                 .codeName(province.getCodeName())
-                .administrativeUnitId(province.getAdministrativeUnit() != null ? province.getAdministrativeUnit().getId() : null)
+                .administrativeUnit(!DataUtil.isNullOrEmpty(province.getAdministrativeUnit())
+                        ? this.mapToAdministrativeUnitDto(province.getAdministrativeUnit())
+                        : null)
+//                .administrativeRegionId(province.getAdministrativeRegion() != null ? province.getAdministrativeRegion().getId() : null)
                 .build();
     }
 
-    public WardDto mapToWardDto(Ward ward) {
-        return WardDto.builder()
+    public WardResponse mapToWardDto(WardEntity ward) {
+        return WardResponse.builder()
                 .code(ward.getCode())
                 .name(ward.getName())
                 .nameEn(ward.getNameEn())
                 .fullName(ward.getFullName())
                 .fullNameEn(ward.getFullNameEn())
                 .codeName(ward.getCodeName())
-                .provinceCode(ward.getProvince() != null ? ward.getProvince().getCode() : null)
-                .administrativeUnitId(ward.getAdministrativeUnit() != null ? ward.getAdministrativeUnit().getId() : null)
+//                .province(!DataUtil.isNullOrEmpty(ward.getProvince())
+//                        ? this.mapToProvinceDto(ward.getProvince())
+//                        : null)
+                .administrativeUnit(!DataUtil.isNullOrEmpty(ward.getAdministrativeUnit())
+                        ? this.mapToAdministrativeUnitDto(ward.getAdministrativeUnit())
+                        : null)
                 .build();
     }
 
-    public GisDto mapToGisProvinceDto(GisProvince gisProvince) {
-        return GisDto.builder()
+    public GisResponse mapToGisProvinceDto(GisProvinceEntity gisProvince) {
+        return GisResponse.builder()
                 .id(gisProvince.getId())
                 .code(gisProvince.getProvince() != null ? gisProvince.getProvince().getCode() : null)
                 .gisServerId(gisProvince.getGisServerId())
@@ -47,8 +70,8 @@ public class LocationMapper {
                 .build();
     }
 
-    public GisDto mapToGisWardDto(GisWard gisWard) {
-        return GisDto.builder()
+    public GisResponse mapToGisWardDto(GisWardEntity gisWard) {
+        return GisResponse.builder()
                 .id(gisWard.getId())
                 .code(gisWard.getWard() != null ? gisWard.getWard().getCode() : null)
                 .gisServerId(gisWard.getGisServerId())

@@ -9,14 +9,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class WardDto {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class ProvinceResponse {
     String code;
     String name;
     String nameEn;
     String fullName;
     String fullNameEn;
     String codeName;
-    String provinceCode;
-    Integer administrativeUnitId;
+    AdministrativeUnitResponse administrativeUnit;
+//    Integer administrativeRegionId;
 }

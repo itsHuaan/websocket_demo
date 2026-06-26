@@ -5,8 +5,8 @@ import com.example.websocket_demo.entity.BaseEntity;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AccountStatus;
-import com.example.websocket_demo.repository.IRoleRepository;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.RoleRepository;
+import com.example.websocket_demo.repository.UserRepository;
 import com.example.websocket_demo.repository.specification.UserSpecification;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.dto.request.AdminUserRequest;
@@ -39,12 +39,12 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
 
-    IUserRepository userRepository;
+    UserRepository userRepository;
     CloudinaryServiceImpl mediaUploader;
     PasswordEncoder passwordEncoder;
     UserMapper userMapper;
     StringRedisTemplate redisTemplate;
-    IRoleRepository roleRepository;
+    RoleRepository roleRepository;
     SimpMessagingTemplate messagingTemplate;
 
     @Override

@@ -3,7 +3,7 @@ package com.example.websocket_demo.security.config;
 import com.example.websocket_demo.security.jwt.JwtAuthenticationFilter;
 import com.example.websocket_demo.security.jwt.JwtProvider;
 import com.example.websocket_demo.service.user.impl.UserDetailServiceImpl;
-import com.example.websocket_demo.repository.ITokenBlackListRepository;
+import com.example.websocket_demo.repository.TokenBlackListRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 public class JwtConfig {
     JwtProvider jwtProvider;
     UserDetailServiceImpl userDetailService;
-    ITokenBlackListRepository tokenBlacklistRepository;
+    TokenBlackListRepository tokenBlacklistRepository;
 
     @Bean
     JwtAuthenticationFilter jwtAuthenticationFilter() {

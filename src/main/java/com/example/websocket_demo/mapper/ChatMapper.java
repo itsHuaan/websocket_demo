@@ -7,8 +7,8 @@ import com.example.websocket_demo.dto.response.ChatRoomResponse;
 import com.example.websocket_demo.entity.ChatMediaEntity;
 import com.example.websocket_demo.entity.ChatMessageEntity;
 import com.example.websocket_demo.entity.ChatRoomEntity;
-import com.example.websocket_demo.repository.IChatMessageRepository;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.ChatMessageRepository;
+import com.example.websocket_demo.repository.UserRepository;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,9 +24,9 @@ import java.util.NoSuchElementException;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class ChatMapper {
     @Autowired
-    protected IUserRepository userRepository;
+    protected UserRepository userRepository;
     @Autowired
-    protected IChatMessageRepository chatMessageRepository;
+    protected ChatMessageRepository chatMessageRepository;
 
     @Mapping(target = "sender", expression = "java(getUsername(chatRoomEntity.getSenderId()))")
     @Mapping(target = "recipient", expression = "java(getUsername(chatRoomEntity.getRecipientId()))")

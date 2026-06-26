@@ -4,8 +4,8 @@ import com.example.websocket_demo.dto.response.ChatRoomResponse;
 import com.example.websocket_demo.dto.response.ChatUserResponse;
 import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.mapper.ChatMapper;
-import com.example.websocket_demo.repository.IChatRoomRepository;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.ChatRoomRepository;
+import com.example.websocket_demo.repository.UserRepository;
 import com.example.websocket_demo.service.chat.IChatRoomService;
 import com.example.websocket_demo.repository.specification.ChatSpecification;
 import lombok.AccessLevel;
@@ -24,9 +24,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatRoomServiceImpl implements IChatRoomService {
-    IChatRoomRepository chatRoomRepository;
+    ChatRoomRepository chatRoomRepository;
     ChatMapper chatMapper;
-    IUserRepository userRepository;
+    UserRepository userRepository;
 
     @Override
     public Optional<String> getChatRoomId(Long senderId, Long recipientId, boolean createIfNotExist) {

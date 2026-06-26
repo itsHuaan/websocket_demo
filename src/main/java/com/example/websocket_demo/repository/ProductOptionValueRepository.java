@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface IProductOptionValueRepository extends JpaRepository<ProductOptionValueEntity, Long>, JpaSpecificationExecutor<ProductOptionValueEntity> {
+public interface ProductOptionValueRepository extends JpaRepository<ProductOptionValueEntity, Long>, JpaSpecificationExecutor<ProductOptionValueEntity> {
     Optional<ProductOptionValueEntity> findByOptionAndValueName(ProductOptionEntity option, String valueName);
 }

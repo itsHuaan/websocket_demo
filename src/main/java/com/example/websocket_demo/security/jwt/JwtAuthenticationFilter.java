@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.websocket_demo.repository.ITokenBlackListRepository;
+import com.example.websocket_demo.repository.TokenBlackListRepository;
 import com.example.websocket_demo.service.user.impl.UserDetailServiceImpl;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final UserDetailServiceImpl userDetailServiceImpl;
-    private final ITokenBlackListRepository tokenBlackListRepository;
+    private final TokenBlackListRepository tokenBlackListRepository;
     @Value("${jwt.secret-key}")
     private String JWT_SECRET;
 

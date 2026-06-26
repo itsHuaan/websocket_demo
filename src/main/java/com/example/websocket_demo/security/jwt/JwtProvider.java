@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.example.websocket_demo.entity.UserEntity;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.UserRepository;
 
 import java.util.Date;
 
@@ -20,7 +20,7 @@ public class JwtProvider {
     @Value("${jwt.expiration}")
     private int JWT_EXPIRATION;
 
-    private final IUserRepository userRepository;
+    private final UserRepository userRepository;
 
     public String generateTokenByUsername(String username) {
         Date now = new Date();

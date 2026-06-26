@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.objectweb.asm.TypeReference;
 
 import java.lang.reflect.Field;
+import java.text.Normalizer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.example.websocket_demo.enumeration.VietnamPhoneFormat.*;
@@ -105,5 +107,21 @@ public class DataUtil {
             case PLUS_MSISDN -> PLUS_MSISDN.getValue() + coreNumber;
             case ISDN -> coreNumber;
         };
+    }
+
+    public static String toSnakeCase(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        String temp = input.replace("Đ", "D").replace("đ", "d");
+        temp = Normalizer.normalize(temp, Normalizer.Form.NFD);
+        temp = Pattern.compile("\\p{InCombiningDiacriticalMarks}+").matcher(temp).replaceAll("");
+
+        temp = temp.replaceAll("([a-z])([A-Z]+)", "$1_$2");
+
+        return temp.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
     }
 }

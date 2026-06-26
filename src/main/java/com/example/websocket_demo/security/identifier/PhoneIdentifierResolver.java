@@ -4,7 +4,7 @@ import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.VietnamPhoneFormat;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PhoneIdentifierResolver implements UserIdentifierResolver {
 
-    IUserRepository userRepository;
+    UserRepository userRepository;
 
     @Override
     public boolean supports(String identifier) {

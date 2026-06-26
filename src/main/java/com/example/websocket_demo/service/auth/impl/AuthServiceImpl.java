@@ -14,8 +14,8 @@ import com.example.websocket_demo.dto.request.EmailRequest;
 
 import com.example.websocket_demo.dto.request.SignInRequest;
 import com.example.websocket_demo.dto.request.SignUpRequest;
-import com.example.websocket_demo.repository.IRefreshTokenRepository;
-import com.example.websocket_demo.repository.IUserRepository;
+import com.example.websocket_demo.repository.RefreshTokenRepository;
+import com.example.websocket_demo.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -50,8 +50,8 @@ import com.example.websocket_demo.dto.request.ResendOtpRequest;
 public class AuthServiceImpl implements IAuthService {
     JwtProvider jwtProvider;
     AuthenticationManager authenticationManager;
-    IUserRepository userRepository;
-    IRefreshTokenRepository refreshTokenRepository;
+    UserRepository userRepository;
+    RefreshTokenRepository refreshTokenRepository;
     UserMapper userMapper;
     IEmailService emailService;
     SpringTemplateEngine templateEngine;

@@ -9,13 +9,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProvinceDto {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class GisResponse {
+    Integer id;
     String code;
-    String name;
-    String nameEn;
-    String fullName;
-    String fullNameEn;
-    String codeName;
-    Integer administrativeUnitId;
+    String gisServerId;
+    Double areaKm2;
+    String bboxWkt;
+    String geomWkt;
 }

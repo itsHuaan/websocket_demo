@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface IChatMessageRepository extends JpaRepository<ChatMessageEntity, Long>, JpaSpecificationExecutor<ChatMessageEntity> {
+public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, Long>, JpaSpecificationExecutor<ChatMessageEntity> {
     ChatMessageEntity findChatMessageEntityByChatIdOrderByCreatedAtDesc(@NotNull String chatId);
     List<ChatMessageEntity> findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(String chatId);
 

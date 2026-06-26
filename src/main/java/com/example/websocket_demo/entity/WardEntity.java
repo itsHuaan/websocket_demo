@@ -18,7 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "tbl_wards")
-public class Ward {
+public class WardEntity {
     @Id
     @Column(name = "code", length = 20)
     private String code;
@@ -40,9 +40,9 @@ public class Ward {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "province_code")
-    private Province province;
+    private ProvinceEntity province;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "administrative_unit_id")
-    private AdministrativeUnit administrativeUnit;
+    private AdministrativeUnitEntity administrativeUnit;
 }
