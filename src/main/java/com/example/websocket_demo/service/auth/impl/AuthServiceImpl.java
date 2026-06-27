@@ -1,11 +1,11 @@
 package com.example.websocket_demo.service.auth.impl;
 
+import com.example.websocket_demo.common.MessageService;
 import com.example.websocket_demo.security.domain.UserDetailsImpl;
 import com.example.websocket_demo.security.jwt.JwtProvider;
 import com.example.websocket_demo.dto.response.SignInResponse;
 import com.example.websocket_demo.entity.RefreshTokenEntity;
 import com.example.websocket_demo.entity.UserEntity;
-import com.example.websocket_demo.enumeration.AuthValidation;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.enumeration.VietnamPhoneFormat;
@@ -20,8 +20,8 @@ import com.example.websocket_demo.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import com.example.websocket_demo.service.auth.IAuthService;
-import com.example.websocket_demo.service.email.IEmailService;
+import com.example.websocket_demo.service.auth.AuthService;
+import com.example.websocket_demo.service.email.EmailService;
 import com.example.websocket_demo.service.otp.OtpService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -44,19 +44,22 @@ import com.example.websocket_demo.dto.request.ForgotPasswordRequest;
 import com.example.websocket_demo.dto.request.ResetPasswordRequest;
 import com.example.websocket_demo.dto.request.ResendOtpRequest;
 
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AuthServiceImpl implements IAuthService {
+public class AuthServiceImpl implements AuthService {
     JwtProvider jwtProvider;
     AuthenticationManager authenticationManager;
     UserRepository userRepository;
     RefreshTokenRepository refreshTokenRepository;
     UserMapper userMapper;
-    IEmailService emailService;
+    EmailService emailService;
     SpringTemplateEngine templateEngine;
     OtpService otpService;
     PasswordEncoder passwordEncoder;
+    MessageService messageService;
 
     @NonFinal
     @Value("${app.otp.expires-minutes}")
@@ -90,22 +93,22 @@ public class AuthServiceImpl implements IAuthService {
     @Override
     public SignInResponse refreshToken(String refreshToken) {
         RefreshTokenEntity stored = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+                .orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(INVALID_REFRESH_TOKEN.getCode())));
         if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
             refreshTokenRepository.delete(stored);
-            throw new IllegalArgumentException("Refresh token has expired. Please sign in again.");
+            throw new IllegalArgumentException(messageService.getMessage(REFRESH_TOKEN_EXPIRED.getCode()));
         }
         UserEntity user = userRepository.findById(stored.getUserId())
                 .filter(u -> u.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(USER_NOT_FOUND.getCode())));
 
         // A deactivated/suspended account must not be able to mint a fresh token.
         // The refresh token is left intact so a later reactivation still works.
         if (user.getStatus() != AccountStatus.ACTIVE.getValue()) {
             String reason = user.getStatusReason();
-            throw new IllegalArgumentException(reason != null && !reason.isBlank()
-                    ? "Your account has been locked: " + reason
-                    : "Your account is not active. Please contact an administrator.");
+            throw new IllegalArgumentException(!DataUtil.isNullOrEmpty(reason)
+                    ? messageService.getMessage(ACCOUNT_LOCKED.getCode(), reason)
+                    : messageService.getMessage(ACCOUNT_NOT_ACTIVE.getCode()));
         }
 
         // Rotate: the used refresh token is single-use; issue a fresh access/refresh pair
@@ -147,11 +150,11 @@ public class AuthServiceImpl implements IAuthService {
         boolean isExistingByEmail = userRepository.existsByEmailAndDeletedAtIsNull(email);
         boolean isExistingByUsername = userRepository.existsByUsernameAndDeletedAtIsNull(credentials.getUsername());
         if (isExistingByEmail && isExistingByUsername) {
-            throw new IllegalArgumentException("User already exists with both email and username");
+            throw new IllegalArgumentException(messageService.getMessage(USER_EXISTS.getCode()));
         } else if (isExistingByEmail) {
-            throw new IllegalArgumentException(AuthValidation.USER_EXISTING_BY_EMAIL.getMessage());
+            throw new IllegalArgumentException(messageService.getMessage(USER_EXISTING_BY_EMAIL.getCode()));
         } else if (isExistingByUsername) {
-            throw new IllegalArgumentException(AuthValidation.USER_EXISTING_BY_USERNAME.getMessage());
+            throw new IllegalArgumentException(messageService.getMessage(USER_EXISTING_BY_USERNAME.getCode()));
         }
 
         // Phone number is optional. When supplied, validate, normalise to the canonical
@@ -160,11 +163,11 @@ public class AuthServiceImpl implements IAuthService {
         String phone = credentials.getPhoneNumber();
         if (phone != null && !phone.isBlank()) {
             if (!phone.matches(Const.VN_PHONE_REGEX)) {
-                throw new IllegalArgumentException("Invalid Vietnamese phone number");
+                throw new IllegalArgumentException(messageService.getMessage(INVALID_PHONE_NUMBER.getCode()));
             }
             String canonicalPhone = DataUtil.formatVnPhone(phone, VietnamPhoneFormat.ZERO);
             if (userRepository.existsByPhoneNumberAndDeletedAtIsNull(canonicalPhone)) {
-                throw new IllegalArgumentException("An account with this phone number already exists");
+                throw new IllegalArgumentException(messageService.getMessage(USER_EXISTING_BY_PHONE.getCode()));
             }
             credentials.setPhoneNumber(canonicalPhone);
         } else {
@@ -180,9 +183,9 @@ public class AuthServiceImpl implements IAuthService {
     public void resendSignUpOtp(ResendOtpRequest request) {
         String email = request.getEmail();
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+                .orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(USER_NOT_FOUND_BY_EMAIL.getCode())));
         if (user.getStatus() == AccountStatus.ACTIVE.getValue()) {
-            throw new IllegalArgumentException("This account is already verified. Please sign in.");
+            throw new IllegalArgumentException(messageService.getMessage(ACCOUNT_ALREADY_VERIFIED.getCode()));
         }
         String otp = otpService.generateAndStoreOtp(email).getData();
         EmailRequest emailRequest = new EmailRequest(email, "Account Confirmation OTP", getEmailContent(otp, OTP_EXPIRES_MINUTES));
@@ -195,13 +198,13 @@ public class AuthServiceImpl implements IAuthService {
         String otp = request.getOtp();
         String storedOtp = otpService.getOtp(email);
         if (storedOtp == null || !storedOtp.equals(otp)) {
-            throw new IllegalArgumentException("Invalid or expired OTP");
+            throw new IllegalArgumentException(messageService.getMessage(OTP_INVALID_OR_EXPIRED.getCode()));
         }
         if (otpService.isOtpUsed(email)) {
-            throw new IllegalArgumentException("OTP has already been used");
+            throw new IllegalArgumentException(messageService.getMessage(OTP_USED.getCode()));
         }
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(USER_NOT_FOUND.getCode())));
         user.setStatus(AccountStatus.ACTIVE.getValue());
         userRepository.save(user);
         otpService.markOtpAsUsed(email);
@@ -211,7 +214,7 @@ public class AuthServiceImpl implements IAuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
         String email = request.getEmail();
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with this email"));
+                .orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(USER_NOT_FOUND_BY_EMAIL.getCode())));
         
         String otp = otpService.generateAndStoreOtp(email).getData();
         EmailRequest emailRequest = new EmailRequest(email, "Reset Password OTP", getEmailContent(otp, OTP_EXPIRES_MINUTES));
@@ -224,14 +227,14 @@ public class AuthServiceImpl implements IAuthService {
         String otp = request.getOtp();
         String storedOtp = otpService.getOtp(email);
         if (storedOtp == null || !storedOtp.equals(otp)) {
-            throw new IllegalArgumentException("Invalid or expired OTP");
+            throw new IllegalArgumentException(messageService.getMessage(OTP_INVALID_OR_EXPIRED.getCode()));
         }
         if (otpService.isOtpUsed(email)) {
-            throw new IllegalArgumentException("OTP has already been used");
+            throw new IllegalArgumentException(messageService.getMessage(OTP_USED.getCode()));
         }
-        
+
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(USER_NOT_FOUND.getCode())));
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         otpService.markOtpAsUsed(email);

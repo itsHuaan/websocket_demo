@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.request.ChatMessageRequest;
 import com.example.websocket_demo.dto.response.ApiResponse;
-import com.example.websocket_demo.service.chat.IChatMessageService;
+import com.example.websocket_demo.service.chat.ChatMessageService;
 import com.example.websocket_demo.common.Const;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -17,7 +17,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -29,7 +28,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatController {
-    IChatMessageService chatMessageService;
+    ChatMessageService chatMessageService;
     SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat")

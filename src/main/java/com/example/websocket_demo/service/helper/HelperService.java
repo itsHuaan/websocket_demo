@@ -2,6 +2,6 @@ package com.example.websocket_demo.service.helper;
 
 import java.util.Map;
 
-public interface IHelperService {
+public interface HelperService {
     Map<Object, Object> getAllPhoneCodes();
 }

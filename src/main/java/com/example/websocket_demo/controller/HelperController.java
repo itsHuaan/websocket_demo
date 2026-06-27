@@ -2,7 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.dto.response.ApiResponse;
-import com.example.websocket_demo.service.helper.IHelperService;
+import com.example.websocket_demo.service.helper.HelperService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -22,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class HelperController {
-    IHelperService helperService;
+    HelperService helperService;
 
     private <T> ResponseEntity<ApiResponse<T>> ok(String message, T data) {
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, message, data));

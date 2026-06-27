@@ -5,7 +5,7 @@ import com.example.websocket_demo.dto.request.ChatMessageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface IChatMessageService {
+public interface ChatMessageService {
     ChatMessageResponse getChatMessageById(Long id);
     ChatMessageResponse saveMessage(ChatMessageRequest message);
     Page<ChatMessageResponse> getChatMessages(Long senderId, Long recipientId, Pageable pageable);

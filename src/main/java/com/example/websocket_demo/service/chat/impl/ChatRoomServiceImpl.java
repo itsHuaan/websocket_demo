@@ -1,12 +1,13 @@
 package com.example.websocket_demo.service.chat.impl;
 
+import com.example.websocket_demo.common.MessageService;
 import com.example.websocket_demo.dto.response.ChatRoomResponse;
 import com.example.websocket_demo.dto.response.ChatUserResponse;
 import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.mapper.ChatMapper;
 import com.example.websocket_demo.repository.ChatRoomRepository;
 import com.example.websocket_demo.repository.UserRepository;
-import com.example.websocket_demo.service.chat.IChatRoomService;
+import com.example.websocket_demo.service.chat.ChatRoomService;
 import com.example.websocket_demo.repository.specification.ChatSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,17 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ChatRoomServiceImpl implements IChatRoomService {
+public class ChatRoomServiceImpl implements ChatRoomService {
     ChatRoomRepository chatRoomRepository;
     ChatMapper chatMapper;
     UserRepository userRepository;
+    MessageService messageService;
 
     @Override
     public Optional<String> getChatRoomId(Long senderId, Long recipientId, boolean createIfNotExist) {
@@ -61,10 +65,10 @@ public class ChatRoomServiceImpl implements IChatRoomService {
 
     private String createChatId(Long senderId, Long recipientId) {
         Long _senderId = userRepository.findById(senderId).orElseThrow(
-                () -> new NoSuchElementException("Sender not found")
+                () -> new NoSuchElementException(messageService.getMessage(SENDER_NOT_FOUND.getCode()))
         ).getUserId();
         Long _recipientId = userRepository.findById(recipientId).orElseThrow(
-                () -> new NoSuchElementException("Recipient not found")
+                () -> new NoSuchElementException(messageService.getMessage(RECIPIENT_NOT_FOUND.getCode()))
         ).getUserId();
         var chatId = String.format("%s_%s", Math.min(_senderId, _recipientId), Math.max(_senderId, _recipientId));
         ChatRoomEntity senderRecipient = ChatRoomEntity.builder()

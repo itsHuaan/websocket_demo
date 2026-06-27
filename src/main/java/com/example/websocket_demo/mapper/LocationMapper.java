@@ -38,7 +38,6 @@ public class LocationMapper {
                 .administrativeUnit(!DataUtil.isNullOrEmpty(province.getAdministrativeUnit())
                         ? this.mapToAdministrativeUnitDto(province.getAdministrativeUnit())
                         : null)
-//                .administrativeRegionId(province.getAdministrativeRegion() != null ? province.getAdministrativeRegion().getId() : null)
                 .build();
     }
 
@@ -50,9 +49,6 @@ public class LocationMapper {
                 .fullName(ward.getFullName())
                 .fullNameEn(ward.getFullNameEn())
                 .codeName(ward.getCodeName())
-//                .province(!DataUtil.isNullOrEmpty(ward.getProvince())
-//                        ? this.mapToProvinceDto(ward.getProvince())
-//                        : null)
                 .administrativeUnit(!DataUtil.isNullOrEmpty(ward.getAdministrativeUnit())
                         ? this.mapToAdministrativeUnitDto(ward.getAdministrativeUnit())
                         : null)

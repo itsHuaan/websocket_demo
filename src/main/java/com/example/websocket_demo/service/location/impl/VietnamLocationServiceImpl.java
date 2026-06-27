@@ -95,7 +95,7 @@ public class VietnamLocationServiceImpl implements VietnamLocationService {
         String snakeCaseCodeName = DataUtil.toSnakeCase(codeName);
         return provinceRepository.findByCodeName(snakeCaseCodeName)
                 .map(locationMapper::mapToProvinceDto)
-                .orElseThrow();
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(PROVINCE_NOT_FOUND.getCode(), snakeCaseCodeName)));
     }
 
     @Override
@@ -111,7 +111,7 @@ public class VietnamLocationServiceImpl implements VietnamLocationService {
         String snakeCaseCodeName = DataUtil.toSnakeCase(codeName);
         return wardRepository.findByCodeName(snakeCaseCodeName)
                 .map(locationMapper::mapToWardDto)
-                .orElseThrow();
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(WARD_NOT_FOUND.getCode(), snakeCaseCodeName)));
     }
 
     @Override
@@ -125,7 +125,7 @@ public class VietnamLocationServiceImpl implements VietnamLocationService {
     @Override
     public GisResponse getGisWard(String code) {
         GisWardEntity gisWardEntity = gisWardRepository.findByWardCode(code);
-        if (gisWardEntity == null) throw new NoSuchElementException("WardEntity not found");
+        if (gisWardEntity == null) throw new NoSuchElementException("Ward not found");
         return locationMapper.mapToGisWardDto(gisWardEntity);
     }
 }

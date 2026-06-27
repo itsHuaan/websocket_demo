@@ -1,4 +1,4 @@
 package com.example.websocket_demo.service.auth;
 
-public interface ITokenBlacklistService {
+public interface TokenBlacklistService {
 }

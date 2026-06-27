@@ -8,6 +8,7 @@ import com.example.websocket_demo.dto.response.GisResponse;
 import com.example.websocket_demo.dto.response.ProvinceResponse;
 import com.example.websocket_demo.dto.response.WardResponse;
 import com.example.websocket_demo.service.location.VietnamLocationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +22,7 @@ import java.util.List;
 import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 
 @RestController
+@Tag(name = "Vietnam Location Controller")
 @RequestMapping(Const.API_PREFIX_V1 + "/locations")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -86,6 +88,4 @@ public class VietnamLocationController {
     public ResponseEntity<ApiResponse<GisResponse>> getGisWard(@PathVariable String code) {
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched gis ward", vietnamLocationService.getGisWard(code)));
     }
-
-
 }

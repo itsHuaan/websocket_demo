@@ -2,7 +2,7 @@ package com.example.websocket_demo.service.helper.impl;
 
 import com.example.websocket_demo.client.BaseClient;
 import com.example.websocket_demo.common.DataUtil;
-import com.example.websocket_demo.service.helper.IHelperService;
+import com.example.websocket_demo.service.helper.HelperService;
 import com.example.websocket_demo.service.redis.RedisService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class HelperServiceImpl implements IHelperService {
+public class HelperServiceImpl implements HelperService {
     RedisService redisService;
     BaseClient baseClient;
 

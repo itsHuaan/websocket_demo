@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.chat.impl;
 
+import com.example.websocket_demo.common.MessageService;
 import com.example.websocket_demo.dto.request.ChatMessageRequest;
 import com.example.websocket_demo.dto.response.ChatMessageResponse;
 import com.example.websocket_demo.dto.response.ChatNotificationResponse;
@@ -8,8 +9,8 @@ import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.mapper.ChatMapper;
 import com.example.websocket_demo.repository.ChatMessageRepository;
 import com.example.websocket_demo.repository.ChatRoomRepository;
-import com.example.websocket_demo.service.chat.IChatMessageService;
-import com.example.websocket_demo.service.chat.IChatRoomService;
+import com.example.websocket_demo.service.chat.ChatMessageService;
+import com.example.websocket_demo.service.chat.ChatRoomService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,32 +25,35 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ChatMessageServiceImpl implements IChatMessageService {
+public class ChatMessageServiceImpl implements ChatMessageService {
     ChatMessageRepository chatMessageRepository;
     ChatMapper chatMapper;
-    IChatRoomService chatRoomService;
+    ChatRoomService chatRoomService;
     ChatRoomRepository chatRoomRepository;
     SimpMessagingTemplate messagingTemplate;
+    MessageService messageService;
 
     @Override
     public ChatMessageResponse getChatMessageById(Long id) {
         return chatMessageRepository.findById(id)
                 .map(chatMapper::toChatMessageDto)
-                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(MESSAGE_NOT_FOUND.getCode())));
     }
 
     @Override
     public ChatMessageResponse saveMessage(ChatMessageRequest message) {
         if (Objects.equals(message.getSenderId(), message.getRecipientId())) {
-            throw new IllegalArgumentException("You can't send messages to yourself");
+            throw new IllegalArgumentException(messageService.getMessage(CANNOT_SEND_TO_SELF.getCode()));
         }
         var chatRoomId = chatRoomService.getChatRoomId(message.getSenderId(),
                 message.getRecipientId(),
-                true).orElseThrow(() -> new IllegalArgumentException("Can't find chat room"));
+                true).orElseThrow(() -> new IllegalArgumentException(messageService.getMessage(CHAT_ROOM_NOT_FOUND.getCode())));
         message.setChatId(chatRoomId);
         ChatMessageEntity entity = chatMapper.toChatMessageEntity(message);
         applyReplySnapshot(entity, message, chatRoomId);
@@ -93,7 +97,7 @@ public class ChatMessageServiceImpl implements IChatMessageService {
         return chatRoomService.getChatRoomId(senderId, recipientId, false)
                 .map(chatId -> chatMessageRepository.findVisibleMessages(chatId, senderId, pageable)
                         .map(this::toSanitizedResponse))
-                .orElseThrow(() -> new NoSuchElementException("Chat room not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(CHAT_ROOM_NOT_FOUND.getCode())));
     }
 
     // Map to a response, scrubbing any content from messages removed for everyone
@@ -113,13 +117,13 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     @Override
     public void removeMessageForMe(Long userId, Long messageId) {
         ChatMessageEntity msg = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(MESSAGE_NOT_FOUND.getCode())));
         if (Objects.equals(msg.getSenderId(), userId)) {
             msg.setSenderVisibility(0);
         } else if (Objects.equals(msg.getRecipientId(), userId)) {
             msg.setRecipientVisibility(0);
         } else {
-            throw new IllegalArgumentException("You can't remove this message");
+            throw new IllegalArgumentException(messageService.getMessage(CANNOT_REMOVE_MESSAGE.getCode()));
         }
         chatMessageRepository.save(msg);
     }
@@ -127,9 +131,9 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     @Override
     public void removeMessageForEveryone(Long userId, Long messageId) {
         ChatMessageEntity msg = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(MESSAGE_NOT_FOUND.getCode())));
         if (!Objects.equals(msg.getSenderId(), userId)) {
-            throw new IllegalArgumentException("You can only remove your own messages for everyone");
+            throw new IllegalArgumentException(messageService.getMessage(CANNOT_REMOVE_OTHERS_MESSAGE.getCode()));
         }
         msg.setDeleted(true);
         msg.setMessage(null);
@@ -150,7 +154,7 @@ public class ChatMessageServiceImpl implements IChatMessageService {
     @Override
     public void deleteMessage(Long senderId, Long recipientId) {
         var chatRoomId = chatRoomService.getChatRoomId(senderId, recipientId, false)
-                .orElseThrow(() -> new NoSuchElementException("Chat room not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(CHAT_ROOM_NOT_FOUND.getCode())));
         List<ChatRoomEntity> chatRooms = chatRoomRepository.findChatRoomEntitiesByChatId(chatRoomId);
         chatRoomRepository.deleteAll(chatRooms);
         List<ChatMessageEntity> chatMessages = chatMessageRepository.findChatMessageEntitiesByChatIdOrderByCreatedAtDesc(chatRoomId);
