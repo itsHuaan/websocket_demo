@@ -72,14 +72,21 @@ public class UserServiceImpl implements UserService {
         if (UserRequest == null) {
             throw new IllegalArgumentException(messageService.getMessage(USER_INFO_NULL.getCode()));
         }
-        if (UserRequest.getUsername() == null || UserRequest.getUsername().isEmpty()) {
-            throw new IllegalArgumentException(messageService.getMessage(USERNAME_NULL_OR_EMPTY.getCode()));
+        if (UserRequest.getFirstName() == null || UserRequest.getFirstName().trim().isEmpty() ||
+            UserRequest.getLastName() == null || UserRequest.getLastName().trim().isEmpty()) {
+            throw new IllegalArgumentException(messageService.getMessage(PLEASE_ENTER_FIRST_AND_LAST_NAME.getCode()));
+        }
+        if (UserRequest.getEmail() == null || !UserRequest.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException(messageService.getMessage(PLEASE_ENTER_A_VALID_EMAIL_ADDRESS.getCode()));
+        }
+        if (UserRequest.getUsername() == null || UserRequest.getUsername().trim().length() < 3) {
+            throw new IllegalArgumentException(messageService.getMessage(USERNAME_MUST_BE_AT_LEAST_3_CHARACTERS.getCode()));
         }
         if (userRepository.findByUsernameAndDeletedAtIsNull(UserRequest.getUsername()).isPresent()) {
             throw new IllegalArgumentException(messageService.getMessage(USERNAME_EXISTS.getCode()));
         }
-        if (UserRequest.getPassword() == null || UserRequest.getPassword().isEmpty()) {
-            throw new IllegalArgumentException(messageService.getMessage(PASSWORD_NULL_OR_EMPTY.getCode()));
+        if (UserRequest.getPassword() == null || UserRequest.getPassword().length() < 6) {
+            throw new IllegalArgumentException(messageService.getMessage(PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS.getCode()));
         }
         try {
             UserEntity user = userMapper.toUserEntity(UserRequest);
@@ -171,6 +178,17 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
         );
+
+        if (request.getEmail() != null && !request.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException(messageService.getMessage(PLEASE_ENTER_A_VALID_EMAIL_ADDRESS.getCode()));
+        }
+        if (request.getUsername() != null && request.getUsername().length() < 3) {
+            throw new IllegalArgumentException(messageService.getMessage(USERNAME_MUST_BE_AT_LEAST_3_CHARACTERS.getCode()));
+        }
+        if (request.getPassword() != null && !request.getPassword().isEmpty() && request.getPassword().length() < 6) {
+            throw new IllegalArgumentException(messageService.getMessage(PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS.getCode()));
+        }
+
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
         }

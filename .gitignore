@@ -38,6 +38,8 @@ out/
 
 src/main/resources/application.yml
 
-.playwright-mcp/**
+/.playwright-mcp/
+/.remember/
+/.claude/
 
 **.png

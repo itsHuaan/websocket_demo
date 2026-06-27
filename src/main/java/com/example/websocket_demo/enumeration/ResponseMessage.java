@@ -113,6 +113,11 @@ public enum ResponseMessage {
     FETCHED_WARD("fetched.ward"),
     FETCHED_GIS_PROVINCE("fetched.gis.province"),
     FETCHED_GIS_WARD("fetched.gis.ward"),
+    PLEASE_ENTER_FIRST_AND_LAST_NAME("please.enter.first.and.last.name"),
+    PLEASE_ENTER_A_VALID_EMAIL_ADDRESS("please.enter.a.valid.email.address"),
+    USERNAME_MUST_BE_AT_LEAST_3_CHARACTERS("username.must.be.at.least.3.characters"),
+    PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS("password.must.be.at.least.6.characters"),
+    PLEASE_ENTER_A_ROLE_NAME("please.enter.a.role.name"),
     ;
     String code;
 }

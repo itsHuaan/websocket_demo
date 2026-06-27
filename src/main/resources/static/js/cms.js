@@ -379,11 +379,6 @@ function saveUser() {
     const password = document.getElementById('uPassword').value;
     const roleId = Number(document.getElementById('uRole').value) || null;
 
-    if (!firstName || !lastName) return setError('userModalError', 'Please enter first and last name.');
-    if (!EMAIL_RE.test(email)) return setError('userModalError', 'Please enter a valid email address.');
-    if (username.length < 3) return setError('userModalError', 'Username must be at least 3 characters.');
-    if (!editingUserId && password.length < 6) return setError('userModalError', 'Password must be at least 6 characters.');
-    if (editingUserId && password && password.length < 6) return setError('userModalError', 'Password must be at least 6 characters.');
     setError('userModalError', '');
 
     const btn = document.getElementById('userModalSave');
@@ -515,7 +510,6 @@ function updateRoleSaveState() {
 
 function saveRole() {
     const name = val('roleName');
-    if (!name) return setError('roleModalError', 'Please enter a role name.');
     setError('roleModalError', '');
 
     const btn = document.getElementById('roleModalSave');
