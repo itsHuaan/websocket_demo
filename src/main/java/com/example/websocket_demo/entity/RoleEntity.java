@@ -22,4 +22,6 @@ public class RoleEntity extends BaseEntity{
 
     @NotNull
     String roleName;
+
+    String description;
 }

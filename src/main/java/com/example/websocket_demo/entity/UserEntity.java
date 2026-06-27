@@ -52,6 +52,12 @@ public class UserEntity extends BaseEntity {
     @NotNull
     int status;
 
+    @Column(name = "previous_username")
+    String previousUsername;
+
+    @Column(name = "last_username_change_date")
+    java.time.LocalDateTime lastUsernameChangeDate;
+
     // Admin-supplied reason shown to the user when their account is locked
     // (deactivated/suspended). Cleared on reactivation. Not exposed in UserResponse.
     @Column(length = 500)

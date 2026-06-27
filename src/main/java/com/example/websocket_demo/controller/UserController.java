@@ -18,6 +18,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.security.Principal;
+
 @RestController
 @Tag(name = "User Controller")
 @RequestMapping(value = Const.API_PREFIX_V1 + "/users")
@@ -56,9 +58,21 @@ public class UserController {
                 .body(new ApiResponse<>(HttpStatus.CREATED, "User created successfully", userManagementService.createUser(UserRequest)));
     }
 
+    @Operation(summary = "Get my profile")
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<?>> getMyProfile(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        }
+        Long userId = Long.parseLong(principal.getName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Profile fetched", userManagementService.getUserById(userId)));
+    }
+
     @Operation(summary = "Update my own profile")
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse<?>> updateMyProfile(UserRequest userRequest, java.security.Principal principal) {
+    public ResponseEntity<ApiResponse<?>> updateMyProfile(UserRequest userRequest, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));

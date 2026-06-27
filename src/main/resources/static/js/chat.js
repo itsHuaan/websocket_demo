@@ -69,10 +69,35 @@
     window.onload = function() {
         initTheme();
 
-        const savedUser = localStorage.getItem('chat_user');
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            showChat();
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const refreshToken = urlParams.get('refreshToken');
+        
+        if (token && refreshToken) {
+            currentUser = { token, refreshToken };
+            authFetch('/v1/api/users/me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code === 200 && data.data) {
+                        currentUser = { 
+                            ...data.data, 
+                            token, 
+                            refreshToken, 
+                            id: data.data.userId || data.data.id 
+                        };
+                        localStorage.setItem('chat_user', JSON.stringify(currentUser));
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        showChat();
+                    } else {
+                        showAuth();
+                    }
+                }).catch(() => showAuth());
+        } else {
+            const savedUser = localStorage.getItem('chat_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showChat();
+            }
         }
     };
 
@@ -188,12 +213,15 @@
     function saveSettings() {
         const firstName = settingsFirstName.value.trim();
         const lastName = settingsLastName.value.trim();
+        const username = settingsUsernameInput.value.trim();
         if (!firstName || !lastName) return setFieldError('settingsError', 'Please enter your first and last name.');
+        if (!username) return setFieldError('settingsError', 'Please enter a username.');
         setFieldError('settingsError', '');
 
         const form = new FormData();
         form.append('firstName', firstName);
         form.append('lastName', lastName);
+        if (username !== currentUser.username) form.append('username', username);
         if (settingsPhotoFile) form.append('profilePicture', settingsPhotoFile);
 
         settingsSaveBtn.disabled = true;
@@ -206,6 +234,7 @@
             if (data.code === 200 && data.data) {
                 currentUser.firstName = data.data.firstName;
                 currentUser.lastName = data.data.lastName;
+                currentUser.username = data.data.username;
                 currentUser.profilePicture = data.data.profilePicture;
                 localStorage.setItem('chat_user', JSON.stringify(currentUser));
                 currentUsernameSpan.textContent = displayName(currentUser);

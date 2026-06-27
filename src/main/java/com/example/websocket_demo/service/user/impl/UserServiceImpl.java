@@ -10,6 +10,8 @@ import com.example.websocket_demo.repository.UserRepository;
 import com.example.websocket_demo.repository.specification.UserSpecification;
 import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.dto.request.AdminUserRequest;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -46,6 +48,14 @@ public class UserServiceImpl implements UserService {
     StringRedisTemplate redisTemplate;
     RoleRepository roleRepository;
     SimpMessagingTemplate messagingTemplate;
+
+    @NonFinal
+    @Value("${app.feature.change-username.enabled:false}")
+    boolean isUsernameChangeEnabled;
+
+    @NonFinal
+    @Value("${app.feature.change-username.cooldown-days:30}")
+    int usernameChangeCooldownDays;
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -106,8 +116,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // Self-service profile update: only the safe-to-change fields (name + picture).
-    // Username/email/password are intentionally excluded — the JWT is keyed on username,
-    // so changing it would invalidate the caller's own session.
+    // Username can be changed if the feature flag is enabled and cooldown is met.
     @Override
     public UserResponse updateProfile(Long id, UserRequest request) {
         UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
@@ -118,6 +127,26 @@ public class UserServiceImpl implements UserService {
         }
         if (request.getLastName() != null) {
             user.setLastName(request.getLastName());
+        }
+        if (isUsernameChangeEnabled && request.getUsername() != null && !request.getUsername().isBlank()) {
+            String newUsername = request.getUsername();
+            if (!newUsername.equals(user.getUsername())) {
+                if (newUsername.equals(user.getPreviousUsername())) {
+                    throw new IllegalArgumentException("Cannot use the previous username.");
+                }
+                if (user.getLastUsernameChangeDate() != null) {
+                    LocalDateTime nextAllowedChange = user.getLastUsernameChangeDate().plusDays(usernameChangeCooldownDays);
+                    if (LocalDateTime.now().isBefore(nextAllowedChange)) {
+                        throw new IllegalArgumentException("You can only change your username once every " + usernameChangeCooldownDays + " days.");
+                    }
+                }
+                if (userRepository.existsByUsernameAndDeletedAtIsNull(newUsername)) {
+                    throw new IllegalArgumentException("Username already exists.");
+                }
+                user.setPreviousUsername(user.getUsername());
+                user.setUsername(newUsername);
+                user.setLastUsernameChangeDate(LocalDateTime.now());
+            }
         }
         try {
             if (request.getProfilePicture() != null && !request.getProfilePicture().isEmpty()) {

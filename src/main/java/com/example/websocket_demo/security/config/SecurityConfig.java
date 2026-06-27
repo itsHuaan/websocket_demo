@@ -19,6 +19,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import com.example.websocket_demo.security.handler.Forbidden;
 import com.example.websocket_demo.security.handler.Unauthorized;
 import com.example.websocket_demo.security.jwt.JwtAuthenticationFilter;
+import com.example.websocket_demo.security.oauth2.CustomOAuth2UserService;
+import com.example.websocket_demo.security.oauth2.OAuth2AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +33,8 @@ public class SecurityConfig {
     Unauthorized unauthorized;
     Forbidden forbidden;
     SecurityProperties securityProperties;
+    CustomOAuth2UserService customOAuth2UserService;
+    OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource)
@@ -43,6 +47,9 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(unauthorized)
