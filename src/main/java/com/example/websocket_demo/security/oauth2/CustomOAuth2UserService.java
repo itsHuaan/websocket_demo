@@ -64,9 +64,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 userRepository.save(user);
             }
         } else {
-            RoleEntity role = roleRepository.findByRoleName("USER").orElseGet(() -> {
+            RoleEntity role = roleRepository.findByRoleName("ROLE_USER").orElseGet(() -> {
                 RoleEntity newRole = new RoleEntity();
-                newRole.setRoleName("USER");
+                newRole.setRoleName("ROLE_USER");
                 newRole.setDescription("User role");
                 return roleRepository.save(newRole);
             });
