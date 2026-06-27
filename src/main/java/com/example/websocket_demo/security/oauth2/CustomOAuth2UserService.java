@@ -40,13 +40,23 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
         }
 
-        Optional<UserEntity> userOptional = userRepository.findByEmailAndDeletedAtIsNull(email);
+        Optional<UserEntity> userOptional = userRepository.findByEmail(email);
         UserEntity user;
 
         if (userOptional.isPresent()) {
             user = userOptional.get();
+            boolean changed = false;
+            if (user.getDeletedAt() != null) {
+                user.setDeletedAt(null);
+                user.setStatus(AccountStatus.ACTIVE.getValue());
+                user.setStatusReason(null);
+                changed = true;
+            }
             if (picture != null && !picture.equals(user.getProfilePicture())) {
                 user.setProfilePicture(picture);
+                changed = true;
+            }
+            if (changed) {
                 userRepository.save(user);
             }
         } else {

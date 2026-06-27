@@ -58,6 +58,13 @@ public enum ResponseMessage {
     RECIPIENT_NOT_FOUND("recipient.not.found"),
     PROVINCE_NOT_FOUND("province.not.found"),
     WARD_NOT_FOUND("ward.not.found"),
+
+    USER_INFO_NULL("user.info.null"),
+    USERNAME_NULL_OR_EMPTY("username.null.or.empty"),
+    PASSWORD_NULL_OR_EMPTY("password.null.or.empty"),
+    PROFILE_PICTURE_UPDATE_FAILED("profile.picture.update.failed"),
+    CANNOT_USE_PREVIOUS_USERNAME("cannot.use.previous.username"),
+    USERNAME_CHANGE_COOLDOWN("username.change.cooldown"),
     ;
     String code;
 }

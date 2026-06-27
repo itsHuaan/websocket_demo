@@ -87,7 +87,9 @@ public class AuthServiceImpl implements AuthService {
                 jwt,
                 refreshToken,
                 user.getProfilePicture(),
-                user.getRole() != null ? user.getRole().getRoleName() : null);
+                user.getRole() != null ? user.getRole().getRoleName() : null,
+                user.getPreviousUsername(),
+                user.getLastUsernameChangeDate());
     }
 
     @Override
@@ -124,7 +126,9 @@ public class AuthServiceImpl implements AuthService {
                 jwt,
                 newRefreshToken,
                 user.getProfilePicture(),
-                user.getRole() != null ? user.getRole().getRoleName() : null);
+                user.getRole() != null ? user.getRole().getRoleName() : null,
+                user.getPreviousUsername(),
+                user.getLastUsernameChangeDate());
     }
 
     @Override

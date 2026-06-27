@@ -1,5 +1,6 @@
 package com.example.websocket_demo.service.user.impl;
 
+import com.example.websocket_demo.common.MessageService;
 import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.entity.BaseEntity;
 import com.example.websocket_demo.entity.RoleEntity;
@@ -36,6 +37,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -48,6 +51,7 @@ public class UserServiceImpl implements UserService {
     StringRedisTemplate redisTemplate;
     RoleRepository roleRepository;
     SimpMessagingTemplate messagingTemplate;
+    MessageService messageService;
 
     @NonFinal
     @Value("${app.feature.change-username.enabled:false}")
@@ -66,29 +70,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createUser(UserRequest UserRequest) {
         if (UserRequest == null) {
-            throw new IllegalArgumentException("User model cannot be null");
+            throw new IllegalArgumentException(messageService.getMessage(USER_INFO_NULL.getCode()));
         }
         if (UserRequest.getUsername() == null || UserRequest.getUsername().isEmpty()) {
-            throw new IllegalArgumentException("Username cannot be null or empty");
+            throw new IllegalArgumentException(messageService.getMessage(USERNAME_NULL_OR_EMPTY.getCode()));
         }
         if (userRepository.findByUsernameAndDeletedAtIsNull(UserRequest.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new IllegalArgumentException(messageService.getMessage(USERNAME_EXISTS.getCode()));
         }
         if (UserRequest.getPassword() == null || UserRequest.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
+            throw new IllegalArgumentException(messageService.getMessage(PASSWORD_NULL_OR_EMPTY.getCode()));
         }
         try {
             UserEntity user = userMapper.toUserEntity(UserRequest);
             return userMapper.toUserDto(userRepository.save(user));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload profile picture", e);
+            throw new RuntimeException(messageService.getMessage(FAILED_TO_UPLOAD_MEDIA.getCode()), e);
         }
     }
 
     @Override
     public void updateUser(Long id, UserRequest UserRequest) {
         UserEntity currentUser = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new NoSuchElementException("User not found")
+                () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
         );
         currentUser.setUsername(UserRequest.getUsername() != null
                 ? UserRequest.getUsername()
@@ -111,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
             userRepository.save(currentUser);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to update profile picture", e);
+            throw new RuntimeException(messageService.getMessage(PROFILE_PICTURE_UPDATE_FAILED.getCode()), e);
         }
     }
 
@@ -120,7 +124,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateProfile(Long id, UserRequest request) {
         UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new NoSuchElementException("User not found")
+                () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
         );
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
@@ -132,16 +136,16 @@ public class UserServiceImpl implements UserService {
             String newUsername = request.getUsername();
             if (!newUsername.equals(user.getUsername())) {
                 if (newUsername.equals(user.getPreviousUsername())) {
-                    throw new IllegalArgumentException("Cannot use the previous username.");
+                    throw new IllegalArgumentException(messageService.getMessage(CANNOT_USE_PREVIOUS_USERNAME.getCode()));
                 }
                 if (user.getLastUsernameChangeDate() != null) {
                     LocalDateTime nextAllowedChange = user.getLastUsernameChangeDate().plusDays(usernameChangeCooldownDays);
                     if (LocalDateTime.now().isBefore(nextAllowedChange)) {
-                        throw new IllegalArgumentException("You can only change your username once every " + usernameChangeCooldownDays + " days.");
+                        throw new IllegalArgumentException(messageService.getMessage(USERNAME_CHANGE_COOLDOWN.getCode(), usernameChangeCooldownDays));
                     }
                 }
                 if (userRepository.existsByUsernameAndDeletedAtIsNull(newUsername)) {
-                    throw new IllegalArgumentException("Username already exists.");
+                    throw new IllegalArgumentException(messageService.getMessage(USERNAME_EXISTS.getCode()));
                 }
                 user.setPreviousUsername(user.getUsername());
                 user.setUsername(newUsername);
@@ -156,7 +160,7 @@ public class UserServiceImpl implements UserService {
                 user.setProfilePicture(url);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to update profile picture", e);
+            throw new RuntimeException(messageService.getMessage(PROFILE_PICTURE_UPDATE_FAILED.getCode()), e);
         }
         return userMapper.toUserDto(userRepository.save(user));
     }
@@ -165,7 +169,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse adminUpdateUser(Long id, AdminUserRequest request) {
         UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new NoSuchElementException("User not found")
+                () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
         );
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
@@ -176,14 +180,14 @@ public class UserServiceImpl implements UserService {
         if (request.getUsername() != null && !request.getUsername().isBlank()
                 && !request.getUsername().equals(user.getUsername())) {
             if (userRepository.findByUsernameAndDeletedAtIsNull(request.getUsername()).isPresent()) {
-                throw new IllegalArgumentException("Username already exists");
+                throw new IllegalArgumentException(messageService.getMessage(USERNAME_EXISTS.getCode()));
             }
             user.setUsername(request.getUsername());
         }
         if (request.getEmail() != null && !request.getEmail().isBlank()
                 && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmailAndDeletedAtIsNull(request.getEmail())) {
-                throw new IllegalArgumentException("Email already exists");
+                throw new IllegalArgumentException(messageService.getMessage(EMAIL_EXISTS.getCode()));
             }
             user.setEmail(request.getEmail());
         }
@@ -192,7 +196,7 @@ public class UserServiceImpl implements UserService {
         }
         if (request.getRoleId() != null) {
             RoleEntity role = roleRepository.findById(request.getRoleId()).orElseThrow(
-                    () -> new NoSuchElementException("Role not found")
+                    () -> new NoSuchElementException(messageService.getMessage(ROLE_NOT_FOUND.getCode()))
             );
             user.setRole(role);
         }
@@ -223,14 +227,14 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserByUsername(String username) {
         return userRepository.findByUsernameAndDeletedAtIsNull(username)
                 .map(userMapper::toUserDto)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode())));
     }
 
     @Override
     public UserResponse getUserById(Long id) {
         return userRepository.findByUserIdAndDeletedAtIsNull(id)
                 .map(userMapper::toUserDto)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode())));
     }
 
     @Override
@@ -238,9 +242,9 @@ public class UserServiceImpl implements UserService {
         boolean check = isHardDelete != null && isHardDelete == 1;
         UserEntity user = check
                 ? userRepository.findById(id).orElseThrow(
-                () -> new NoSuchElementException("User not found"))
+                () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode())))
                 : userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new NoSuchElementException("User not found"));
+                () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode())));
         if (check) {
             userRepository.delete(user);
         } else {

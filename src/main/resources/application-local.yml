@@ -35,8 +35,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: itshuaan@gmail.com
-    password: vzwjuxqwdwlfamzi
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -47,17 +47,33 @@ spring:
   main:
     allow-circular-references: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
 jwt:
-  secret-key: askhdqiwu48123y123cxv2134123/123u1t238gqhjwdnjaqwhuie412/312i3o1y28712iekjasbdiuqw9e812739jasldk/zxkcbaskanskdlasda/scaksjcoiasjdoi12312o123/qwkjehqwuiehjiqwueiqwuejkqwndoqwd/129831yu293h12ui3qhwiuehqwuieiwheiqwe
+  secret-key: ${JWT_SECRET_KEY}
   expiration: 28800000
   refresh-expiration: 2592000000
 
 cloudinary:
-  name: dpt7g5sxd
-  api-key: 974323932978374
-  secret-key: ZwTSllWoNsr2f3eGctZ4UkYtMVk
+  name: ${CLOUDINARY_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  secret-key: ${CLOUDINARY_SECRET_KEY}
 
 app:
+  feature:
+    change-username:
+      enabled: true
+      cooldown-days: 30
+
   security:
     public-paths:
       - /v1/api/auth/**

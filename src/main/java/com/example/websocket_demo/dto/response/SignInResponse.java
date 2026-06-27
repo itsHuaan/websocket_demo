@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@AllArgsConstructor
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -20,8 +21,10 @@ public class SignInResponse {
     String refreshToken;
     String profilePicture;
     String role;
+    String previousUsername;
+    LocalDateTime lastUsernameChangeDate;
 
-    public SignInResponse(Long id, String username, String firstName, String lastName, String token, String refreshToken, String profilePicture, String role) {
+    public SignInResponse(Long id, String username, String firstName, String lastName, String token, String refreshToken, String profilePicture, String role, String previousUsername, java.time.LocalDateTime lastUsernameChangeDate) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
@@ -31,6 +34,8 @@ public class SignInResponse {
         this.refreshToken = refreshToken;
         this.profilePicture = profilePicture;
         this.role = role;
+        this.previousUsername = previousUsername;
+        this.lastUsernameChangeDate = lastUsernameChangeDate;
     }
 }
 

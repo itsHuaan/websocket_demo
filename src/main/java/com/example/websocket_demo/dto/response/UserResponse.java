@@ -22,6 +22,8 @@ public class UserResponse {
     String profilePicture;
     String role;
     String status;
+    String previousUsername;
+    java.time.LocalDateTime lastUsernameChangeDate;
     String createdAt;
     String modifiedAt;
     String deletedAt;

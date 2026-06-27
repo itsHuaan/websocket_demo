@@ -172,6 +172,34 @@
         settingsFirstName.value = currentUser.firstName || '';
         settingsLastName.value = currentUser.lastName || '';
         settingsUsernameInput.value = currentUser.username || '';
+
+        const hintDiv = settingsUsernameInput.nextElementSibling;
+        if (currentUser.lastUsernameChangeDate) {
+            const lastChange = new Date(currentUser.lastUsernameChangeDate);
+            const now = new Date();
+            const diffDays = (now - lastChange) / (1000 * 60 * 60 * 24);
+            if (diffDays < 30) {
+                const daysLeft = Math.ceil(30 - diffDays);
+                settingsUsernameInput.disabled = true;
+                if (hintDiv && hintDiv.classList.contains('form-hint')) {
+                    hintDiv.textContent = `You can change your username again in ${daysLeft} days.`;
+                    hintDiv.style.color = '#ef4444';
+                }
+            } else {
+                settingsUsernameInput.disabled = false;
+                if (hintDiv && hintDiv.classList.contains('form-hint')) {
+                    hintDiv.textContent = 'You can change your username once every 30 days.';
+                    hintDiv.style.color = '';
+                }
+            }
+        } else {
+            settingsUsernameInput.disabled = false;
+            if (hintDiv && hintDiv.classList.contains('form-hint')) {
+                hintDiv.textContent = 'You can change your username once every 30 days.';
+                hintDiv.style.color = '';
+            }
+        }
+
         setFieldError('settingsError', '');
         renderSettingsAvatar();
         settingsModal.classList.add('open');
@@ -236,6 +264,7 @@
                 currentUser.lastName = data.data.lastName;
                 currentUser.username = data.data.username;
                 currentUser.profilePicture = data.data.profilePicture;
+                currentUser.lastUsernameChangeDate = data.data.lastUsernameChangeDate;
                 localStorage.setItem('chat_user', JSON.stringify(currentUser));
                 currentUsernameSpan.textContent = displayName(currentUser);
                 renderProfileAvatar();
