@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,7 @@ import java.util.List;
 public class TestServiceImpl implements TestService {
     CloudinaryServiceImpl mediaUploader;
     TestRepository testRepository;
+    MessageService messageService;
 
     private TestResponse toTestDto(TestEntity testEntity) {
         return TestResponse.builder()
@@ -63,7 +67,7 @@ public class TestServiceImpl implements TestService {
 
     private TestEntity getTestEntity(Long id) {
         return testRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Test with id " + id + " not found")
+                () -> new IllegalArgumentException(messageService.getMessage(TEST_NOT_FOUND.getCode()) + id)
         );
     }
 
@@ -72,7 +76,7 @@ public class TestServiceImpl implements TestService {
         List<TestResponse> testEntities = testRepository.findAll().stream()
                 .map(this::toTestDto)
                 .toList();
-        return new ApiResponse<>(HttpStatus.OK, "Medias fetched successfully", testEntities);
+        return new ApiResponse<>(HttpStatus.OK, messageService.getMessage(MEDIAS_FETCHED.getCode()), testEntities);
     }
 
     @Override
@@ -82,13 +86,13 @@ public class TestServiceImpl implements TestService {
 
         try {
             testRepository.save(toTestEntity(model));
-            message = "Media uploaded";
+            message = messageService.getMessage(MEDIA_UPLOADED.getCode());
             status = HttpStatus.CREATED;
         } catch (RuntimeException e) {
             message = e.getMessage();
             status = HttpStatus.BAD_REQUEST;
         } catch (Exception e) {
-            message = "An unexpected error occurred: " + e.getMessage();
+            message = messageService.getMessage(UNEXPECTED_ERROR.getCode()) + e.getMessage();
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
@@ -118,13 +122,13 @@ public class TestServiceImpl implements TestService {
                 }
             }
             testRepository.delete(getTestEntity(id));
-            message = "Media deleted";
+            message = messageService.getMessage(MEDIA_DELETED.getCode());
             status = HttpStatus.CREATED;
         } catch (RuntimeException e) {
             message = e.getMessage();
             status = HttpStatus.BAD_REQUEST;
         } catch (Exception e) {
-            message = "An unexpected error occurred: " + e.getMessage();
+            message = messageService.getMessage(UNEXPECTED_ERROR.getCode()) + e.getMessage();
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         return new ApiResponse<>(status, message);

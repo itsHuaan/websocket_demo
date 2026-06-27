@@ -251,7 +251,19 @@ public class UserServiceImpl implements UserService {
         if (check) {
             userRepository.delete(user);
         } else {
+            String suffix = "_del_" + user.getUserId();
             user.setDeletedAt(LocalDateTime.now());
+            user.setEmail(user.getEmail() + suffix);
+            
+            String newUsername = user.getUsername() + suffix;
+            if (newUsername.length() > 50) {
+                newUsername = user.getUsername().substring(0, 50 - suffix.length()) + suffix;
+            }
+            user.setUsername(newUsername);
+            
+            if (user.getPhoneNumber() != null) {
+                user.setPhoneNumber(user.getPhoneNumber() + suffix);
+            }
             userRepository.save(user);
         }
 

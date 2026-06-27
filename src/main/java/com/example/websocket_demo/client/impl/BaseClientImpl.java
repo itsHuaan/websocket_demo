@@ -16,10 +16,19 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.FAILED_TO_FETCH_PHONE_CODES;
+
 @Slf4j
 @Component
 public class BaseClientImpl implements BaseClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    
+    private final MessageService messageService;
+
+    public BaseClientImpl(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @Override
     public Map<String, String> fetchPhoneCodes() throws Exception {
@@ -41,7 +50,7 @@ public class BaseClientImpl implements BaseClient {
         log.info("Response from {}: {}", url, response.body().trim());
 
         if (response.statusCode() != HttpStatus.OK.value()) {
-            throw new IllegalStateException("Failed to fetch phone codes: HTTP " + response.statusCode());
+            throw new IllegalStateException(messageService.getMessage(FAILED_TO_FETCH_PHONE_CODES.getCode()) + " " + response.statusCode());
         }
 
         Map<String, String> codes = MAPPER.readValue(response.body(), new TypeReference<>() {

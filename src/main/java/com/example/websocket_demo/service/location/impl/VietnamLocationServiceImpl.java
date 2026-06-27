@@ -117,7 +117,7 @@ public class VietnamLocationServiceImpl implements VietnamLocationService {
     @Override
     public GisResponse getGisProvince(String code) {
         GisProvinceEntity gisProvinceEntity = gisProvinceRepository.findByProvinceCode(code);
-        if (gisProvinceEntity == null) throw new NoSuchElementException("Province not found");
+        if (gisProvinceEntity == null) throw new NoSuchElementException(messageService.getMessage(PROVINCE_NOT_FOUND.getCode()));
         return locationMapper.mapToGisProvinceDto(gisProvinceEntity);
 
     }
@@ -125,7 +125,7 @@ public class VietnamLocationServiceImpl implements VietnamLocationService {
     @Override
     public GisResponse getGisWard(String code) {
         GisWardEntity gisWardEntity = gisWardRepository.findByWardCode(code);
-        if (gisWardEntity == null) throw new NoSuchElementException("Ward not found");
+        if (gisWardEntity == null) throw new NoSuchElementException(messageService.getMessage(WARD_NOT_FOUND.getCode()));
         return locationMapper.mapToGisWardDto(gisWardEntity);
     }
 }

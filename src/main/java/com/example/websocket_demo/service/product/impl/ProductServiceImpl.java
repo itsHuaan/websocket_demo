@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,19 +36,20 @@ public class ProductServiceImpl implements ProductService {
     ProductSkuValueRepository productSkuValueRepository;
     ProductMapper productMapper;
     CloudinaryServiceImpl mediaUploader;
+    MessageService messageService;
 
     @Transactional
     @Override
     public void addProduct(ProductRequest productRequest) {
         if (DataUtil.hasNullField(productRequest)) {
-            throw new IllegalArgumentException("Please fill all the required fields");
+            throw new IllegalArgumentException(messageService.getMessage(FILL_ALL_FIELDS.getCode()));
         }
         if (productRequest.getMedia() == null) {
-            throw new IllegalArgumentException("Product needs to have at least media items");
+            throw new IllegalArgumentException(messageService.getMessage(NEED_MEDIA_ITEM.getCode()));
         }
 
         UserEntity user = userRepository.findById(productRequest.getUserId()).orElseThrow(
-                () -> new NoSuchElementException("User not found")
+                () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
         );
         ProductEntity product = ProductEntity.builder()
                 .productName(productRequest.getProductName())
@@ -62,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
                                 .build();
                     } catch (IOException e) {
                         log.error("Failed to parse media: {}", e.getMessage());
-                        throw new RuntimeException("Failed to upload media", e);
+                        throw new RuntimeException(messageService.getMessage(FAILED_TO_UPLOAD_MEDIA.getCode()), e);
                     }
                 }).toList();
         product.setMediaUrls(productMedias);
@@ -97,13 +100,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getById(Long id) {
         return productMapper.toProductDto(productRepository.findByProductIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new NoSuchElementException("Product not found")
+                () -> new NoSuchElementException(messageService.getMessage(PRODUCT_NOT_FOUND.getCode()))
         ));
     }
 
     private void handleNoOptionCase(ProductEntity product, List<ProductRequest.SkuRequest> skus) {
         if (skus == null || skus.isEmpty()) {
-            throw new IllegalArgumentException("Product must have at least one SKU with a price.");
+            throw new IllegalArgumentException(messageService.getMessage(NEED_SKU_WITH_PRICE.getCode()));
         }
 
         for (ProductRequest.SkuRequest skuRequest : skus) {
@@ -148,10 +151,10 @@ public class ProductServiceImpl implements ProductService {
 
             for (ProductRequest.SkuRequest.SkuValueRequest skuValueRequest : skuRequest.getValues()) {
                 ProductOptionEntity option = productOptionRepository.findByProductAndOptionName(product, skuValueRequest.getOption())
-                        .orElseThrow(() -> new NoSuchElementException("Option not found: " + skuValueRequest.getOption()));
+                        .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(OPTION_NOT_FOUND.getCode())));
 
                 ProductOptionValueEntity optionValue = productOptionValueRepository.findByOptionAndValueName(option, skuValueRequest.getValue())
-                        .orElseThrow(() -> new NoSuchElementException("Option Value not found: " + skuValueRequest.getValue()));
+                        .orElseThrow(() -> new NoSuchElementException(messageService.getMessage(OPTION_VALUE_NOT_FOUND.getCode())));
 
                 ProductSkuValueEntity skuValue = ProductSkuValueEntity.builder()
                         .sku(sku)

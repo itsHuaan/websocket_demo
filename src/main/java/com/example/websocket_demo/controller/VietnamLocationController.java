@@ -61,31 +61,31 @@ public class VietnamLocationController {
 
     @GetMapping("/units/{code-name}/provinces")
     public ResponseEntity<ApiResponse<List<ProvinceResponse>>> getProvincesByUnit(@PathVariable("code-name") String codeName) {
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched all provinces", vietnamLocationService.getProvincesByUnit(codeName)));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FETCHED_ALL_PROVINCES.getCode()), vietnamLocationService.getProvincesByUnit(codeName)));
     }
 
     @GetMapping("/regions/{code-name}/provinces")
     public ResponseEntity<ApiResponse<List<ProvinceResponse>>> getProvincesByRegion(@PathVariable("code-name") String codeName) {
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched all provinces", vietnamLocationService.getProvincesByRegion(codeName)));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FETCHED_ALL_PROVINCES.getCode()), vietnamLocationService.getProvincesByRegion(codeName)));
     }
 
     @GetMapping("/provinces/{code-name}/wards")
     public ResponseEntity<ApiResponse<List<WardResponse>>> getWardsByProvince(@PathVariable("code-name") String codeName) {
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched wards", vietnamLocationService.getWardsByProvince(codeName)));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FETCHED_WARDS.getCode()), vietnamLocationService.getWardsByProvince(codeName)));
     }
 
     @GetMapping("/wards/{code-name}")
     public ResponseEntity<ApiResponse<WardResponse>> getWardByCode(@PathVariable("code-name") String codeName) {
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched ward", vietnamLocationService.getWardByCode(codeName)));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FETCHED_WARD.getCode()), vietnamLocationService.getWardByCode(codeName)));
     }
 
     @GetMapping("/provinces/{code}/gis")
     public ResponseEntity<ApiResponse<GisResponse>> getGisProvince(@PathVariable String code) {
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched gis province", vietnamLocationService.getGisProvince(code)));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FETCHED_GIS_PROVINCE.getCode()), vietnamLocationService.getGisProvince(code)));
     }
 
     @GetMapping("/wards/{code}/gis")
     public ResponseEntity<ApiResponse<GisResponse>> getGisWard(@PathVariable String code) {
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched gis ward", vietnamLocationService.getGisWard(code)));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FETCHED_GIS_WARD.getCode()), vietnamLocationService.getGisWard(code)));
     }
 }

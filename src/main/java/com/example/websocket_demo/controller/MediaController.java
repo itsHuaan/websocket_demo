@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.common.Const;
@@ -24,12 +26,13 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
 public class MediaController {
+    MessageService messageService;
     CloudinaryServiceImpl mediaUploader;
 
     @GetMapping
     public ResponseEntity<?> getAllMedia() {
         try {
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Retrieved media", mediaUploader.getAllMedia()));
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(RETRIEVED_MEDIA.getCode()), mediaUploader.getAllMedia()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
@@ -82,4 +85,3 @@ public class MediaController {
         }
     }
 }
-

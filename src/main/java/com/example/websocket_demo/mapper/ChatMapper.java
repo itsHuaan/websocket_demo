@@ -9,6 +9,8 @@ import com.example.websocket_demo.entity.ChatMessageEntity;
 import com.example.websocket_demo.entity.ChatRoomEntity;
 import com.example.websocket_demo.repository.ChatMessageRepository;
 import com.example.websocket_demo.repository.UserRepository;
+import com.example.websocket_demo.common.MessageService;
+import com.example.websocket_demo.enumeration.ResponseMessage;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -63,18 +65,21 @@ public abstract class ChatMapper {
     @Mapping(target = "sentAt", source = "createdAt")
     public abstract ChatHistoryResponse toChatHistoryDto(ChatMessageEntity chatMessageEntity);
 
+    @Autowired
+    protected MessageService messageService;
+
     @Named("getUsername")
     protected String getUsername(Long userId) {
         if (userId == null) return null;
         return userRepository.findById(userId).orElseThrow(
-                () -> new NoSuchElementException("User not found with id: " + userId)).getUsername();
+                () -> new NoSuchElementException(messageService.getMessage(ResponseMessage.USER_IDENTIFIER_NOT_FOUND.getCode(), String.valueOf(userId)))).getUsername();
     }
 
     @Named("getProfilePicture")
     protected String getProfilePicture(Long userId) {
         if (userId == null) return null;
         return userRepository.findById(userId).orElseThrow(
-                () -> new NoSuchElementException("User not found with id: " + userId)).getProfilePicture();
+                () -> new NoSuchElementException(messageService.getMessage(ResponseMessage.USER_IDENTIFIER_NOT_FOUND.getCode(), String.valueOf(userId)))).getProfilePicture();
     }
 
     protected List<ChatHistoryResponse> getMessages(ChatRoomEntity chatRoomEntity) {

@@ -20,12 +20,16 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CloudinaryServiceImpl implements CloudinaryService {
     Cloudinary cloudinary;
+    MessageService messageService;
 
     @Override
     public List<String> uploadMediaFile(MultipartFile[] file) throws IOException {
@@ -81,20 +85,20 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
     private String extractPublicId(String mediaUrl) {
         if (mediaUrl == null || mediaUrl.isEmpty()) {
-            throw new IllegalArgumentException("URL cannot be null or empty");
+            throw new IllegalArgumentException(messageService.getMessage(URL_NULL_OR_EMPTY.getCode()));
         }
         Pattern pattern = Pattern.compile("(\\d{8}_\\d{6}_[\\w-]+)");
         Matcher matcher = pattern.matcher(mediaUrl);
         if (matcher.find()) {
             return matcher.group(0);
         } else {
-            throw new IllegalArgumentException("Failed to extract public ID from URL: " + mediaUrl);
+            throw new IllegalArgumentException(messageService.getMessage(FAILED_TO_EXTRACT_PUBLIC_ID.getCode()) + " " + mediaUrl);
         }
     }
 
     private String getResourceType(String mediaUrl) {
         if (mediaUrl == null || mediaUrl.isEmpty()) {
-            throw new IllegalArgumentException("URL cannot be null or empty");
+            throw new IllegalArgumentException(messageService.getMessage(URL_NULL_OR_EMPTY.getCode()));
         }
         String mediaUrlLower = mediaUrl.toLowerCase();
         if (mediaUrlLower.endsWith(".mp4") ||

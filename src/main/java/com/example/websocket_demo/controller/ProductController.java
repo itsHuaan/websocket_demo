@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.dto.request.ProductRequest;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.response.ProductResponse;
@@ -28,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {
+    MessageService messageService;
     ProductService productService;
 
     @Operation(summary = "Add a product")
@@ -39,7 +42,7 @@ public class ProductController {
         productRequest.setMedia(productMedia);
         productService.addProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(HttpStatus.CREATED, "Product added successfully"));
+                .body(new ApiResponse<>(HttpStatus.CREATED, messageService.getMessage(PRODUCT_ADDED_SUCCESSFULLY.getCode())));
     }
 
     @Operation(summary = "Get all products")
@@ -47,7 +50,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<ProductSummaryResponse>>> getAllProducts() {
         List<ProductSummaryResponse> products = productService.getAll();
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Product fetched", products));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(PRODUCT_FETCHED.getCode()), products));
     }
 
     @Operation(summary = "Get all products by user")
@@ -55,7 +58,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<ProductSummaryResponse>>> getAllProductsByUser(@PathVariable Long id) {
         List<ProductSummaryResponse> products = productService.getAllByUser(id);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Product fetched", products));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(PRODUCT_FETCHED.getCode()), products));
     }
 
     @Operation(summary = "Get product by id")
@@ -63,6 +66,6 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id) {
         ProductResponse product = productService.getById(id);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Product fetched", product));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(PRODUCT_FETCHED.getCode()), product));
     }
 }

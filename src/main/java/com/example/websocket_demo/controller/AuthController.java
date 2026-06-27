@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.request.SignInRequest;
 import com.example.websocket_demo.dto.request.SignUpRequest;
@@ -29,20 +31,21 @@ import com.example.websocket_demo.dto.request.RefreshTokenRequest;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {
+    MessageService messageService;
     AuthService authService;
 
     @Operation(summary = "Sign users in")
     @PostMapping("/sign-in")
     public ResponseEntity<ApiResponse<?>> signIn(@RequestBody SignInRequest credentials) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "You're now logged in", authService.signIn(credentials)));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(YOU_RE_NOW_LOGGED_IN.getCode()), authService.signIn(credentials)));
     }
 
     @Operation(summary = "Exchange a refresh token for a new access token")
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<?>> refreshToken(@RequestBody RefreshTokenRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Token refreshed", authService.refreshToken(request.getRefreshToken())));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(TOKEN_REFRESHED.getCode()), authService.refreshToken(request.getRefreshToken())));
     }
 
     @Operation(summary = "Log out and revoke the refresh token")
@@ -50,7 +53,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> logout(@RequestBody RefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Logged out"));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(LOGGED_OUT.getCode())));
     }
 
     @Operation(summary = "Sign users up")
@@ -58,7 +61,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> signUp(@RequestBody SignUpRequest credentials) {
         authService.signUp(credentials);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(HttpStatus.CREATED, "Sign up successful, please check your email for OTP"));
+                .body(new ApiResponse<>(HttpStatus.CREATED, messageService.getMessage(SIGN_UP_SUCCESSFUL_PLEASE_CHECK_YOUR_EMAIL_FOR_OTP.getCode())));
     }
 
     @Operation(summary = "Verify sign up OTP")
@@ -66,7 +69,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> verifySignUp(@RequestBody VerifyOtpRequest request) {
         authService.verifySignUp(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Account activated successfully"));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(ACCOUNT_ACTIVATED_SUCCESSFULLY.getCode())));
     }
 
     @Operation(summary = "Resend sign up OTP")
@@ -74,7 +77,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> resendOtp(@RequestBody ResendOtpRequest request) {
         authService.resendSignUpOtp(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "A new OTP has been sent to your email"));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(A_NEW_OTP_HAS_BEEN_SENT_TO_YOUR_EMAIL.getCode())));
     }
 
     @Operation(summary = "Request password reset OTP")
@@ -82,7 +85,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Password reset OTP sent to your email"));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(PASSWORD_RESET_OTP_SENT_TO_YOUR_EMAIL.getCode())));
     }
 
     @Operation(summary = "Reset password with OTP")
@@ -90,7 +93,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> resetPassword(@RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Password has been reset successfully"));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(PASSWORD_HAS_BEEN_RESET_SUCCESSFULLY.getCode())));
     }
 }
-

@@ -64,10 +64,13 @@ public abstract class UserMapper {
         return file != null ? mediaUploader.uploadMediaFile(file) : null;
     }
 
+    @Autowired
+    protected com.example.websocket_demo.common.MessageService messageService;
+
     protected RoleEntity getRole(Long roleId) {
         if (roleId != null) {
             return roleRepository.findById(roleId).orElseThrow(
-                    () -> new NoSuchElementException("Role not found")
+                    () -> new NoSuchElementException(messageService.getMessage(com.example.websocket_demo.enumeration.ResponseMessage.ROLE_NOT_FOUND.getCode()))
             );
         }
         return getDefaultRole();

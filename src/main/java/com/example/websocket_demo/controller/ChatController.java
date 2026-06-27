@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.dto.request.ChatMessageRequest;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.service.chat.ChatMessageService;
@@ -28,6 +30,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatController {
+    MessageService messageService;
     ChatMessageService chatMessageService;
     SimpMessagingTemplate messagingTemplate;
 
@@ -72,36 +75,35 @@ public class ChatController {
             Principal principal) {
         
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, messageService.getMessage(UNAUTHORIZED.getCode())));
         }
         
         Long senderId = Long.parseLong(principal.getName());
         Pageable pageable = PageRequest.of(page, size);
         
         try {
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Chat history retrieved", chatMessageService.getChatMessages(senderId, recipientId, pageable)));
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(CHAT_HISTORY_RETRIEVED.getCode()), chatMessageService.getChatMessages(senderId, recipientId, pageable)));
         } catch (NoSuchElementException e) {
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "No chat history found", Page.empty(pageable)));
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(NO_CHAT_HISTORY_FOUND.getCode()), Page.empty(pageable)));
         }
     }
 
     @DeleteMapping("/{messageId}/me")
     public ResponseEntity<ApiResponse<?>> removeMessageForMe(@PathVariable Long messageId, Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, messageService.getMessage(UNAUTHORIZED.getCode())));
         }
         chatMessageService.removeMessageForMe(Long.parseLong(principal.getName()), messageId);
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Message removed for you"));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(MESSAGE_REMOVED_FOR_YOU.getCode())));
     }
 
     @DeleteMapping("/{messageId}")
     public ResponseEntity<ApiResponse<?>> removeMessageForEveryone(@PathVariable Long messageId, Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, messageService.getMessage(UNAUTHORIZED.getCode())));
         }
         chatMessageService.removeMessageForEveryone(Long.parseLong(principal.getName()), messageId);
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Message removed for everyone"));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(MESSAGE_REMOVED_FOR_EVERYONE.getCode())));
     }
 }
-
 

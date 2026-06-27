@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.service.redis.RedisService;
@@ -33,6 +35,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @PreAuthorize("hasRole('ADMIN')")
 public class RedisController {
+    MessageService messageService;
 
     RedisService redisService;
 
@@ -89,9 +92,9 @@ public class RedisController {
     public ResponseEntity<ApiResponse<Void>> rename(@RequestParam String key, @RequestParam String newKey) {
         if (!redisService.rename(key, newKey)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND, "Key '" + key + "' does not exist"));
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND, messageService.getMessage(KEY.getCode()) + key + "' does not exist"));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, "Key renamed"));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(KEY_RENAMED.getCode())));
     }
 
     @Operation(summary = "Delete a single key")
@@ -110,7 +113,7 @@ public class RedisController {
     @DeleteMapping("/flush")
     public ResponseEntity<ApiResponse<Void>> flush() {
         redisService.flush();
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, "Database flushed"));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(DATABASE_FLUSHED.getCode())));
     }
 
     // ===================== String values =====================
@@ -127,7 +130,7 @@ public class RedisController {
                                                        @RequestBody(required = false) String value,
                                                        @RequestParam(required = false) Long ttlSeconds) {
         redisService.setString(key, value, ttlSeconds);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, "Value set"));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(VALUE_SET.getCode())));
     }
 
     @Operation(summary = "Increment a numeric string value (default by 1); returns the new value")
@@ -156,7 +159,7 @@ public class RedisController {
     public ResponseEntity<ApiResponse<Void>> setHashField(@PathVariable String key, @PathVariable String field,
                                                          @RequestBody(required = false) String value) {
         redisService.setHashField(key, field, value);
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, "Field set"));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(FIELD_SET.getCode())));
     }
 
     @Operation(summary = "Delete a hash field; returns how many were removed")

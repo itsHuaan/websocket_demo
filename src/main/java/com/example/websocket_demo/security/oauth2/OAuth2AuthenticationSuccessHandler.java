@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -27,6 +30,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final MessageService messageService;
 
     @Value("${jwt.refresh-expiration}")
     private long REFRESH_EXPIRATION;
@@ -37,7 +41,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String email = oAuth2User.getAttribute("email");
 
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(messageService.getMessage(USER_NOT_FOUND.getCode())));
 
         String jwt = jwtProvider.generateTokenByUsername(user.getUsername());
         

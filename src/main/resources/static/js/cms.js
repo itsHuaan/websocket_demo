@@ -98,7 +98,7 @@ function showDialog({ title = 'Notice', message = '', confirmText = 'OK', cancel
     iconEl.className = 'dialog-icon' + (danger || icon === 'warn' ? ' warn' : '');
     iconEl.innerHTML = DIALOG_ICONS[danger ? 'warn' : icon] || DIALOG_ICONS.info;
     document.getElementById('appDialogTitle').textContent = title;
-    document.getElementById('appDialogMessage').textContent = message;
+    document.getElementById('appDialogMessage').innerHTML = message;
     const actions = document.getElementById('appDialogActions');
     actions.innerHTML = '';
     if (cancelText) {
@@ -444,12 +444,28 @@ function saveUser() {
 function confirmDeleteUser(id) {
     const u = allUsers.find(x => x.userId === id);
     if (!u) return;
+    
+    const messageHtml = `
+        <div style="margin-bottom: 8px;">Delete "<b>${esc(displayName(u))}</b>" (@${esc(u.username)})? They will be removed from the app.</div>
+        <div class="cms-toggle-wrap" style="text-align: left;">
+            <div class="cms-toggle-info">
+                <span class="cms-toggle-label">Hard Delete</span>
+                <span class="cms-toggle-desc" id="deleteTypeDesc">Turn on to permanently wipe this user's data from the database.</span>
+            </div>
+            <label class="cms-toggle">
+                <input type="checkbox" id="hardDeleteToggle" onchange="document.getElementById('deleteTypeDesc').innerText = this.checked ? 'User and data will be permanently wiped.' : 'Turn on to permanently wipe this user\\'s data from the database.'">
+                <span class="cms-toggle-slider"></span>
+            </label>
+        </div>
+    `;
+
     showDialog({
         title: 'Delete user',
-        message: `Delete "${displayName(u)}" (@${u.username})? They will be removed from the app.`,
+        message: messageHtml,
         confirmText: 'Delete', cancelText: 'Cancel', danger: true,
         onConfirm: () => {
-            authFetch('/v1/api/users/' + id + '?isHardDelete=0', { method: 'DELETE' })
+            const isHardDelete = document.getElementById('hardDeleteToggle').checked ? 1 : 0;
+            authFetch('/v1/api/users/' + id + '?isHardDelete=' + isHardDelete, { method: 'DELETE' })
                 .then(r => r.json())
                 .then(data => {
                     if (data.code === 200) loadUsers();

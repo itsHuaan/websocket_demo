@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.request.RoleRequest;
 import com.example.websocket_demo.service.role.RoleService;
@@ -23,13 +25,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @PreAuthorize("hasRole('ADMIN')")
 public class RoleController {
+    MessageService messageService;
     RoleService roleService;
 
     @Operation(summary = "Get all roles")
     @GetMapping
     public ResponseEntity<ApiResponse<?>> getRoles() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Roles fetched", roleService.getAllRoles()));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(ROLES_FETCHED.getCode()), roleService.getAllRoles()));
     }
 
     @Operation(summary = "Add role", description = "'ROLE_' prefix in role name is optional")
@@ -37,7 +40,7 @@ public class RoleController {
     public ResponseEntity<ApiResponse<?>> addRole(@RequestBody RoleRequest RoleRequest) {
         roleService.addRole(RoleRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(HttpStatus.CREATED, "Role added"));
+                .body(new ApiResponse<>(HttpStatus.CREATED, messageService.getMessage(ROLE_ADDED.getCode())));
     }
 
     @Operation(summary = "Update role", description = "'ROLE_' prefix in role name is optional")
@@ -46,8 +49,7 @@ public class RoleController {
                                         @RequestBody RoleRequest role) {
         roleService.updateRole(id, role.getRoleName());
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new ApiResponse<>(HttpStatus.OK, "Role updated"));
+                .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(ROLE_UPDATED.getCode())));
     }
 }
-
 

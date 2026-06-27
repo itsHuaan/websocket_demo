@@ -1,5 +1,7 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.service.helper.HelperService;
@@ -22,6 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class HelperController {
+    MessageService messageService;
     HelperService helperService;
 
     private <T> ResponseEntity<ApiResponse<T>> ok(String message, T data) {
@@ -31,6 +34,6 @@ public class HelperController {
     @Operation(summary = "Get all phone number code")
     @GetMapping("/phone-codes")
     public ResponseEntity<ApiResponse<Map<Object, Object>>> getPhoneCodes() {
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, "Codes fetched", helperService.getAllPhoneCodes()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(CODES_FETCHED.getCode()), helperService.getAllPhoneCodes()));
     }
 }

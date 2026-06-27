@@ -14,12 +14,16 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.example.websocket_demo.common.MessageService;
+import static com.example.websocket_demo.enumeration.ResponseMessage.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleServiceImpl implements RoleService {
     RoleRepository roleRepository;
+    MessageService messageService;
 
     @Override
     public List<RoleResponse> getAllRoles() {
@@ -31,11 +35,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void addRole(RoleRequest role) {
         if (role.getRoleName() == null || role.getRoleName().isEmpty()) {
-            throw new IllegalArgumentException("Role name cannot be empty");
+            throw new IllegalArgumentException(messageService.getMessage(ROLE_NAME_EMPTY.getCode()));
         }
         String roleName = modifyRoleName(role.getRoleName().toUpperCase());
         if (roleRepository.findByRoleName(roleName).isPresent()) {
-            throw new IllegalArgumentException("Role already exist");
+            throw new IllegalArgumentException(messageService.getMessage(ROLE_EXISTS.getCode()));
         }
         roleRepository.save(RoleEntity.builder().roleName(roleName).build());
     }
@@ -43,10 +47,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void updateRole(Long id, String roleName) {
         if (roleName == null || roleName.isEmpty()) {
-            throw new IllegalArgumentException("Role name cannot be empty");
+            throw new IllegalArgumentException(messageService.getMessage(ROLE_NAME_EMPTY.getCode()));
         }
         RoleEntity roleEntity = roleRepository.findById(id).orElseThrow(
-                () -> new NoSuchElementException("Role does not exist")
+                () -> new NoSuchElementException(messageService.getMessage(ROLE_NOT_FOUND.getCode()))
         );
         roleEntity.setRoleName(modifyRoleName(roleName.toUpperCase()));
         roleRepository.save(roleEntity);
