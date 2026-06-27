@@ -760,7 +760,16 @@
     // Real-time push: an admin changed this account's status. A non-active status
     // logs the user out immediately with the admin's reason.
     function handleAccountStatus(data) {
-        if (!data || data.status === 1) return; // reactivated — nothing to do
+        if (!data) return;
+        if (data.action === 'DELETED') {
+            forceLogout({ title: 'Account deleted', message: 'An administrator has deleted your account.' });
+            return;
+        }
+        if (data.action === 'UPDATED') {
+            forceLogout({ title: 'Account updated', message: 'An administrator has modified your account. For security reasons, please log in again.' });
+            return;
+        }
+        if (data.status === 1) return; // reactivated — nothing to do
         const reason = (data.reason || '').trim();
         forceLogout({
             title: 'Account locked',

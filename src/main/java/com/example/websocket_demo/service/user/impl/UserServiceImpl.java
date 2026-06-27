@@ -212,14 +212,17 @@ public class UserServiceImpl implements UserService {
         }
         UserEntity saved = userRepository.save(user);
 
-        // Tell the user in real time that their account was locked, so they're
-        // logged out immediately instead of only on their next request/reload.
+        // Tell the user in real time that their account was modified.
+        // If locked, we send the specific reason. Otherwise, we send an UPDATED action to log them out.
+        Map<String, Object> payload = new HashMap<>();
         if (lockedNow) {
-            Map<String, Object> payload = new HashMap<>();
             payload.put("status", saved.getStatus());
             payload.put("reason", saved.getStatusReason());
-            messagingTemplate.convertAndSendToUser(String.valueOf(saved.getUserId()), "/queue/account", payload);
+        } else {
+            payload.put("action", "UPDATED");
         }
+        messagingTemplate.convertAndSendToUser(String.valueOf(saved.getUserId()), "/queue/account", payload);
+
         return userMapper.toUserDto(saved);
     }
 
@@ -251,6 +254,11 @@ public class UserServiceImpl implements UserService {
             user.setDeletedAt(LocalDateTime.now());
             userRepository.save(user);
         }
+
+        // Immediately log out the user if they are online
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("action", "DELETED");
+        messagingTemplate.convertAndSendToUser(String.valueOf(id), "/queue/account", payload);
     }
 
     @Override
