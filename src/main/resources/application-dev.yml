@@ -56,6 +56,15 @@ spring:
             scope:
               - email
               - profile
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+            scope:
+              - email
+              - public_profile
+        provider:
+          facebook:
+            user-info-uri: https://graph.facebook.com/me?fields=id,name,email,first_name,last_name,picture
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
@@ -90,6 +99,8 @@ app:
       - /v1/api/helper/**
       - /v1/api/test/**
       - /v1/api/locations/**
+      - /oauth2/**
+      - /login/**
   otp:
     expires-minutes: 3
 

@@ -23,6 +23,10 @@ import java.util.UUID;
 import com.example.websocket_demo.common.MessageService;
 import static com.example.websocket_demo.enumeration.ResponseMessage.*;
 
+import com.example.websocket_demo.security.oauth2.userinfo.OAuth2UserInfo;
+import com.example.websocket_demo.security.oauth2.userinfo.OAuth2UserInfoFactory;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -39,6 +43,16 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
+        
+        if (email == null && authentication instanceof OAuth2AuthenticationToken) {
+            String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
+            OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId, oAuth2User.getAttributes());
+            
+            String id = oAuth2UserInfo.getId();
+            if (id != null) {
+                email = registrationId + "_" + id + "@" + registrationId + ".local";
+            }
+        }
 
         UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new RuntimeException(messageService.getMessage(USER_NOT_FOUND.getCode())));

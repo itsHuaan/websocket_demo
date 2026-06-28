@@ -35,13 +35,42 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
         String email = oAuth2User.getAttribute("email");
+        
         String givenName = oAuth2User.getAttribute("given_name");
+        if (givenName == null) givenName = oAuth2User.getAttribute("first_name");
+        
         String familyName = oAuth2User.getAttribute("family_name");
+        if (familyName == null) familyName = oAuth2User.getAttribute("last_name");
+        
         String name = oAuth2User.getAttribute("name");
-        String picture = oAuth2User.getAttribute("picture");
+        
+        String picture = null;
+        Object picObj = oAuth2User.getAttribute("picture");
+        if (picObj instanceof java.util.Map) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> pictureObj = (java.util.Map<String, Object>) picObj;
+            if (pictureObj.containsKey("data")) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> dataObj = (java.util.Map<String, Object>) pictureObj.get("data");
+                if (dataObj.containsKey("url")) {
+                    picture = (String) dataObj.get("url");
+                }
+            }
+        } else if (picObj instanceof String) {
+            picture = (String) picObj;
+        }
 
         if (email == null) {
-            throw new OAuth2AuthenticationException(messageService.getMessage(OAUTH2_EMAIL_NOT_FOUND.getCode()));
+            String id = oAuth2User.getAttribute("id");
+            if (id == null) {
+                id = oAuth2User.getAttribute("sub"); // Fallback for Google
+            }
+            if (id != null) {
+                String registrationId = userRequest.getClientRegistration().getRegistrationId();
+                email = registrationId + "_" + id + "@" + registrationId + ".local";
+            } else {
+                throw new OAuth2AuthenticationException(messageService.getMessage(OAUTH2_EMAIL_NOT_FOUND.getCode()));
+            }
         }
 
         Optional<UserEntity> userOptional = userRepository.findByEmail(email);
