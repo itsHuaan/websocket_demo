@@ -25,6 +25,8 @@ public interface UserService {
     void deleteUser(Long id, Integer isHardDelete);
 
     java.util.Set<String> getOnlineUsers();
+
+    java.util.List<UserResponse> getConnectedUsers(Long userId);
 }
 
 

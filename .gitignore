@@ -41,5 +41,6 @@ src/main/resources/application.yml
 /.playwright-mcp/
 /.remember/
 /.claude/
+/target/
 
 **.png

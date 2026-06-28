@@ -841,11 +841,11 @@
     }
 
     function loadContacts() {
-        authFetch('/v1/api/users', { method: 'GET' })
+        authFetch('/v1/api/users/contacts', { method: 'GET' })
         .then(res => res.json())
         .then(data => {
             if (data.code === 200) {
-                renderContacts(data.data.content || []);
+                renderContacts(data.data || []);
             }
         })
         .catch(err => console.error("Failed to load contacts:", err));

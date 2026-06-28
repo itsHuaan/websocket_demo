@@ -3,7 +3,7 @@ package com.example.websocket_demo.security.jwt;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AccountStatus;
-import com.example.websocket_demo.repository.ITokenBlackListRepository;
+import com.example.websocket_demo.repository.TokenBlackListRepository;
 import com.example.websocket_demo.security.domain.UserDetailsImpl;
 import com.example.websocket_demo.service.user.impl.UserDetailServiceImpl;
 import io.jsonwebtoken.Jwts;
@@ -40,14 +40,14 @@ class JwtAuthenticationFilterTest {
 
     private JwtProvider jwtProvider;
     private UserDetailServiceImpl userDetailService;
-    private ITokenBlackListRepository blacklistRepository;
+    private TokenBlackListRepository blacklistRepository;
     private JwtAuthenticationFilter filter;
 
     @BeforeEach
     void setUp() {
         jwtProvider = mock(JwtProvider.class);
         userDetailService = mock(UserDetailServiceImpl.class);
-        blacklistRepository = mock(ITokenBlackListRepository.class);
+        blacklistRepository = mock(TokenBlackListRepository.class);
         filter = new JwtAuthenticationFilter(jwtProvider, userDetailService, blacklistRepository);
         ReflectionTestUtils.setField(filter, "JWT_SECRET", SECRET);
         SecurityContextHolder.clearContext();

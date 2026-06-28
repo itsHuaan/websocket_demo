@@ -110,5 +110,17 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ApiResponse<>(HttpStatus.OK, messageService.getMessage(ONLINE_USERS_FETCHED.getCode()), userManagementService.getOnlineUsers()));
     }
+
+    @Operation(summary = "Get connected contacts")
+    @GetMapping("/contacts")
+    public ResponseEntity<ApiResponse<?>> getMyContacts(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED, messageService.getMessage(UNAUTHORIZED.getCode())));
+        }
+        Long userId = Long.parseLong(principal.getName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(HttpStatus.OK, "Contacts fetched successfully", userManagementService.getConnectedUsers(userId)));
+    }
 }
 

@@ -295,6 +295,13 @@ public class UserServiceImpl implements UserService {
     public Set<String> getOnlineUsers() {
         return redisTemplate.opsForSet().members("chat:online_users");
     }
+
+    @Override
+    public java.util.List<UserResponse> getConnectedUsers(Long userId) {
+        return userRepository.findConnectedUsers(userId).stream()
+                .map(userMapper::toUserDto)
+                .toList();
+    }
 }
 
 
