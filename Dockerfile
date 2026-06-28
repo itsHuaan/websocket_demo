@@ -15,9 +15,16 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x gradlew \
-    && ./gradlew build -x test \
-    && find build/libs -name '*.jar' ! -name '*-plain.jar' -exec mv {} app.jar \;
+RUN curl -L -o /tmp/maven.tar.gz \
+    https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz \
+    && mkdir -p /usr/maven \
+    && tar -xzf /tmp/maven.tar.gz -C /usr/maven --strip-components=1 \
+    && rm /tmp/maven.tar.gz
+
+ENV PATH="/usr/maven/bin:$PATH"
+
+RUN mvn clean package -DskipTests \
+    && cp target/*.jar app.jar
 
 EXPOSE 8080
 
