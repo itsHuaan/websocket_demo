@@ -53,6 +53,7 @@ public class ProductServiceImpl implements ProductService {
         );
         ProductEntity product = ProductEntity.builder()
                 .productName(productRequest.getProductName())
+                .description(productRequest.getDescription())
                 .user(user)
                 .build();
         
@@ -114,6 +115,8 @@ public class ProductServiceImpl implements ProductService {
                     .product(product)
                     .skuValues(new HashSet<>())
                     .price(skuRequest.getPrice())
+                    .skuCode(skuRequest.getSkuCode())
+                    .stockQuantity(skuRequest.getStockQuantity())
                     .build();
             productSkuRepository.save(sku);
             ProductSkuValueEntity skuValue = ProductSkuValueEntity.builder()
@@ -146,6 +149,8 @@ public class ProductServiceImpl implements ProductService {
             ProductSkuEntity sku = ProductSkuEntity.builder()
                     .product(product)
                     .price(skuRequest.getPrice())
+                    .skuCode(skuRequest.getSkuCode())
+                    .stockQuantity(skuRequest.getStockQuantity())
                     .build();
             sku = productSkuRepository.save(sku);
 

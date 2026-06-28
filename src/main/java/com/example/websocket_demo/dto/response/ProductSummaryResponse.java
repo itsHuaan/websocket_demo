@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -15,8 +16,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ProductSummaryResponse {
     String productName;
+    String description;
     List<ProductOptionResponse> options;
-    double price;
+    BigDecimal price;
     String user;
 }
 

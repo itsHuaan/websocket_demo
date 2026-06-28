@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -13,6 +14,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductRequest {
     String productName;
+    String description;
     Long userId;
     MultipartFile[] media;
     List<OptionRequest<?>> options;
@@ -28,7 +30,9 @@ public class ProductRequest {
     @Data
     @NoArgsConstructor
     public static class SkuRequest {
-        Double price;
+        BigDecimal price;
+        String skuCode;
+        Integer stockQuantity;
         List<SkuValueRequest> values;
 
         @Data

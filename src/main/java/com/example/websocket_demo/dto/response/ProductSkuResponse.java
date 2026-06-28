@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -16,6 +17,8 @@ import java.util.List;
 public class ProductSkuResponse {
     Long id;
     List<String> values;
-    double price;
+    BigDecimal price;
+    String skuCode;
+    Integer stockQuantity;
 }
 

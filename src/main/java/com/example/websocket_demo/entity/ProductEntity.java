@@ -25,6 +25,9 @@ public class ProductEntity extends BaseEntity {
     @Column(nullable = false)
     String productName;
 
+    @Column(columnDefinition = "TEXT")
+    String description;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     Set<ProductOptionEntity> options;
 

@@ -13,7 +13,7 @@ import lombok.experimental.FieldNameConstants;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "tbl_product_option_value", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"product_id", "option_id", "value_name"})
+        @UniqueConstraint(columnNames = {"option_id", "value_name"})
 })
 @FieldNameConstants
 public class ProductOptionValueEntity extends BaseEntity {

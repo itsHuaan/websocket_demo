@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 import org.mapstruct.ReportingPolicy;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -29,14 +30,14 @@ public interface ProductMapper {
     @Mapping(target = "values", expression = "java(mapOptionValues(option.getOptionValues()))")
     ProductOptionResponse toProductOptionDto(ProductOptionEntity option);
 
-    default Double calculateMinPrice(ProductEntity product) {
+    default BigDecimal calculateMinPrice(ProductEntity product) {
         if (product.getSkus() == null || product.getSkus().isEmpty()) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
         return product.getSkus().stream()
-                .mapToDouble(ProductSkuEntity::getPrice)
-                .min()
-                .orElse(0.0);
+                .map(ProductSkuEntity::getPrice)
+                .min(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
     }
 
     default List<String> mapSkuValues(Collection<ProductSkuValueEntity> skuValues) {

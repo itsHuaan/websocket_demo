@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.apache.commons.math3.stat.descriptive.summary.Product;
-
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Getter
@@ -30,5 +29,10 @@ public class ProductSkuEntity extends BaseEntity {
     Set<ProductSkuValueEntity> skuValues;
 
     @Column(nullable = false)
-    Double price;
+    BigDecimal price;
+
+    @Column(unique = true)
+    String skuCode;
+
+    Integer stockQuantity;
 }
