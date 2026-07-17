@@ -100,6 +100,7 @@ app:
       - /v1/api/helper/**
       - /v1/api/test/**
       - /v1/api/locations/**
+      - /api/scores
       - /oauth2/**
       - /login/**
   otp:
