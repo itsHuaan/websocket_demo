@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "user_score")
+@Table(name = "tbl_user_score")
 public class UserScoreEntity extends BaseEntity {
 
     @Id
