@@ -2,6 +2,7 @@ package com.example.websocket_demo.controller;
 
 import com.example.websocket_demo.dto.request.score.UserScoreRequest;
 import com.example.websocket_demo.service.score.UserScoreService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Tag(name = "User Score Controller")
 @RequestMapping("/api/scores")
 @RequiredArgsConstructor
 public class UserScoreController {

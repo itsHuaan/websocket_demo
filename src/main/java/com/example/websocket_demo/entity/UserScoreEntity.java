@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -25,11 +26,9 @@ public class UserScoreEntity extends BaseEntity {
 
     String username;
 
+    String quiz;
+
     Integer correctAnswers;
 
     Integer incorrectAnswers;
-
-    Instant submitDate;
-
-    Instant editDate;
 }

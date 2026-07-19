@@ -10,8 +10,7 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserScoreRequest {
     String name;
+    String quiz;
     Integer correctAnswers;
     Integer incorrectAnswers;
-    Instant submitDate;
-    Instant editDate;
 }

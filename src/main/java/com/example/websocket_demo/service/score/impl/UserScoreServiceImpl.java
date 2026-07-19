@@ -24,10 +24,9 @@ public class UserScoreServiceImpl implements UserScoreService {
 
         UserScoreEntity newScore = new UserScoreEntity();
         newScore.setUsername(usernameSnakeCase);
+        newScore.setQuiz(request.getQuiz());
         newScore.setCorrectAnswers(request.getCorrectAnswers());
         newScore.setIncorrectAnswers(request.getIncorrectAnswers());
-        newScore.setSubmitDate(request.getSubmitDate());
-        newScore.setEditDate(request.getEditDate());
         return userScoreRepository.save(newScore);
     }
 
