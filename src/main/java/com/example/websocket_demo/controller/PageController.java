@@ -14,4 +14,9 @@ public class PageController {
     public String cms() {
         return "cms";
     }
+
+    @GetMapping("/wol")
+    public String wol() {
+        return "wol";
+    }
 }

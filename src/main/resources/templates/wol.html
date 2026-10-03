@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOL · Modern Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/cms.css">
+    <style>
+        /* Hide mobile view by default */
+        .mobile-view { display: none; }
+        
+        /* completely custom mobile styling */
+        @media (max-width: 768px) {
+            .desktop-view { display: none !important; }
+            .mobile-view { display: block; }
+            
+            /* Override body for mobile */
+            body { background: #f3f4f6; padding: 0; margin: 0; font-family: 'Manrope', sans-serif; }
+            [data-theme="dark"] body { background: #000; }
+            
+            /* Mobile Header */
+            .m-header {
+                background: #fff;
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+            [data-theme="dark"] .m-header { background: #18181b; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+            
+            .m-title { font-size: 1.25rem; font-weight: 800; margin: 0; }
+            
+            .m-add-btn {
+                background: var(--accent, #18181b);
+                color: #fff;
+                border: none;
+                width: 36px; height: 36px;
+                border-radius: 50%;
+                font-size: 1.5rem;
+                display: flex; align-items: center; justify-content: center;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+            [data-theme="dark"] .m-add-btn { background: #fff; color: #000; }
+            
+            /* Mobile Container */
+            .m-container { padding: 16px; padding-bottom: 100px; }
+            
+            /* Mobile Cards */
+            .m-card {
+                background: #fff;
+                border-radius: 16px;
+                padding: 20px;
+                margin-bottom: 16px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+                border: 1px solid rgba(0,0,0,0.05);
+                position: relative;
+                overflow: hidden;
+            }
+            [data-theme="dark"] .m-card { background: #1c1c1f; border-color: #27272a; }
+            
+            .m-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 12px;
+            }
+            .m-card-title {
+                font-size: 1.15rem;
+                font-weight: 800;
+                margin: 0;
+            }
+            
+            .m-card-actions { display: flex; gap: 8px; }
+            .m-icon-btn {
+                background: #f4f4f5;
+                border: none;
+                width: 32px; height: 32px;
+                border-radius: 8px;
+                display: flex; align-items: center; justify-content: center;
+                color: #52525b;
+            }
+            [data-theme="dark"] .m-icon-btn { background: #27272a; color: #a1a1aa; }
+            .m-icon-btn.danger { color: #ef4444; background: #fef2f2; }
+            [data-theme="dark"] .m-icon-btn.danger { background: rgba(239, 68, 68, 0.1); }
+            
+            .m-card-detail {
+                font-size: 0.85rem;
+                color: #71717a;
+                margin: 4px 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .m-badge {
+                background: #f4f4f5;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-family: monospace;
+                color: #18181b;
+            }
+            [data-theme="dark"] .m-badge { background: #27272a; color: #fff; }
+            
+            .m-wake-btn {
+                width: 100%;
+                margin-top: 16px;
+                padding: 14px;
+                border: none;
+                border-radius: 12px;
+                background: #22c55e;
+                color: white;
+                font-weight: 800;
+                font-size: 1rem;
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+                transition: transform 0.1s;
+            }
+            .m-wake-btn:active { transform: scale(0.96); }
+            
+            /* Mobile Modal overrides */
+            @media (max-width: 768px) {
+                .modal {
+                    max-width: 100%;
+                    max-height: 100%;
+                    border-radius: 0;
+                    height: 100vh;
+                    justify-content: flex-start;
+                }
+                .modal-header { padding: 20px; }
+                .settings-body { padding: 20px; }
+                .settings-footer { padding: 20px; padding-bottom: 40px; }
+                .dialog-btn { padding: 14px; font-size: 1rem; }
+                .form-group input { padding: 14px; font-size: 1rem; }
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- DESKTOP VIEW (CMS Shell) -->
+<div class="cms desktop-view" id="cmsApp">
+    <header class="cms-topbar">
+        <div class="cms-brand">
+            <span class="cms-logo">Modern Chat</span>
+            <span class="cms-tag">WOL</span>
+        </div>
+        <div class="cms-topbar-actions">
+            <!-- Theme toggle matching CMS -->
+            <button class="cms-icon-btn" id="cmsThemeBtn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle theme">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <button class="cms-signout" onclick="window.location.href='/cms'">Back to CMS</button>
+        </div>
+    </header>
+
+    <nav class="cms-tabs">
+        <button class="cms-tab active">Wake on LAN Devices</button>
+    </nav>
+
+    <main class="cms-main">
+        <section class="cms-panel" id="panel-devices">
+            <div class="cms-toolbar">
+                <div class="cms-toolbar-title">Managed PCs</div>
+                <button class="cms-add-btn" onclick="openModal()">+ Add device</button>
+            </div>
+            <div class="cms-table-wrap">
+                <table class="cms-table">
+                    <thead>
+                        <tr>
+                            <th>Device Name</th>
+                            <th>MAC Address</th>
+                            <th>Host (IP/DNS)</th>
+                            <th>Port</th>
+                            <th class="cms-col-actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceList"></tbody>
+                </table>
+                <div class="cms-empty" id="devicesEmpty" style="display: none;">No devices found.</div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- MOBILE VIEW -->
+<div class="mobile-view">
+    <div class="m-header">
+        <h1 class="m-title">Wake on LAN</h1>
+        <button class="m-add-btn" onclick="openModal()">+</button>
+    </div>
+    <div class="m-container" id="mobileDeviceList">
+        <!-- populated via JS -->
+    </div>
+</div>
+
+<!-- Create / edit modal (Shared between Desktop & Mobile) -->
+<div class="modal-overlay" id="deviceModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add device</h3>
+            <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+        </div>
+        <div class="settings-body">
+            <input type="hidden" id="deviceId">
+            <div class="form-group">
+                <label for="devName">Device Name</label>
+                <input type="text" id="devName" placeholder="e.g. My Desktop PC">
+            </div>
+            <div class="form-group">
+                <label for="devMac">MAC Address</label>
+                <input type="text" id="devMac" placeholder="00:1A:2B:3C:4D:5E">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="devHost">Host (IP or DDNS)</label>
+                    <input type="text" id="devHost" placeholder="itshuaan.ddns.net">
+                </div>
+                <div class="form-group" style="flex: 0 0 80px;">
+                    <label for="devPort">Port</label>
+                    <input type="number" id="devPort" value="9">
+                </div>
+            </div>
+        </div>
+        <div class="settings-footer">
+            <button type="button" class="dialog-btn" onclick="closeModal()">Cancel</button>
+            <button type="button" class="dialog-btn primary" onclick="saveDevice()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Styled dialog (alert / confirm) -->
+<div class="dialog-overlay" id="appDialog">
+    <div class="dialog" role="alertdialog" aria-modal="true">
+        <div class="dialog-icon" id="appDialogIcon"></div>
+        <h3 id="appDialogTitle"></h3>
+        <div id="appDialogMessage" style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 24px;"></div>
+        <div class="dialog-actions" id="appDialogActions"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/v1/network/devices';
+
+    // Custom Dialog Logic
+    function openDialog(title, message, isError, buttonsHTML) {
+        document.getElementById('appDialogTitle').innerText = title;
+        document.getElementById('appDialogMessage').innerText = message;
+        
+        const icon = document.getElementById('appDialogIcon');
+        if (isError) {
+            icon.className = 'dialog-icon warn';
+            icon.innerHTML = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+        } else {
+            icon.className = 'dialog-icon';
+            icon.innerHTML = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        }
+        
+        document.getElementById('appDialogActions').innerHTML = buttonsHTML;
+        document.getElementById('appDialog').classList.add('open');
+    }
+
+    function closeDialog() {
+        document.getElementById('appDialog').classList.remove('open');
+    }
+
+    function customAlert(title, message, isError = false) {
+        openDialog(title, message, isError, `<button class="dialog-btn primary" onclick="closeDialog()">OK</button>`);
+    }
+
+    // Expose a global confirm function handler
+    let confirmCallback = null;
+    function customConfirm(title, message, onConfirm) {
+        confirmCallback = onConfirm;
+        openDialog(title, message, true, `
+            <button class="dialog-btn" onclick="closeDialog()">Cancel</button>
+            <button class="dialog-btn primary danger" onclick="closeDialog(); confirmCallback()">Delete</button>
+        `);
+    }
+
+    // Auth helpers
+    const CMS_SESSION_KEY = 'cms_session';
+    function getAuthToken() {
+        try {
+            const session = JSON.parse(localStorage.getItem(CMS_SESSION_KEY));
+            return session && session.token ? session.token : null;
+        } catch (e) {
+            return null;
+        }
+    }
+    
+    function getHeaders(isJson = true) {
+        const token = getAuthToken();
+        if (!token) {
+            window.location.href = '/cms';
+            throw new Error('Unauthorized');
+        }
+        const headers = { 'Authorization': `Bearer ${token}` };
+        if (isJson) headers['Content-Type'] = 'application/json';
+        return headers;
+    }
+
+    // Theme logic matching CMS
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('cms-theme', next);
+    }
+    const savedTheme = localStorage.getItem('cms-theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    async function loadDevices() {
+        try {
+            const token = getAuthToken();
+            if (!token) { window.location.href = '/cms'; return; }
+
+            const res = await fetch(API_URL, { headers: getHeaders(false) });
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/cms';
+                return;
+            }
+            const json = await res.json();
+            const devices = json.data || [];
+            
+            const list = document.getElementById('deviceList');
+            const mList = document.getElementById('mobileDeviceList');
+            const empty = document.getElementById('devicesEmpty');
+            
+            if (devices.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                mList.innerHTML = '<div style="text-align:center; padding:40px; color:#a1a1aa;">No devices configured.<br><br>Tap the + button to add one.</div>';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            
+            // Desktop render
+            list.innerHTML = devices.map(d => `
+                <tr>
+                    <td class="cms-user-name">${d.name}</td>
+                    <td><span class="cms-badge">${d.macAddress}</span></td>
+                    <td class="cms-muted">${d.host}</td>
+                    <td class="cms-muted">${d.port}</td>
+                    <td class="cms-col-actions">
+                        <button class="cms-row-btn primary" onclick="wakeDevice(${d.id})">Wake UP</button>
+                        <button class="cms-row-btn" onclick="editDevice(${d.id})">Edit</button>
+                        <button class="cms-row-btn danger" onclick="deleteDevice(${d.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Mobile render
+            const iconEdit = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path></svg>`;
+            const iconDelete = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+            
+            mList.innerHTML = devices.map(d => `
+                <div class="m-card">
+                    <div class="m-card-header">
+                        <h3 class="m-card-title">${d.name}</h3>
+                        <div class="m-card-actions">
+                            <button class="m-icon-btn" onclick="editDevice(${d.id})">${iconEdit}</button>
+                            <button class="m-icon-btn danger" onclick="deleteDevice(${d.id})">${iconDelete}</button>
+                        </div>
+                    </div>
+                    <div class="m-card-detail">MAC: <span class="m-badge">${d.macAddress}</span></div>
+                    <div class="m-card-detail">Host: <strong>${d.host}:${d.port}</strong></div>
+                    <button class="m-wake-btn" onclick="wakeDevice(${d.id})">Wake UP</button>
+                </div>
+            `).join('');
+            
+        } catch (e) {
+            console.error('Failed to load devices', e);
+        }
+    }
+
+    async function wakeDevice(id) {
+        const res = await fetch(`${API_URL}/${id}/wake`, { method: 'POST', headers: getHeaders(false) });
+        if (res.ok) customAlert('Success', 'Magic Packet sent successfully!', false);
+        else customAlert('Error', 'Failed to wake device', true);
+    }
+
+    async function saveDevice() {
+        const id = document.getElementById('deviceId').value;
+        const data = {
+            name: document.getElementById('devName').value,
+            macAddress: document.getElementById('devMac').value,
+            host: document.getElementById('devHost').value,
+            port: parseInt(document.getElementById('devPort').value)
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_URL}/${id}` : API_URL;
+
+        const res = await fetch(url, {
+            method,
+            headers: getHeaders(true),
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            closeModal();
+            loadDevices();
+        } else {
+            customAlert('Configuration Error', 'Error saving configuration (check MAC address format)', true);
+        }
+    }
+
+    function deleteDevice(id) {
+        customConfirm('Delete Device', 'Are you sure you want to remove this device?', async () => {
+            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: getHeaders(false) });
+            if (res.ok) loadDevices();
+        });
+    }
+
+    async function editDevice(id) {
+        const res = await fetch(`${API_URL}/${id}`, { headers: getHeaders(false) });
+        const json = await res.json();
+        const d = json.data;
+        
+        document.getElementById('deviceId').value = d.id;
+        document.getElementById('devName').value = d.name;
+        document.getElementById('devMac').value = d.macAddress;
+        document.getElementById('devHost').value = d.host;
+        document.getElementById('devPort').value = d.port;
+        
+        document.getElementById('modalTitle').innerText = 'Edit device';
+        document.getElementById('deviceModal').classList.add('open');
+    }
+
+    function openModal() {
+        document.getElementById('deviceId').value = '';
+        document.getElementById('devName').value = '';
+        document.getElementById('devMac').value = '';
+        document.getElementById('devHost').value = '255.255.255.255';
+        document.getElementById('devPort').value = '9';
+        document.getElementById('modalTitle').innerText = 'Add device';
+        document.getElementById('deviceModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('deviceModal').classList.remove('open');
+    }
+
+    document.getElementById('deviceModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // Init
+    loadDevices();
+</script>
+</body>
+</html>

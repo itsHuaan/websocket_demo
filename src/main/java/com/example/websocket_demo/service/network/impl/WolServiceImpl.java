@@ -14,9 +14,9 @@ import java.net.InetAddress;
 public class WolServiceImpl implements WolService {
 
     @Override
-    public void wakeOnLan(WolRequest request) {
+    public void wakeOnLan(String macAddress, String host, int port) {
         try {
-            byte[] macBytes = getMacBytes(request.getMacAddress());
+            byte[] macBytes = getMacBytes(macAddress);
             byte[] bytes = new byte[6 + 16 * macBytes.length];
 
             // 6 bytes of 0xFF
@@ -29,18 +29,18 @@ public class WolServiceImpl implements WolService {
                 System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
             }
 
-            InetAddress address = InetAddress.getByName(request.getHost());
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, request.getPort());
+            InetAddress address = InetAddress.getByName(host);
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
 
             try (DatagramSocket socket = new DatagramSocket()) {
                 socket.setBroadcast(true);
                 socket.send(packet);
                 log.info("Wake-on-LAN packet sent to MAC: {}, Host: {}, Port: {}", 
-                        request.getMacAddress(), request.getHost(), request.getPort());
+                        macAddress, host, port);
             }
 
         } catch (Exception e) {
-            log.error("Failed to send Wake-on-LAN packet to MAC: {}", request.getMacAddress(), e);
+            log.error("Failed to send Wake-on-LAN packet to MAC: {}", macAddress, e);
             throw new RuntimeException("Failed to send Wake-on-LAN packet: " + e.getMessage(), e);
         }
     }

@@ -90,6 +90,7 @@ app:
       - /index.html
       - /
       - /cms
+      - /wol
       - /static/**
       - /css/**
       - /js/**
@@ -99,7 +100,6 @@ app:
       - /v1/api/helper/**
       - /v1/api/test/**
       - /v1/api/locations/**
-      - /api/v1/network/**
       - /api/scores
       - /oauth2/**
       - /login/**
