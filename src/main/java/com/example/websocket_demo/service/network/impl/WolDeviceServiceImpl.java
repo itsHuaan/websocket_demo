@@ -1,9 +1,10 @@
 package com.example.websocket_demo.service.network.impl;
 
 import com.example.websocket_demo.dto.request.WolDeviceRequest;
-import com.example.websocket_demo.dto.request.WolRequest;
 import com.example.websocket_demo.dto.response.WolDeviceResponse;
+import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.entity.WolDeviceEntity;
+import com.example.websocket_demo.repository.UserRepository;
 import com.example.websocket_demo.repository.WolDeviceRepository;
 import com.example.websocket_demo.service.network.WolDeviceService;
 import com.example.websocket_demo.service.network.WolService;
@@ -22,14 +23,19 @@ public class WolDeviceServiceImpl implements WolDeviceService {
 
     private final WolDeviceRepository repository;
     private final WolService wolService;
+    private final UserRepository userRepository;
 
     @Override
-    public WolDeviceResponse createDevice(WolDeviceRequest request) {
+    public WolDeviceResponse createDevice(Long userId, WolDeviceRequest request) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
         WolDeviceEntity entity = WolDeviceEntity.builder()
                 .name(request.getName())
                 .macAddress(request.getMacAddress())
                 .host(request.getHost())
                 .port(request.getPort())
+                .user(user)
                 .build();
         
         entity = repository.save(entity);
@@ -37,8 +43,8 @@ public class WolDeviceServiceImpl implements WolDeviceService {
     }
 
     @Override
-    public WolDeviceResponse updateDevice(Long id, WolDeviceRequest request) {
-        WolDeviceEntity entity = getEntityById(id);
+    public WolDeviceResponse updateDevice(Long userId, Long id, WolDeviceRequest request) {
+        WolDeviceEntity entity = getEntityByIdAndUserId(id, userId);
         
         entity.setName(request.getName());
         entity.setMacAddress(request.getMacAddress());
@@ -50,40 +56,34 @@ public class WolDeviceServiceImpl implements WolDeviceService {
     }
 
     @Override
-    public void deleteDevice(Long id) {
-        WolDeviceEntity entity = getEntityById(id);
+    public void deleteDevice(Long userId, Long id) {
+        WolDeviceEntity entity = getEntityByIdAndUserId(id, userId);
         entity.setDeletedAt(LocalDateTime.now());
         repository.save(entity);
     }
 
     @Override
-    public WolDeviceResponse getDevice(Long id) {
-        return mapToResponse(getEntityById(id));
+    public WolDeviceResponse getDevice(Long userId, Long id) {
+        return mapToResponse(getEntityByIdAndUserId(id, userId));
     }
 
     @Override
-    public List<WolDeviceResponse> getAllDevices() {
-        return repository.findAllByDeletedAtIsNull().stream()
+    public List<WolDeviceResponse> getAllDevices(Long userId) {
+        return repository.findAllByUser_UserIdAndDeletedAtIsNull(userId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void wakeDevice(Long id) {
-        WolDeviceEntity entity = getEntityById(id);
+    public void wakeDevice(Long userId, Long id) {
+        WolDeviceEntity entity = getEntityByIdAndUserId(id, userId);
         
         wolService.wakeOnLan(entity.getMacAddress(), entity.getHost(), entity.getPort());
     }
     
-    private WolDeviceEntity getEntityById(Long id) {
-        WolDeviceEntity entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
-                
-        if (entity.getDeletedAt() != null) {
-            throw new RuntimeException("Device has been deleted");
-        }
-        
-        return entity;
+    private WolDeviceEntity getEntityByIdAndUserId(Long id, Long userId) {
+        return repository.findByIdAndUser_UserIdAndDeletedAtIsNull(id, userId)
+                .orElseThrow(() -> new RuntimeException("Device not found or access denied for id: " + id));
     }
     
     private WolDeviceResponse mapToResponse(WolDeviceEntity entity) {

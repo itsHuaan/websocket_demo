@@ -6,10 +6,10 @@ import com.example.websocket_demo.dto.response.WolDeviceResponse;
 import java.util.List;
 
 public interface WolDeviceService {
-    WolDeviceResponse createDevice(WolDeviceRequest request);
-    WolDeviceResponse updateDevice(Long id, WolDeviceRequest request);
-    void deleteDevice(Long id);
-    WolDeviceResponse getDevice(Long id);
-    List<WolDeviceResponse> getAllDevices();
-    void wakeDevice(Long id);
+    WolDeviceResponse createDevice(Long userId, WolDeviceRequest request);
+    WolDeviceResponse updateDevice(Long userId, Long id, WolDeviceRequest request);
+    void deleteDevice(Long userId, Long id);
+    WolDeviceResponse getDevice(Long userId, Long id);
+    List<WolDeviceResponse> getAllDevices(Long userId);
+    void wakeDevice(Long userId, Long id);
 }

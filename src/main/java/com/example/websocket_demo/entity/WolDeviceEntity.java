@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "wol_devices")
+@Table(name = "tbl_wol_devices")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,4 +28,8 @@ public class WolDeviceEntity extends BaseEntity {
 
     @Column(nullable = false)
     Integer port;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    UserEntity user;
 }

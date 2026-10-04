@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -22,13 +23,23 @@ public class WolDeviceController {
 
     private final WolDeviceService deviceService;
 
+    private Long getUserId(Principal principal) {
+        if (principal == null) {
+            throw new RuntimeException("Unauthorized access");
+        }
+        return Long.parseLong(principal.getName());
+    }
+
     @PostMapping
     @Operation(summary = "Create a new device")
-    public ResponseEntity<ApiResponse<WolDeviceResponse>> createDevice(@Valid @RequestBody WolDeviceRequest request) {
+    public ResponseEntity<ApiResponse<WolDeviceResponse>> createDevice(
+            @Valid @RequestBody WolDeviceRequest request,
+            Principal principal) {
+        Long userId = getUserId(principal);
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.CREATED,
                 "Device created successfully",
-                deviceService.createDevice(request)
+                deviceService.createDevice(userId, request)
         ));
     }
 
@@ -36,18 +47,23 @@ public class WolDeviceController {
     @Operation(summary = "Update an existing device")
     public ResponseEntity<ApiResponse<WolDeviceResponse>> updateDevice(
             @PathVariable Long id, 
-            @Valid @RequestBody WolDeviceRequest request) {
+            @Valid @RequestBody WolDeviceRequest request,
+            Principal principal) {
+        Long userId = getUserId(principal);
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Device updated successfully",
-                deviceService.updateDevice(id, request)
+                deviceService.updateDevice(userId, id, request)
         ));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a device")
-    public ResponseEntity<ApiResponse<Void>> deleteDevice(@PathVariable Long id) {
-        deviceService.deleteDevice(id);
+    public ResponseEntity<ApiResponse<Void>> deleteDevice(
+            @PathVariable Long id,
+            Principal principal) {
+        Long userId = getUserId(principal);
+        deviceService.deleteDevice(userId, id);
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Device deleted successfully"
@@ -56,28 +72,35 @@ public class WolDeviceController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a device by ID")
-    public ResponseEntity<ApiResponse<WolDeviceResponse>> getDevice(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<WolDeviceResponse>> getDevice(
+            @PathVariable Long id,
+            Principal principal) {
+        Long userId = getUserId(principal);
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Success",
-                deviceService.getDevice(id)
+                deviceService.getDevice(userId, id)
         ));
     }
 
     @GetMapping
     @Operation(summary = "Get all devices")
-    public ResponseEntity<ApiResponse<List<WolDeviceResponse>>> getAllDevices() {
+    public ResponseEntity<ApiResponse<List<WolDeviceResponse>>> getAllDevices(Principal principal) {
+        Long userId = getUserId(principal);
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Success",
-                deviceService.getAllDevices()
+                deviceService.getAllDevices(userId)
         ));
     }
 
     @PostMapping("/{id}/wake")
     @Operation(summary = "Wake up a specific device by ID")
-    public ResponseEntity<ApiResponse<String>> wakeDevice(@PathVariable Long id) {
-        deviceService.wakeDevice(id);
+    public ResponseEntity<ApiResponse<String>> wakeDevice(
+            @PathVariable Long id,
+            Principal principal) {
+        Long userId = getUserId(principal);
+        deviceService.wakeDevice(userId, id);
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Wake on LAN packet sent successfully",
