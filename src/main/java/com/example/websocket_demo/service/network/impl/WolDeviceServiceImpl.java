@@ -84,6 +84,7 @@ public class WolDeviceServiceImpl implements WolDeviceService {
             if (token == null || token.isEmpty()) {
                 throw new RuntimeException("Failed to get session token");
             }
+            log.info("Router calling step 1 completed successfully.");
 
             Map<String, Object> redirectParams = new HashMap<>();
             redirectParams.put("redirect", new Object[]{});
@@ -100,10 +101,19 @@ public class WolDeviceServiceImpl implements WolDeviceService {
             });
 
             HttpEntity<Map<String, Object>> step2Request = new HttpEntity<>(step2Payload, headers);
-            restTemplate.postForEntity(url, step2Request, String.class);
+            ResponseEntity<String> step2Response = restTemplate.postForEntity(url, step2Request, String.class);
+            
+            JsonNode step2Node = mapper.readTree(step2Response.getBody());
+            JsonNode statusNode = step2Node.path("result").path(1).path("status");
+            
+            if (statusNode.isMissingNode() || !statusNode.asBoolean()) {
+                throw new RuntimeException("Step 2 failed: result[1].status is not true");
+            }
+            
+            log.info("Router calling step 2 completed successfully.");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during router calling steps in refreshArp", e);
         }
     }
 
