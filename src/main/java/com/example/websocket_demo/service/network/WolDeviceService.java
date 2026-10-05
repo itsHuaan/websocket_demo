@@ -6,6 +6,7 @@ import com.example.websocket_demo.dto.response.WolDeviceResponse;
 import java.util.List;
 
 public interface WolDeviceService {
+    void refreshArp();
     WolDeviceResponse createDevice(Long userId, WolDeviceRequest request);
     WolDeviceResponse updateDevice(Long userId, Long id, WolDeviceRequest request);
     void deleteDevice(Long userId, Long id);
