@@ -77,6 +77,12 @@ cloudinary:
   api-key: ${CLOUDINARY_API_KEY}
   secret-key: ${CLOUDINARY_SECRET_KEY}
 
+router:
+  host: ${ROUTER_HOST}
+  username: ${ROUTER_USERNAME}
+  password: ${ROUTER_PASSWORD}
+  path: ${ROUTER_PATH}
+
 app:
   feature:
     change-username:
