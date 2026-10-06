@@ -120,8 +120,8 @@ public class WolDeviceController {
         ));
     }
 
-    @PostMapping("/apply-port-forwarding")
-    @Operation(summary = "Apply port forwarding (Refresh ARP cache)")
+    @PostMapping("/refresh-arp")
+    @Operation(summary = "Refresh ARP cache")
     public ResponseEntity<ApiResponse<Void>> applyPortForwarding() {
         deviceService.refreshArp();
         return ResponseEntity.ok(new ApiResponse<>(
