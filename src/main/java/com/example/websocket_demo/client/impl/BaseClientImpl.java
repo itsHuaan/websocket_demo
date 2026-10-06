@@ -145,7 +145,6 @@ public class BaseClientImpl implements BaseClient {
     }
 
     @Override
-    @Async
     public void applyPortForwarding() {
         String token = getSessionToken();
         String url = host + path;
