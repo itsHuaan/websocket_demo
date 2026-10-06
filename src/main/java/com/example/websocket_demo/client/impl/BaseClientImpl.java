@@ -4,9 +4,12 @@ import com.example.websocket_demo.client.BaseClient;
 import com.example.websocket_demo.common.DataUtil;
 import com.example.websocket_demo.common.MessageService;
 import com.example.websocket_demo.dto.response.ArpEntryResponse;
+import com.example.websocket_demo.dto.response.router.ArpTableData;
+import com.example.websocket_demo.dto.response.router.LoginData;
+import com.example.websocket_demo.dto.response.router.PortForwardingData;
+import com.example.websocket_demo.dto.response.router.UbusResponse;
 import com.example.websocket_demo.service.redis.RedisService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,13 +93,13 @@ public class BaseClientImpl implements BaseClient {
 
     private String getSessionToken() {
         String token = redisService.getString(UBUS_SESSION_REDIS_KEY);
-        if (!DataUtil.isNullOrEmpty(token)) {
+        if (token != null && !token.isEmpty()) {
             return token;
         }
-        return login();
+        return loginToNetwork();
     }
 
-    private String login() {
+    private String loginToNetwork() {
         String url = host + path;
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -121,12 +124,16 @@ public class BaseClientImpl implements BaseClient {
             });
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            ResponseEntity<UbusResponse> response = restTemplate.postForEntity(url, request, UbusResponse.class);
 
-            JsonNode rootNode = MAPPER.readTree(response.getBody());
-            JsonNode resultNode = rootNode.path("result").path(1);
-            String token = resultNode.path("ubus_rpc_session").asText();
-            long timeout = resultNode.path("timeout").asLong(300);
+            UbusResponse ubusResponse = response.getBody();
+            if (ubusResponse == null || ubusResponse.getResult() == null || ubusResponse.getResult().size() < 2) {
+                throw new RuntimeException("Invalid response from router login");
+            }
+
+            LoginData loginData = MAPPER.convertValue(ubusResponse.getResult().get(1), LoginData.class);
+            String token = loginData.getUbusRpcSession();
+            Long timeout = loginData.getTimeout() != null ? loginData.getTimeout() : 300L;
 
             if (token == null || token.isEmpty()) {
                 throw new RuntimeException("Failed to get session token");
@@ -145,6 +152,7 @@ public class BaseClientImpl implements BaseClient {
     }
 
     @Override
+    @Async
     public void applyPortForwarding() {
         String token = getSessionToken();
         String url = host + path;
@@ -170,15 +178,18 @@ public class BaseClientImpl implements BaseClient {
             });
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-
-            JsonNode rootNode = MAPPER.readTree(response.getBody());
-            JsonNode statusNode = rootNode.path("result").path(1).path("status");
-
-            if (statusNode.isMissingNode() || !statusNode.asBoolean()) {
-                throw new RuntimeException("Port forwarding failed: result[1].status is not true");
+            ResponseEntity<UbusResponse> response = restTemplate.postForEntity(url, request, UbusResponse.class);
+            
+            UbusResponse ubusResponse = response.getBody();
+            if (ubusResponse == null || ubusResponse.getResult() == null || ubusResponse.getResult().size() < 2) {
+                throw new RuntimeException("Invalid response from router port forwarding");
             }
 
+            PortForwardingData pfData = MAPPER.convertValue(ubusResponse.getResult().get(1), PortForwardingData.class);
+            if (pfData == null || !Boolean.TRUE.equals(pfData.getStatus())) {
+                throw new RuntimeException("Port forwarding failed: status is not true");
+            }
+            
             log.info("Router apply port forwarding completed successfully.");
 
         } catch (Exception e) {
@@ -209,22 +220,26 @@ public class BaseClientImpl implements BaseClient {
             });
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-
-            JsonNode rootNode = MAPPER.readTree(response.getBody());
-            JsonNode entriesNode = rootNode.path("result").path(1).path("entries");
-
+            ResponseEntity<UbusResponse> response = restTemplate.postForEntity(url, request, UbusResponse.class);
+            
+            UbusResponse ubusResponse = response.getBody();
+            if (ubusResponse == null || ubusResponse.getResult() == null || ubusResponse.getResult().size() < 2) {
+                throw new RuntimeException("Invalid response from router getArpTable");
+            }
+            
+            ArpTableData arpData = MAPPER.convertValue(ubusResponse.getResult().get(1), ArpTableData.class);
+            
             List<ArpEntryResponse> arpEntries = new ArrayList<>();
-            if (entriesNode.isArray()) {
-                for (JsonNode entry : entriesNode) {
+            if (arpData != null && arpData.getEntries() != null) {
+                for (ArpTableData.ArpEntry entry : arpData.getEntries()) {
                     arpEntries.add(ArpEntryResponse.builder()
-                            .device(entry.path("device").asText())
-                            .macAddress(entry.path("macaddr").asText())
-                            .ipAddress(entry.path("ipaddr").asText())
+                            .device(entry.getDevice())
+                            .macAddress(entry.getMacaddr())
+                            .ipAddress(entry.getIpaddr())
                             .build());
                 }
             }
-
+            
             return arpEntries;
 
         } catch (Exception e) {
