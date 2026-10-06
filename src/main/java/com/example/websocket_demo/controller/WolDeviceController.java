@@ -1,31 +1,21 @@
 package com.example.websocket_demo.controller;
 
+import com.example.websocket_demo.client.BaseClient;
 import com.example.websocket_demo.dto.request.WolDeviceRequest;
 import com.example.websocket_demo.dto.response.ApiResponse;
+import com.example.websocket_demo.dto.response.ArpEntryResponse;
 import com.example.websocket_demo.dto.response.WolDeviceResponse;
 import com.example.websocket_demo.service.network.WolDeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Random;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 
 @RestController
 @RequestMapping("/api/v1/network/devices")
@@ -123,10 +113,20 @@ public class WolDeviceController {
     @PostMapping("/refresh-arp")
     @Operation(summary = "Refresh ARP cache")
     public ResponseEntity<ApiResponse<Void>> applyPortForwarding() {
-        deviceService.refreshArp();
+        deviceService.applyPortForwarding();
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Port forwarding triggered in background"
+        ));
+    }
+
+    @GetMapping("/arp-table")
+    @Operation(summary = "Get ARP table")
+    public ResponseEntity<ApiResponse<List<ArpEntryResponse>>> getArpTable() {
+        return ResponseEntity.ok(new ApiResponse<>(
+                HttpStatus.OK,
+                "Success",
+                deviceService.getArpTable()
         ));
     }
 }

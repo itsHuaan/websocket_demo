@@ -43,4 +43,5 @@ src/main/resources/application.yml
 /.claude/
 /target/
 
-**.png
+*.png
+*.md
