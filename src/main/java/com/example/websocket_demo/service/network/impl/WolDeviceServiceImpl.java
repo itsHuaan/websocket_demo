@@ -86,7 +86,7 @@ public class WolDeviceServiceImpl implements WolDeviceService {
         wolService.wakeOnLan(entity.getMacAddress(), entity.getHost(), entity.getPort());
     }
 
-    @Async
+//    @Async
     @Override
     public void applyPortForwarding() {
         baseClient.applyPortForwarding();
