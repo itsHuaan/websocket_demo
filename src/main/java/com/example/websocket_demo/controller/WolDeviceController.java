@@ -116,7 +116,7 @@ public class WolDeviceController {
         deviceService.applyPortForwarding();
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
-                "Port forwarding triggered in background"
+                "Port forwarding triggered"
         ));
     }
 
