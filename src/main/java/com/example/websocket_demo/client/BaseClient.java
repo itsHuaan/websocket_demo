@@ -7,6 +7,4 @@ import java.util.Map;
 
 public interface BaseClient {
     Map<String, String> fetchPhoneCodes() throws Exception;
-    void applyPortForwarding();
-    List<ArpEntryResponse> getArpTable();
 }

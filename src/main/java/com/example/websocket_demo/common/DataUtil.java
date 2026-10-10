@@ -6,10 +6,7 @@ import org.objectweb.asm.TypeReference;
 
 import java.lang.reflect.Field;
 import java.text.Normalizer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +40,10 @@ public class DataUtil {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static int generateRequestId() {
+        return new Random().nextInt(Integer.MAX_VALUE);
     }
 
     public static <T> T parseJsonToObject(String json, Class<T> clazz) {

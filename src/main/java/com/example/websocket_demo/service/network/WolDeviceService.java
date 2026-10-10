@@ -13,6 +13,4 @@ public interface WolDeviceService {
     WolDeviceResponse getDevice(Long userId, Long id);
     List<WolDeviceResponse> getAllDevices(Long userId);
     void wakeDevice(Long userId, Long id);
-    void applyPortForwarding();
-    List<ArpEntryResponse> getArpTable();
 }

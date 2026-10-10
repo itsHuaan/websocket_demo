@@ -1,4 +1,4 @@
-package com.example.websocket_demo.dto.otp;
+package com.example.websocket_demo.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

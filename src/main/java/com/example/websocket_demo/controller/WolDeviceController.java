@@ -1,10 +1,10 @@
 package com.example.websocket_demo.controller;
 
-import com.example.websocket_demo.client.BaseClient;
 import com.example.websocket_demo.dto.request.WolDeviceRequest;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.dto.response.ArpEntryResponse;
 import com.example.websocket_demo.dto.response.WolDeviceResponse;
+import com.example.websocket_demo.service.network.RouterService;
 import com.example.websocket_demo.service.network.WolDeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +24,7 @@ import java.util.List;
 public class WolDeviceController {
 
     private final WolDeviceService deviceService;
+    private final RouterService routerService;
 
     private Long getUserId(Principal principal) {
         if (principal == null) {
@@ -48,7 +49,7 @@ public class WolDeviceController {
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing device")
     public ResponseEntity<ApiResponse<WolDeviceResponse>> updateDevice(
-            @PathVariable Long id, 
+            @PathVariable Long id,
             @Valid @RequestBody WolDeviceRequest request,
             Principal principal) {
         Long userId = getUserId(principal);
@@ -113,10 +114,10 @@ public class WolDeviceController {
     @PostMapping("/refresh-arp")
     @Operation(summary = "Refresh ARP cache")
     public ResponseEntity<ApiResponse<Void>> applyPortForwarding() {
-        deviceService.applyPortForwarding();
+        boolean success = routerService.applyPortForwarding();
         return ResponseEntity.ok(new ApiResponse<>(
-                HttpStatus.OK,
-                "Port forwarding triggered"
+                success ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR,
+                success ? "Port forwarding triggered successfully" : "Failed to trigger port forwarding"
         ));
     }
 
@@ -126,7 +127,7 @@ public class WolDeviceController {
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
                 "Success",
-                deviceService.getArpTable()
+                routerService.getArpTable()
         ));
     }
 }

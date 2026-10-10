@@ -28,7 +28,6 @@ public class WolDeviceServiceImpl implements WolDeviceService {
     private final WolDeviceRepository repository;
     private final WolService wolService;
     private final UserRepository userRepository;
-    private final BaseClient baseClient;
 
     @Override
     public WolDeviceResponse createDevice(Long userId, WolDeviceRequest request) {
@@ -84,17 +83,6 @@ public class WolDeviceServiceImpl implements WolDeviceService {
         WolDeviceEntity entity = getEntityByIdAndUserId(id, userId);
 
         wolService.wakeOnLan(entity.getMacAddress(), entity.getHost(), entity.getPort());
-    }
-
-//    @Async
-    @Override
-    public void applyPortForwarding() {
-        baseClient.applyPortForwarding();
-    }
-
-    @Override
-    public List<ArpEntryResponse> getArpTable() {
-        return baseClient.getArpTable();
     }
 
     private WolDeviceEntity getEntityByIdAndUserId(Long id, Long userId) {

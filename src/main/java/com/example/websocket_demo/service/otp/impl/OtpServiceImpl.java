@@ -2,7 +2,7 @@ package com.example.websocket_demo.service.otp.impl;
 
 import com.example.websocket_demo.common.Const;
 import com.example.websocket_demo.common.DataUtil;
-import com.example.websocket_demo.dto.otp.OtpData;
+import com.example.websocket_demo.dto.response.OtpData;
 import com.example.websocket_demo.dto.response.ApiResponse;
 import com.example.websocket_demo.service.otp.OtpService;
 import lombok.RequiredArgsConstructor;

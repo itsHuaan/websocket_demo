@@ -77,10 +77,10 @@ cloudinary:
   secret-key: ${CLOUDINARY_SECRET_KEY}
 
 router:
-  host: ${ROUTER_HOST}
-  username: ${ROUTER_USERNAME}
-  password: ${ROUTER_PASSWORD}
-  path: ${ROUTER_PATH}
+  host: ${ROUTER_HOST:http://localhost}
+  username: ${ROUTER_USERNAME:admin}
+  password: ${ROUTER_PASSWORD:admin}
+  ubus: /ubus
 
 app:
   feature:
@@ -109,6 +109,7 @@ app:
       - /api/scores
       - /oauth2/**
       - /login/**
+      - /api/v1/router/**
   otp:
     expires-minutes: 3
 
