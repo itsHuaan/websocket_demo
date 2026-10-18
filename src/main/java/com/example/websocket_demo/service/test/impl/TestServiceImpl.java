@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -136,13 +137,11 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public ApiResponse<?> keepServiceAlive() {
-        String time = DateUtil.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy");
-        log.info("Service is alive: {}", time);
         return new ApiResponse<>(
                 HttpStatus.OK,
-                time,
+                DateUtil.formatDate(LocalDateTime.now(), "HH:mm:ss MMM dd, yyyy"),
                 DataUtil.isNullOrZero(testRepository.getAllIds()) ? 0 : testRepository.getAllIds().size(),
-                LocalDateTime.of(2001, 9, 19, 0, 0));
+                LocalDateTime.of(2001, Month.SEPTEMBER, 19, 6, 10, 19));
     }
 
 }
