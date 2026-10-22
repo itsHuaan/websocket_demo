@@ -1,19 +1,14 @@
 package com.example.websocket_demo.service.network.impl;
 
-import com.example.websocket_demo.client.BaseClient;
 import com.example.websocket_demo.dto.request.WolDeviceRequest;
-import com.example.websocket_demo.dto.response.ApiResponse;
-import com.example.websocket_demo.dto.response.ArpEntryResponse;
 import com.example.websocket_demo.dto.response.WolDeviceResponse;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.entity.WolDeviceEntity;
 import com.example.websocket_demo.repository.UserRepository;
 import com.example.websocket_demo.repository.WolDeviceRepository;
 import com.example.websocket_demo.service.network.WolDeviceService;
-import com.example.websocket_demo.service.network.WolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
