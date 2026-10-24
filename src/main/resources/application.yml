@@ -2,12 +2,18 @@ spring:
   profiles:
     active: dev
 
+  data:
+    redis:
+      repositories:
+        enabled: false
+
   main:
     lazy-initialization: true
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration
       - org.springframework.boot.autoconfigure.websocket.reactive.WebSocketReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
 server:
   tomcat:
