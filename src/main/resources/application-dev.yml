@@ -13,6 +13,12 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
 
   data:
     redis:
@@ -72,9 +78,9 @@ jwt:
   refresh-expiration: 2592000000
 
 cloudinary:
-  name: ${CLOUDINARY_NAME}
-  api-key: ${CLOUDINARY_API_KEY}
-  secret-key: ${CLOUDINARY_SECRET_KEY}
+  name: ${CLOUDINARY_NAME:default}
+  api-key: ${CLOUDINARY_API_KEY:default}
+  secret-key: ${CLOUDINARY_SECRET_KEY:default}
 
 router:
   host: ${ROUTER_HOST:http://localhost}
@@ -115,6 +121,8 @@ app:
 
 springdoc:
   swagger-ui:
+    enabled: false
     path: /swagger-ui.html
   api-docs:
+    enabled: false
     path: /swagger-ui

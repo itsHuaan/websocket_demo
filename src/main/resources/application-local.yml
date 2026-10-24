@@ -13,6 +13,12 @@ spring:
     username: itsHuaan
     password: QHuan1909!
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
 
   data:
     redis:
@@ -116,6 +122,8 @@ app:
 
 springdoc:
   swagger-ui:
+    enabled: false
     path: /swagger-ui.html
   api-docs:
+    enabled: false
     path: /swagger-ui

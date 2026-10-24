@@ -1,3 +1,24 @@
 spring:
   profiles:
     active: dev
+
+  main:
+    lazy-initialization: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration
+      - org.springframework.boot.autoconfigure.websocket.reactive.WebSocketReactiveAutoConfiguration
+
+server:
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 2
+    accept-count: 10
+    max-connections: 100
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
