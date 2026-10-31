@@ -1,6 +1,7 @@
 package com.example.websocket_demo.service.user.impl;
 
 import com.example.websocket_demo.common.MessageService;
+import com.example.websocket_demo.configuration.CacheConfig;
 import com.example.websocket_demo.service.media.impl.CloudinaryServiceImpl;
 import com.example.websocket_demo.entity.BaseEntity;
 import com.example.websocket_demo.entity.RoleEntity;
@@ -13,6 +14,7 @@ import com.example.websocket_demo.mapper.UserMapper;
 import com.example.websocket_demo.dto.request.AdminUserRequest;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -97,6 +99,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public void updateUser(Long id, UserRequest UserRequest) {
         UserEntity currentUser = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
@@ -129,6 +132,7 @@ public class UserServiceImpl implements UserService {
     // Self-service profile update: only the safe-to-change fields (name + picture).
     // Username can be changed if the feature flag is enabled and cooldown is met.
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public UserResponse updateProfile(Long id, UserRequest request) {
         UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
@@ -174,6 +178,7 @@ public class UserServiceImpl implements UserService {
 
     // Admin edit: name, username, email, role, status, optional password reset.
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public UserResponse adminUpdateUser(Long id, AdminUserRequest request) {
         UserEntity user = userRepository.findByUserIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new NoSuchElementException(messageService.getMessage(USER_NOT_FOUND.getCode()))
@@ -259,6 +264,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public void deleteUser(Long id, Integer isHardDelete) {
         boolean check = isHardDelete != null && isHardDelete == 1;
         UserEntity user = check
@@ -303,5 +309,3 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 }
-
-

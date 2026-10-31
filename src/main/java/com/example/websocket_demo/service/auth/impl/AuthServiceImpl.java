@@ -1,6 +1,7 @@
 package com.example.websocket_demo.service.auth.impl;
 
 import com.example.websocket_demo.common.MessageService;
+import com.example.websocket_demo.configuration.CacheConfig;
 import com.example.websocket_demo.security.domain.UserDetailsImpl;
 import com.example.websocket_demo.security.jwt.JwtProvider;
 import com.example.websocket_demo.dto.response.SignInResponse;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -197,6 +199,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public void verifySignUp(VerifyOtpRequest request) {
         String email = request.getEmail();
         String otp = request.getOtp();
@@ -226,6 +229,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public void resetPassword(ResetPasswordRequest request) {
         String email = request.getEmail();
         String otp = request.getOtp();
@@ -251,5 +255,3 @@ public class AuthServiceImpl implements AuthService {
         return templateEngine.process("otp-code", context);
     }
 }
-
-

@@ -1,11 +1,13 @@
 package com.example.websocket_demo.security.oauth2;
 
+import com.example.websocket_demo.configuration.CacheConfig;
 import com.example.websocket_demo.entity.RoleEntity;
 import com.example.websocket_demo.entity.UserEntity;
 import com.example.websocket_demo.enumeration.AccountStatus;
 import com.example.websocket_demo.repository.RoleRepository;
 import com.example.websocket_demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -30,6 +32,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final MessageService messageService;
 
     @Override
+    @CacheEvict(value = CacheConfig.USER_DETAILS_CACHE, allEntries = true)
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
